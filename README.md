@@ -1,0 +1,2 @@
+# quadratic-diplomacy
+Quadratic-diplomacy
