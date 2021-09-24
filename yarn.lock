@@ -1731,6 +1731,11 @@
   resolved "https://registry.yarnpkg.com/@fontsource/lexend/-/lexend-4.5.1.tgz#905f5ed1f3f40e7150b79d6c11e7b4839977999e"
   integrity sha512-opFE25zKj2vo978f+QWgID9K4qMsPE6S59RRuwOcyuVL0pBbTErYUVWxfHn8kgDGyy99w+vwxoKI2hGqCHeN2g==
 
+"@fontsource/space-mono@^4.5.0":
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/@fontsource/space-mono/-/space-mono-4.5.0.tgz#634cb042d570f9341f4449c6bf0b4c57c562c0c2"
+  integrity sha512-1tzGlLH2N/k1sovGSA4s7MpIRMciKeJbXKfdrKc1H84lg1FPcmiYGYdWiQA5MoQyjF6Bqx+IWpyIcOktMKvViA==
+
 "@hapi/accept@5.0.2":
   version "5.0.2"
   resolved "https://registry.yarnpkg.com/@hapi/accept/-/accept-5.0.2.tgz#ab7043b037e68b722f93f376afb05e85c0699523"

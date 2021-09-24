@@ -5,7 +5,7 @@ import { CacheProvider } from "@emotion/react";
 import { DefaultSeo } from "next-seo";
 import { AppProps } from "next/app";
 import Head from "next/head";
-import "@fontsource/lexend/latin.css";
+import "@fontsource/space-mono"
 
 import defaultSEOConfig from "../../next-seo.config";
 import Layout from "components/layout";
