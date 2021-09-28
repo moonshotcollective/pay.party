@@ -1,5 +1,6 @@
-import { Box, Flex } from "@chakra-ui/react";
-import Link from "next/link";
+import { Box, Flex, Stack } from "@chakra-ui/react";
+import React from "react";
+import ConnectButton from "../Buttons/ConnectButton";
 
 import ThemeToggle from "./ThemeToggle";
 
@@ -7,7 +8,10 @@ const Header = () => {
   return (
     <Flex as="header" width="full" align="center">
       <Box marginLeft="auto">
-        <ThemeToggle />
+        <Stack direction="row" spacing={6}>
+          <ThemeToggle />
+          <ConnectButton />
+        </Stack>
       </Box>
     </Flex>
   );
