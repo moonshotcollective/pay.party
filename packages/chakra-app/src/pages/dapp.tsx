@@ -1,20 +1,7 @@
 import {
-  Box,
-  Text,
-  Heading,
-  VStack,
   HStack,
-  Divider,
   Button,
-  AspectRatio,
 } from "@chakra-ui/react";
-import { useColorModeValue } from "@chakra-ui/color-mode";
-import { Link, SimpleGrid } from "@chakra-ui/layout";
-
-import QDIcon from "../components/Icons/QDIcon";
-import Circle from "../components/Circles/Circle";
-
-import NextLink from "next/link";
 
 import CenteredFrame from "../components/layout/CenteredFrame";
 import NotConnectedCard from "../components/layout/Card/NotConnectedCard";

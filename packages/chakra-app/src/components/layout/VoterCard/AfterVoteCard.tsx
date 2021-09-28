@@ -1,17 +1,12 @@
 import {
-  Box,
   Text,
   Heading,
   VStack,
   HStack,
   Divider,
-  Button,
-  Checkbox,
   Avatar,
 } from "@chakra-ui/react";
 import { useColorModeValue } from "@chakra-ui/color-mode";
-
-// import AvatarImage from "./avatar.png";
 
 function AfterVoteCard() {
   const headingColor = useColorModeValue("yellow.600", "yellow.500");

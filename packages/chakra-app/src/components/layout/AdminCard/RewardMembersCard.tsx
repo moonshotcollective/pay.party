@@ -6,7 +6,6 @@ import {
   HStack,
   Divider,
   Button,
-  Checkbox,
   Avatar,
   Input,
   Icon,
@@ -19,11 +18,9 @@ import {
   Tr,
   Th,
   Td,
-  TableCaption,
 } from "@chakra-ui/react";
 import { useColorModeValue } from "@chakra-ui/color-mode";
 
-// import AvatarImage from "./avatar.png";
 import { FiChevronDown } from "react-icons/fi";
 
 function RewardMembersCard() {

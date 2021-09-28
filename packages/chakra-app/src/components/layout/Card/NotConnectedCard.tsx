@@ -1,12 +1,8 @@
 import {
-  Box,
   Text,
   Heading,
   VStack,
-  HStack,
-  Divider,
   Button,
-  AspectRatio,
 } from "@chakra-ui/react";
 import { useColorModeValue } from "@chakra-ui/color-mode";
 

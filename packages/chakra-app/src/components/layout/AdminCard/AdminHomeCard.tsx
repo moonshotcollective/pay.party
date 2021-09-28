@@ -5,16 +5,9 @@ import {
   VStack,
   HStack,
   Divider,
-  Button,
-  Checkbox,
-  Input,
-  Avatar,
-  useNumberInput,
   Icon,
 } from "@chakra-ui/react";
 import { useColorModeValue } from "@chakra-ui/color-mode";
-// import AvatarImage from "./avatar.png";
-import VoteInput from "../VoteInput";
 import { FiChevronRight } from "react-icons/fi";
 
 enum CardEnum {
@@ -36,10 +29,6 @@ function AdminHomeCard({ changeActive }: any) {
       <Heading fontSize="1.5rem" color={headingColor}>
         Admin
       </Heading>
-      {/* <Text pb="2rem" fontSize="1rem">
-        Vote each member based on their contributions.
-        <br /> You have 79 votes left.
-      </Text> */}
       <VStack w="100%" align="left" spacing="1rem">
         <Divider pt="2rem" />
         <Box

@@ -1,18 +1,12 @@
 import {
-  Box,
   Text,
   Heading,
   VStack,
   HStack,
   Divider,
-  Button,
-  Checkbox,
-  Input,
   Avatar,
-  useNumberInput,
 } from "@chakra-ui/react";
 import { useColorModeValue } from "@chakra-ui/color-mode";
-// import AvatarImage from "./avatar.png";
 import VoteInput from "../VoteInput";
 
 function VoteCard() {

@@ -1,15 +1,8 @@
 import React from "react";
 import {
-  Box,
-  Text,
-  Heading,
-  VStack,
   HStack,
-  Divider,
   Button,
-  Checkbox,
   Input,
-  Avatar,
   useNumberInput,
 } from "@chakra-ui/react";
 

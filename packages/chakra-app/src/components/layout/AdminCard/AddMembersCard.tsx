@@ -6,17 +6,12 @@ import {
   HStack,
   Divider,
   Button,
-  Checkbox,
   Input,
-  Avatar,
-  useNumberInput,
   InputRightElement,
   InputGroup,
   Icon,
 } from "@chakra-ui/react";
 import { useColorModeValue } from "@chakra-ui/color-mode";
-// import AvatarImage from "./avatar.png";
-import VoteInput from "../VoteInput";
 import QRCodeIcon from "../../Icons/QRCodeIcon";
 import { FiX } from "react-icons/fi";
 
@@ -30,10 +25,6 @@ function AddMembersCard() {
       <Heading fontSize="1.5rem" color={headingColor}>
         Add members to election
       </Heading>
-      {/* <Text pb="2rem" fontSize="1rem">
-        Vote each member based on their contributions.
-        <br /> You have 79 votes left.
-      </Text> */}
       <VStack w="100%" align="left" spacing="1.5rem">
         <HStack pt="2rem" justify="space-between">
           <Text fontSize="1rem">

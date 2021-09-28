@@ -1,5 +1,5 @@
 import { Step, Steps, useSteps } from "chakra-ui-steps";
-import { Flex, Text, Button, Box } from "@chakra-ui/react";
+import { Button, Box } from "@chakra-ui/react";
 
 import SelectMemberCard from "./SelectMemberCard";
 import AfterVoteCard from "./AfterVoteCard";
