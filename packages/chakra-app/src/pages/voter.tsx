@@ -19,7 +19,7 @@ import NextLink from "next/link";
 import CenteredFrame from "../components/layout/CenteredFrame";
 import NotConnectedCard from "../components/layout/Card/NotConnectedCard";
 import NotMemberCard from "../components/layout/Card/NotMemberCard";
-import SelectMemberCard from "../components/layout/Card/SelectMemberCard";
+import VoterSteps from "../components/layout/VoterCard/VoterSteps";
 
 import { useState } from "react";
 
@@ -52,7 +52,7 @@ const Voter = () => {
       </HStack>
       {activeCard === CardEnum.NotConnectedCard && <NotConnectedCard />}
       {activeCard === CardEnum.NotMember && <NotMemberCard />}
-      {activeCard === CardEnum.SelectMemberCard && <SelectMemberCard />}
+      {activeCard === CardEnum.SelectMemberCard && <VoterSteps />}
     </CenteredFrame>
   );
 };

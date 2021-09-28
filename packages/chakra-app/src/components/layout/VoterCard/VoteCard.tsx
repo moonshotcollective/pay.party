@@ -7,33 +7,33 @@ import {
   Divider,
   Button,
   Checkbox,
+  Input,
   Avatar,
+  useNumberInput,
 } from "@chakra-ui/react";
 import { useColorModeValue } from "@chakra-ui/color-mode";
-
 // import AvatarImage from "./avatar.png";
+import VoteInput from "../VoteInput";
 
-function SelectMemberCard() {
+function VoteCard() {
   const headingColor = useColorModeValue("yellow.600", "yellow.500");
 
   const members = ["0xad", "0xad", "0xad", "0xad", "0xad", "0xad"];
+
   return (
     <VStack align="left" w="100%" spacing="0.5rem">
       <Heading fontSize="1.5rem" color={headingColor}>
-        1. Select members
+        2. Vote
       </Heading>
       <Text pb="2rem" fontSize="1rem">
-        Select members you have been working with.
+        Vote each member based on their contributions.
+        <br /> You have 79 votes left.
       </Text>
       <VStack w="100%" align="left" spacing="1rem">
-        <Checkbox colorScheme="purple">
-          <Text ml="1rem">Select All</Text>
-        </Checkbox>
-        <Divider />
         {members.map((member) => (
           <>
-            <Checkbox colorScheme="purple">
-              <Text ml="1rem">
+            <HStack>
+              <Text>
                 <Avatar
                   mr="0.5rem"
                   boxSize="1.5em"
@@ -41,18 +41,14 @@ function SelectMemberCard() {
                 />
                 {member}
               </Text>
-            </Checkbox>
+              <VoteInput />
+            </HStack>
             <Divider />
           </>
         ))}
       </VStack>
-      <Box align="end">
-        <Button px="1.25rem" fontSize="md">
-          Next
-        </Button>
-      </Box>
     </VStack>
   );
 }
 
-export default SelectMemberCard;
+export default VoteCard;

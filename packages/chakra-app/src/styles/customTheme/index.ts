@@ -5,6 +5,8 @@ import colors from "./colors";
 import Button from "./components/button";
 import fonts from "./fonts";
 
+import { StepsStyleConfig as Steps } from "chakra-ui-steps";
+
 const customTheme = extendTheme({
   config: {
     initialColorMode: "dark",
@@ -21,6 +23,7 @@ const customTheme = extendTheme({
   colors,
   components: {
     Button,
+    Steps,
   },
 });
 

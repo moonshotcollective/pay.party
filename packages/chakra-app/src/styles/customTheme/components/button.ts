@@ -12,6 +12,16 @@ const Button: DeepPartial<Theme["components"]["Button"]> = {
         background: "yellow.500",
         color: "purple.500",
       },
+      _active: {
+        color: "purple.500",
+        bg: "yellow.800",
+      },
+    },
+    outline: {
+      borderRadius: "full",
+      borderWidth: "1px",
+      borderColor: "purple.500",
+      color: "violet.50",
     },
   },
 };
