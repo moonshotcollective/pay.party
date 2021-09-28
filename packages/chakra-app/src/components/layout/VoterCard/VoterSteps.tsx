@@ -22,7 +22,7 @@ const BasicExample = () => {
 
   return (
     <>
-      <Steps size="sm" activeStep={activeStep}>
+      <Steps colorScheme="purple" size="sm" activeStep={activeStep}>
         {steps.map(({ label, content }) => (
           <Step pb="1rem" label={label} key={label}>
             {content}
