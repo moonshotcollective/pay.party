@@ -33,14 +33,12 @@ const Home = () => {
             Distribute tokens among your team members based on quadratic voting.{" "}
           </Text>
           <Box maxW="300px" pt="10">
-            <NextLink href="/voter" passHref>
-              <Button w="239px" h="51px" fontSize="xl">
-                Go to Voter
-              </Button>
+            <NextLink href="/about" passHref>
+              Wallet not connected
             </NextLink>
           </Box>
           <Box maxW="300px" pt="10">
-            <NextLink href="/admin" passHref>
+            <NextLink href="/about" passHref>
               <Button w="239px" h="51px" fontSize="xl">
                 Go to Admin
               </Button>
