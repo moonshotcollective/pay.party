@@ -1,6 +1,16 @@
-import { Box, Heading, Text, VStack, HStack, Button } from "@chakra-ui/react";
+import {
+  Box,
+  Flex,
+  Stack,
+  Heading,
+  Text,
+  VStack,
+  HStack,
+  Button,
+} from "@chakra-ui/react";
 import { useColorModeValue } from "@chakra-ui/color-mode";
-
+import React from "react";
+import ConnectButton from "../Buttons/ConnectButton";
 import Link from "next/link";
 import QDIcon from "../Icons/QDIcon";
 
@@ -39,9 +49,7 @@ const Header = () => {
 
         <HStack>
           <ThemeToggle />
-          <Button fontSize="md">
-            Connect Wallet
-          </Button>
+          <ConnectButton />
         </HStack>
       </HStack>
     </Box>
