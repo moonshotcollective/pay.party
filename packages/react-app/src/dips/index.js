@@ -13,7 +13,7 @@ export default {
     id: 1,
     name: "On-chain (votes & election)",
     description: "",
-    handler: null,
+    handler: onChainHandler,
   },
   ipfs: {
     name: "IPFS (votes only)",

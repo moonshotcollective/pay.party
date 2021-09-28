@@ -1,48 +1,139 @@
-import React, { useState } from "react";
-import { Button, Table, Modal, Form, Input, Divider, InputNumber, Select } from "antd";
-import { DeleteRowOutlined, MinusCircleOutlined, PlusOutlined, UserDeleteOutlined } from "@ant-design/icons";
+import React, { useState, useEffect } from "react";
+import { useHistory } from "react-router-dom";
+import { Button, Table, Modal, Form, Input, Divider, InputNumber, Select, Typography, Tag, Space } from "antd";
+import {
+  DeleteRowOutlined,
+  MinusCircleOutlined,
+  PlusOutlined,
+  UserDeleteOutlined,
+  LinkOutlined,
+} from "@ant-design/icons";
 import { Address, AddressInput } from "../components";
 import dips from "../dips";
+import { mainnetProvider, blockExplorer } from "../App";
 
-export default function Home({ tx, createContracts, mainnetProvider }) {
+export default function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
+  const routeHistory = useHistory();
+
+  const viewElection = record => {
+    // console.log({ record });
+    routeHistory.push("/vote/" + record.id);
+  };
+
+  const createElection = () => {
+    routeHistory.push("/create");
+  };
+
   const [newElection, setNewElection] = useState(false);
-  const [selectedDip, setSelectedDip] = useState(null);
+  const [selectedDip, setSelectedDip] = useState("onChain");
+  const [electionsMap, setElectionsMap] = useState();
+
+  useEffect(() => {
+    if (readContracts) {
+      if (readContracts.Diplomacy) {
+        init();
+      }
+    }
+  }, [readContracts, address]);
 
   const dipsKeys = Object.keys(dips);
 
-  const columns = [
-    {
-      title: "Election Id",
-      dataIndex: "id",
-      key: "id",
-    },
-    {
+  const dateCol = () => {
+    return {
+      title: "Created",
+      dataIndex: "created_date",
+      key: "created_date",
+      align: "center",
+      width: 112,
+    };
+  };
+  const nameCol = () => {
+    return {
       title: "Name",
       dataIndex: "name",
       key: "name",
-    },
-    {
-      title: "Admin",
-      dataIndex: "admin",
-      key: "admin",
-      render: text => <Address address={text} fontSize={16} ensProvider={mainnetProvider} />,
-    },
-    {
-      title: "Candidates",
-      dataIndex: "candidates",
-      key: "candidates",
-    },
-    {
+      align: "center",
+      render: name => <Typography.Text>{name}</Typography.Text>,
+    };
+  };
+  const creatorCol = () => {
+    return {
+      title: "Creator",
+      dataIndex: "creator",
+      key: "creator",
+      align: "center",
+      render: creator => (
+        <>
+          <Address address={creator} fontSize="14pt" ensProvider={mainnetProvider} blockExplorer={blockExplorer} />
+        </>
+      ),
+    };
+  };
+  const votedCol = () => {
+    return {
+      title: "№ Voted",
+      dataIndex: "n_voted",
+      key: "n_voted",
+      align: "center",
+      width: 100,
+      render: p => (
+        <Typography.Text>
+          {p.n_voted} / {p.outOf}
+        </Typography.Text>
+      ),
+    };
+  };
+  const statusCol = () => {
+    return {
       title: "Status",
       dataIndex: "status",
       key: "status",
-    },
-    {
+      align: "center",
+      width: 100,
+      render: status => (status ? <Tag color={"lime"}>open</Tag> : <Tag>closed</Tag>),
+    };
+  };
+  const tagsCol = () => {
+    return {
+      title: "Tags",
+      dataIndex: "tags",
+      key: "tags",
+      align: "center",
+      render: tags =>
+        tags.map(r => {
+          let color = "orange";
+          if (r == "candidate") {
+            color = "blue";
+          }
+          if (r === "voted") {
+            color = "green";
+          }
+          return (
+            <Tag color={color} key={r}>
+              {r.toLowerCase()}
+            </Tag>
+          );
+        }),
+    };
+  };
+  const actionCol = () => {
+    return {
       title: "Action",
       key: "action",
-      render: (text, record) => <a href={`/vote/${record.id}`}>View</a>,
-    },
-  ];
+      align: "center",
+      width: 100,
+      render: (text, record, index) => (
+        <>
+          <Space size="middle">
+            <Button type="link" icon={<LinkOutlined />} size="small" shape="round" onClick={() => viewElection(record)}>
+              View
+            </Button>
+          </Space>
+        </>
+      ),
+    };
+  };
+  const columns = [dateCol(), nameCol(), creatorCol(), votedCol(), tagsCol(), statusCol(), actionCol()];
 
   const formItemLayout = {
     labelCol: {
@@ -71,17 +162,28 @@ export default function Home({ tx, createContracts, mainnetProvider }) {
     },
   ];
 
+  const init = async () => {
+    let electionsMap = await dips[selectedDip].handler.getElections(readContracts.Diplomacy, address);
+    console.log({ electionsMap });
+    setElectionsMap(electionsMap);
+  };
+
   const handleNewElection = async data => {
     // send new election data to specified QD handler
-    // console.log(dips[selectedDip]);
-    dips[selectedDip].handler.createElection(data);
+    // data.name = "Test";
+    // data.fundAmount = 1;
+    // data.tokenAdr = "0x0000000000000000000000000000000000000000";
+    // data.votes = 4;
+    // data.candidates = ["0x7F2FA234AEd9F7FA0D5070Fb325D1c2C983E96b1"];
+    // const result = dips[selectedDip].handler.createElection(data, tx, writeContracts.Diplomacy);
+    console.log({ data });
   };
 
   const renderHeader = () => {
     return (
       <div className="flex flex-1 justify-between items-center mb-4">
         <h1 className="m-0 font-semibold text-lg">Quadratic Elections</h1>
-        <Button type="primary" onClick={() => setNewElection(true)}>
+        <Button type="primary" onClick={() => createElection()}>
           Create Election
         </Button>
       </div>
@@ -91,7 +193,9 @@ export default function Home({ tx, createContracts, mainnetProvider }) {
   return (
     <div style={{ width: 850, margin: "20px auto" }}>
       <div style={{ width: "100%" }}>
-        <Table title={renderHeader} columns={columns} dataSource={sampleElectionData} />
+        {electionsMap && (
+          <Table title={renderHeader} columns={columns} dataSource={Array.from(electionsMap.values()).reverse()} />
+        )}
       </div>
       <Modal
         title="Create New Quadratic Election"
@@ -103,7 +207,14 @@ export default function Home({ tx, createContracts, mainnetProvider }) {
         footer={null}
       >
         <Form name="basic" onFinish={handleNewElection} layout="horizontal">
-          <Form.Item label="Election Name" className="flex-1" labelCol={12} name="name" tooltip="Name of new election">
+          <Form.Item
+            label="Election Name"
+            className="flex-1"
+            labelCol={12}
+            name="name"
+            tooltip="Name of new election"
+            defaultValue="test"
+          >
             <Input type="text" placeholder="Sample Election name..." className="w-full" />
           </Form.Item>
           <div className="flex flex-1 flex-row">
@@ -115,7 +226,7 @@ export default function Home({ tx, createContracts, mainnetProvider }) {
               name="type"
               tooltip="Quadratic diplomacy of choice"
             >
-              <Select placeholder="Quadratic Diplomacy build..." onChange={setSelectedDip}>
+              <Select placeholder="Quadratic Diplomacy build..." onChange={setSelectedDip} defaultValue={["onChain"]}>
                 {dipsKeys.map(k => (
                   <Select.Option key={k} value={k}>
                     {dips[k].name}
