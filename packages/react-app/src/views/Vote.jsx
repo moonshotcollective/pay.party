@@ -1,10 +1,15 @@
-import React, { useState, useEffect } from "react";
-import { Button, Divider, Table, Space, Typography, Input, PageHeader } from "antd";
+import { PageHeader } from "antd";
 import { useParams, useHistory } from "react-router-dom";
-import { PlusSquareOutlined, MinusSquareOutlined, SendOutlined, CloseCircleOutlined } from "@ant-design/icons";
+import React, { useState, useEffect } from "react";
+import { Button, Divider, Table, Space, Typography, Input } from "antd";
 import { fromWei, toWei, toBN, numberToHex } from "web3-utils";
-import { Address } from "../components";
+import { Address, PayButton } from "../components";
+import { PlusSquareOutlined, MinusSquareOutlined, SendOutlined, CloseCircleOutlined } from "@ant-design/icons";
 import dips from "../dips";
+
+const { Text } = Typography;
+
+var Map = require("collections/map");
 
 export default function Vote({
   address,
@@ -14,17 +19,52 @@ export default function Vote({
   tx,
   readContracts,
   writeContracts,
+  yourLocalBalance,
 }) {
+  /***** Routes *****/
   const routeHistory = useHistory();
   let { id } = useParams();
 
-  const [election, setElection] = useState({});
-  const [selectedDip, setSelectedDip] = useState("onChain");
-  const [voteMetadata, setVoteMetadata] = useState({});
-  const [voteTableData, setVoteTableData] = useState([]);
-  const [electionScoreFactor, setElectionScoreFactor] = useState();
-  const [isElectionActive, setIsElectionActive] = useState(false);
+  /***** States *****/
+  const [selectedQdip, setSelectedQdip] = useState("onChain");
+  const [qdipHandler, setSelectedQDip] = useState();
 
+  const [electionState, setElectionState] = useState({});
+  const [votesLeft, setVotesLeft] = useState(0);
+  const [tableSrc, setTableSrc] = useState([]);
+  //   const [tableCols, setTableCols] = useState([]);
+  const [errorMsg, setErrorMsg] = useState("");
+  const [isElectionEnding, setIsElectionEnding] = useState(false);
+  const [candidateMap, setCandidateMap] = useState();
+  const [candidateScores, setCandidateScores] = useState([]);
+
+  //Payout
+  const [finalPayout, setFinalPayout] = useState({
+    scores: [],
+    payout: [],
+    scoreSum: 0,
+  });
+  const [token, setToken] = useState("ETH");
+  const [spender, setSpender] = useState("");
+  const [availableTokens, setAvailableTokens] = useState([]);
+
+  // const [votingData, setVotingData] = useState([]);
+  // const [votesLeft, setVotesLeft] = useState(election.votes);
+  // const [scoreSum, setScoreSum] = useState(0);
+
+  //
+  //   const [electionScoreFactor, setElectionScoreFactor] = useState();
+  //   const [canVote, setCanVote] = useState(false);
+  //   const [isElectionAdmin, setIsElectionAdmin] = useState(true);
+  //   const [isElectionActive, setIsElectionActive] = useState(false);
+  //   const [isElectionPaid, setIsElectionPaid] = useState(false);
+
+  //   const [electionFundingAmount, setElectionFundingAmount] = useState(0);
+  //
+  //   const [isElectionPaying, setIsElectionPaying] = useState(false);
+  //   const [electionCandidates, setElectionCandidates] = useState([]);
+
+  /***** Effects *****/
   useEffect(() => {
     if (readContracts) {
       if (readContracts.Diplomacy) {
@@ -33,65 +73,59 @@ export default function Vote({
     }
   }, [readContracts, address]);
 
-  useEffect(() => {
-    updateTable();
-    updateCandidateMap();
-  }, [election, address]);
+  useEffect(async () => {
+    if (qdipHandler) {
+      loadElectionState();
+    }
+  }, [qdipHandler]);
 
-  const dipsKeys = Object.keys(dips);
+  //   useEffect(async () => {
+  //     if (candidateMap) {
+  //       setTableCols(makeTableCols());
+  //     }
+  //   }, [candidateMap]);
+
+  useEffect(() => {
+    if (electionState.name) {
+      console.log(qdipHandler);
+      updateTableSrc();
+      setVotesLeft(electionState.votes);
+      if (electionState.isActive) {
+        updateCandidateScore();
+      } else {
+        updateFinalPayout();
+      }
+    }
+  }, [electionState, address]);
+  /***** Methods *****/
 
   const init = async () => {
-    const loadedElection = await readContracts.Diplomacy.getElectionById(id);
-    const SCORE_FACTOR = await readContracts.Diplomacy.electionScoreFactor();
-    const isCandidate = loadedElection.candidates.includes(address);
-    const votedStatus = await readContracts.Diplomacy.hasVoted(id, address);
-
-    const electionData = { ...loadedElection };
-    electionData.electionFundingAmount = fromWei(loadedElection.funds.toString(), "ether");
-    setElection(electionData);
-    setIsElectionActive(electionData.isActive);
-    setElectionScoreFactor(SCORE_FACTOR);
-
-    const vote = {};
-    vote.canVote = !votedStatus && isCandidate;
-    vote.votesLeft = loadedElection.votes;
-    setVoteMetadata(vote);
-
-    if (!loadedElection.isActive || votedStatus) {
-      updateVotingData();
-    }
+    setSelectedQDip(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
+    setSpender(readContracts?.Diplomacy?.address);
   };
 
-  const updateTable = async () => {
+  const loadElectionState = async () => {
+    let electionState = await qdipHandler.getElectionStateById(id);
+    console.log({ electionState });
+    setElectionState(electionState);
+  };
+
+  const updateTableSrc = async () => {
     let data = [];
-    if (election.candidates) {
-      for (let i = 0; i < election.candidates.length; i++) {
-        const addr = election.candidates[i];
+    if (electionState.candidates) {
+      for (let i = 0; i < electionState.candidates.length; i++) {
+        const addr = electionState.candidates[i];
         data.push({ key: i, address: addr });
       }
     }
-    setVoteTableData(data);
-  };
-
-  const [candidateMap, setCandidateMap] = useState();
-  const updateCandidateMap = () => {
-    if (election.candidates) {
+    setTableSrc(data);
+    if (electionState.candidates) {
       const mapping = new Map();
-      for (let i = 0; i < election.candidates.length; i++) {
-        mapping.set(election.candidates[i], { votes: 0, score: 0 });
+      for (let i = 0; i < electionState.candidates.length; i++) {
+        mapping.set(electionState.candidates[i], { votes: 0, score: 0 });
       }
       setCandidateMap(mapping);
     }
-  };
-
-  const updateVotingData = async () => {
-    const scoresData = await dips[selectedDip].handler.getElectionScores(readContracts.Diplomacy, id);
-    console.log({ scoresData });
-  };
-
-  const [isElectionEnding, setIsElectionEnding] = useState(false);
-  const endElection = async () => {
-    console.log("endElection");
   };
 
   const minusVote = addr => {
@@ -100,49 +134,191 @@ export default function Vote({
       candidate.votes = candidate.votes - 1;
       candidate.score = (candidate.votes ** 0.5).toFixed(2);
       candidateMap.set(addr, candidate);
-      setVoteMetadata({ ...voteMetadata, votesLeft: voteMetadata.votesLeft + 1 });
-      //   setErrorMsg(null);
+      setVotesLeft(votesLeft + 1);
+      setErrorMsg(null);
     }
+    // console.log(candidate);
   };
 
   const addVote = addr => {
     const candidate = candidateMap.get(addr);
-    if (candidate.votes < election.votes && voteMetadata.votesLeft > 0) {
+    if (candidate.votes < electionState.votes && votesLeft > 0) {
       candidate.votes = candidate.votes + 1;
       candidate.score = (candidate.votes ** 0.5).toFixed(2);
       candidateMap.set(addr, candidate);
-      setVoteMetadata({ ...voteMetadata, votesLeft: voteMetadata.votesLeft - 1 });
-      //   setErrorMsg(null);
+      setVotesLeft(votesLeft - 1);
+      setErrorMsg(null);
     }
+    // console.log(candidate);
   };
 
-  //render
+  const castBallot = async () => {
+    console.log("casting ballot ", votesLeft);
+    if (votesLeft > 0) {
+      setErrorMsg("All remaining votes need to be distributed");
+      return;
+    }
+    setErrorMsg(null);
+
+    const candidates = Array.from(candidateMap.keys());
+    const scores = [];
+    candidateMap.forEach(d => {
+      scores.push(Math.floor(d.score * 10));
+    });
+    console.log(candidates, scores);
+    qdipHandler
+      .castBallot(id, candidates, scores)
+      .then(success => {
+        console.log(success);
+        loadElectionState();
+      })
+      .catch(err => {
+        console.log(err);
+      });
+  };
+
+  const updateCandidateScore = async () => {
+    setCandidateScores(await qdipHandler.getCandidatesScores(id));
+  };
+
+  const updateFinalPayout = async () => {
+    setFinalPayout(await qdipHandler.getFinalPayout(id));
+  };
+
+  const endElection = async () => {
+    console.log("endElection");
+    setIsElectionEnding(true);
+    qdipHandler
+      .endElection(id)
+      .then(success => {
+        loadElectionState();
+        setIsElectionEnding(false);
+      })
+      .catch(err => {
+        setIsElectionEnding(false);
+      });
+  };
+
+  const ethPayHandler = () => {
+    // setIsElectionPaying(true);
+    const adrs = Array.from(candidateMap.keys());
+    const totalValueInWei = toWei(electionState.fundingAmount);
+    //convert payout to wei
+    let payoutInWei = finalPayout.payout.map(p => toWei(p));
+
+    console.log(adrs, payoutInWei, totalValueInWei);
+
+    return new Promise((resolve, reject) => {
+      qdipHandler
+        .distributeEth(id, adrs, payoutInWei, totalValueInWei)
+        .then(success => {
+          loadElectionState();
+          resolve(success);
+        })
+        .catch(err => {
+          reject(err);
+        });
+    });
+  };
+
+  const tokenPayHandler = async opts => {
+    setIsElectionPaying(true);
+    console.log(opts);
+    console.log({ payoutInfo });
+    const election = await readContracts.Diplomacy.getElectionById(id);
+    console.log({ election });
+
+    tx(
+      writeContracts.Diplomacy.payoutElection(id, payoutInfo.candidates, payoutInfo.payout, {
+        gasLimit: 12450000,
+      }),
+    );
+  };
+
+  //     const SCORE_FACTOR = await readContracts.Diplomacy.electionScoreFactor();
+  //     setElectionScoreFactor(SCORE_FACTOR);
+  //
+
+  //   const updateVotingData = async loadedElection => {
+  //     const scoreSum = await readContracts.Diplomacy.electionScoreSum(id);
+  //     const electionFunding = loadedElection.funds;
+  //     const payout = [];
+  //     const scores = [];
+  //     for (let i = 0; i < loadedElection.candidates.length; i++) {
+  //       const candidateScore = (
+  //         await readContracts.Diplomacy.getElectionScore(id, loadedElection.candidates[i])
+  //       ).toNumber();
+  //       const candidatePay = Math.floor((candidateScore / scoreSum) * electionFunding);
+  //       if (!isNaN(candidatePay)) {
+  //         payout.push(fromWei(candidatePay.toString()));
+  //       } else {
+  //         payout.push(0);
+  //       }
+  //       scores.push(candidateScore);
+  //     }
+  //     console.log({ payout });
+  //     console.log({ scores });
+  //     setCandidatePayout(payout);
+  //     setCandidateScores(scores);
+  //     setElectionScoreSum(scoreSum);
+  //   };
+
+  //   const addEventListener = async (contractName, eventName, callback) => {
+  //     await readContracts[contractName].removeListener(eventName);
+  //     readContracts[contractName].on(eventName, (...args) => {
+  //       // let msg = args.pop().args;
+  //       callback(args);
+  //     });
+  //   };
+
+  //   const onBallotCast = async args => {
+  //     console.log("onBallotCast ", args);
+
+  //   };
+
+  //   const onElectionEnded = async args => {
+  //     console.log("onElectionEnded ", args);
+  //     if (args[0].toNumber() != id) return;
+  //     const loadedElection = await readContracts.Diplomacy.getElectionById(id);
+  //     console.log({ loadedElection });
+
+  //     updateVotingData(loadedElection);
+
+  //     setCanVote(false);
+  //     setIsElectionActive(false);
+  //     setIsElectionEnding(false);
+  //   };
+
+  //   const onElectionPaid = async (msg, electionsMap) => {
+  //     console.log("onElectionPaid ", msg);
+  //     setIsElectionPaid(true);
+  //   };
+
+  /***** Render *****/
   const actionCol = () => {
-    if (voteMetadata.canVote) {
+    if (electionState.canVote) {
       return {
         title: "Vote",
         key: "action",
         render: (text, record, index) => (
           <>
-            <>
-              <Space size="middle">
-                <Button
-                  icon={<MinusSquareOutlined />}
-                  type="link"
-                  size="large"
-                  onClick={() => minusVote(text.address)}
-                ></Button>
-                <Typography.Title level={4} style={{ margin: "0.1em" }}>
-                  {candidateMap.get(text.address).votes}
-                </Typography.Title>
-                <Button
-                  icon={<PlusSquareOutlined />}
-                  type="link"
-                  size="large"
-                  onClick={() => addVote(text.address)}
-                ></Button>
-              </Space>
-            </>
+            <Space size="middle">
+              <Button
+                icon={<MinusSquareOutlined />}
+                type="link"
+                size="large"
+                onClick={() => minusVote(text.address)}
+              ></Button>
+              <Typography.Title level={4} style={{ margin: "0.1em" }}>
+                {candidateMap && candidateMap.get(text.address).votes}
+              </Typography.Title>
+              <Button
+                icon={<PlusSquareOutlined />}
+                type="link"
+                size="large"
+                onClick={() => addVote(text.address)}
+              ></Button>
+            </Space>
           </>
         ),
       };
@@ -150,16 +326,25 @@ export default function Vote({
       return {};
     }
   };
+
   const scoreCol = () => {
-    // candidateScores[index]
-    return {
-      title: "Quadratic Score",
-      key: "score",
-      render: (text, record, index) => (
-        <>{Math.floor(candidateMap.get(text.address).score * 10 ** electionScoreFactor)}</>
-      ),
-    };
+    if (electionState.isActive) {
+      return {
+        title: "Quadratic Score",
+        key: "score",
+        render: (text, record, index) => <>{candidateScores[index]}</>,
+      };
+    } else {
+      return {
+        title: "Quadratic Score",
+        key: "score",
+        render: (text, record, index) => (
+          <>{Math.floor(candidateMap.get(text.address).score * 10 ** electionScoreFactor)}</>
+        ),
+      };
+    }
   };
+
   const addressCol = () => {
     return {
       title: "Address",
@@ -172,75 +357,112 @@ export default function Vote({
   };
 
   const payoutCol = () => {
-    // {`${Number(candidatePayout[index]).toFixed(4)}` + ` ${token}`}
     return {
       title: "Expected Payout",
       dataIndex: "payout",
       key: "payout",
-      render: (text, record, index) => <>{"$"}</>,
+      render: (text, record, index) => <>{`${Number(finalPayout.payout[index]).toFixed(4)}` + ` ${token}`}</>,
     };
   };
 
   const percentageCol = () => {
-    // `${((candidateScores[index] / electionScoreSum) * 100).toFixed(1)}`
     return {
       title: "Allocation %",
       key: "percentage",
-      render: (text, record, index) => <>{"%"}</>,
+      render: (text, record, index) => (
+        <>{`${((finalPayout.scores[index] / finalPayout.scoreSum) * 100).toFixed(1)}` + "%"}</>
+      ),
     };
   };
+
   const makeTableCols = () => {
-    if (isElectionActive) {
-      return [addressCol(), scoreCol(), actionCol()];
+    if (electionState.isActive) {
+      if (electionState.canVote) {
+        return [addressCol(), actionCol()];
+      } else {
+        return [addressCol(), scoreCol()];
+      }
     } else {
       return [addressCol(), percentageCol(), payoutCol()];
     }
   };
+  //TODO: table votes are hard to update if we use useState, so has to be outside
   const tableCols = makeTableCols();
 
-  const endElectionButton = (
-    <Button
-      icon={<CloseCircleOutlined />}
-      type="danger"
-      size="large"
-      shape="round"
-      style={{ margin: 4 }}
-      onClick={() => endElection()}
-      loading={isElectionEnding}
-    >
-      End Election
-    </Button>
-  );
-
   return (
-    <div style={{ border: "1px solid #cccccc", padding: 16, width: 900, margin: "auto", marginTop: 64 }}>
-      <PageHeader
-        ghost={false}
-        onBack={() => routeHistory.push("/")}
-        title={election ? election.name : "Loading Election..."}
-        extra={[endElectionButton]}
+    <>
+      <div
+        className="voting-view"
+        style={{ border: "1px solid #cccccc", padding: 16, width: 900, margin: "auto", marginTop: 64 }}
       >
-        {voteMetadata.canVote && (
-          <Typography.Title level={5}>
-            Funding: {election.electionFundingAmount} {<Divider type="vertical" />} Remaining Votes:{" "}
-            {voteMetadata.votesLeft}{" "}
-          </Typography.Title>
-        )}
-        <Table
-          dataSource={voteTableData}
-          columns={tableCols}
-          pagination={false}
-          onRow={(record, rowIndex) => {
-            return {
-              onClick: event => {}, // click row
-              onDoubleClick: event => {}, // double click row
-              onContextMenu: event => {}, // right button click row
-              onMouseEnter: event => {}, // mouse enter row
-              onMouseLeave: event => {}, // mouse leave row
-            };
-          }}
-        />
-      </PageHeader>
-    </div>
+        <PageHeader
+          ghost={false}
+          onBack={() => routeHistory.push("/")}
+          title={electionState ? electionState.name : "Loading Election..."}
+          extra={[
+            electionState.isActive && electionState.isAdmin && (
+              <Button
+                icon={<CloseCircleOutlined />}
+                type="danger"
+                size="large"
+                shape="round"
+                style={{ margin: 4 }}
+                onClick={() => endElection()}
+                loading={isElectionEnding}
+              >
+                End Election
+              </Button>
+            ),
+            !electionState.isActive && electionState.isAdmin && !electionState.isPaid && (
+              <PayButton
+                token={token}
+                appName="Quadratic Diplomacy"
+                tokenListHandler={tokens => setAvailableTokens(tokens)}
+                callerAddress={address}
+                maxApproval={electionState.fundingAmount}
+                amount={electionState.fundingAmount}
+                spender={spender}
+                yourLocalBalance={yourLocalBalance}
+                readContracts={readContracts}
+                writeContracts={writeContracts}
+                ethPayHandler={ethPayHandler}
+                tokenPayHandler={tokenPayHandler}
+              />
+            ),
+          ]}
+        >
+          {electionState.canVote && (
+            <Typography.Title level={5}>
+              {" "}
+              Funding: {electionState.fundingAmount} {<Divider type="vertical" />} Remaining Votes: {votesLeft}{" "}
+            </Typography.Title>
+          )}
+          <Table
+            dataSource={tableSrc}
+            columns={tableCols}
+            pagination={false}
+            onRow={(record, rowIndex) => {
+              return {
+                onClick: event => {}, // click row
+                onDoubleClick: event => {}, // double click row
+                onContextMenu: event => {}, // right button click row
+                onMouseEnter: event => {}, // mouse enter row
+                onMouseLeave: event => {}, // mouse leave row
+              };
+            }}
+          />
+          <Divider />
+          <div>
+            {electionState.canVote && electionState.isActive && (
+              <Button icon={<SendOutlined />} size="large" shape="round" type="primary" onClick={() => castBallot()}>
+                Cast Ballot
+              </Button>
+            )}
+          </div>
+          <div>{errorMsg && <Text type="danger">{errorMsg}</Text>}</div>
+          <div>{electionState.paid && <Text type="success">Election Payout Complete!</Text>}</div>
+        </PageHeader>
+      </div>
+    </>
   );
 }

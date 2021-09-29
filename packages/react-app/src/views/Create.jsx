@@ -266,23 +266,35 @@ export default function Create({
   readContracts,
   writeContracts,
 }) {
-  const [current, setCurrent] = useState(0);
+  /***** Routes *****/
+  const routeHistory = useHistory();
 
+  const viewElection = index => {
+    // console.log({ index });
+    routeHistory.push("/vote/" + index);
+  };
+
+  /***** States *****/
+  const [selectedQdip, setSelectedQdip] = useState("onChain");
+  const [qdipHandler, setSelectedQDip] = useState();
+  const [current, setCurrent] = useState(0);
+  const [errorMsg, setErrorMsg] = useState();
+  const [isConfirmingElection, setIsConfirmingElection] = useState(false);
+  const [isCreatedElection, setIsCreatedElection] = useState(false);
+  const [electionId, setElectionId] = useState(-1);
   const [newElection, setNewElection] = useState({
-    name: "",
-    funds: "",
-    fundAmount: "",
-    votes: 1,
+    name: "test",
+    funds: "10000",
+    fundAmount: "1",
+    votes: 5,
     tokenAdr: "0x0000000000000000000000000000000000000000",
     tokenName: "",
-    candidates: [],
+    candidates: ["0x7F2FA234AEd9F7FA0D5070Fb325D1c2C983E96b1"],
     selectedDip: "onChain",
   });
 
   const { Step } = Steps;
-
   const [formStep1, formStep2] = Form.useForm();
-  const [errorMsg, setErrorMsg] = useState();
 
   const steps = [
     {
@@ -323,8 +335,7 @@ export default function Create({
     setCurrent(current - 1);
   };
 
-  const [isConfirmingElection, setIsConfirmingElection] = useState(false);
-  const [isCreatedElection, setIsCreatedElection] = useState(false);
+  /***** Effects *****/
 
   useEffect(() => {
     if (readContracts) {
@@ -334,71 +345,41 @@ export default function Create({
     }
   }, [readContracts, address]);
 
-  const init = async () => {
-    addEventListener("Diplomacy", "ElectionCreated", onElectionCreated);
-  };
+  useEffect(async () => {
+    if (qdipHandler) {
+    }
+  }, [qdipHandler]);
 
-  const addEventListener = async (contractName, eventName, callback) => {
-    await readContracts[contractName].removeListener(eventName);
-    readContracts[contractName].on(eventName, (...args) => {
-      callback(args);
-    });
+  /***** Methods *****/
+  const init = async () => {
+    setSelectedQDip(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
   };
-  const [electionId, setElectionId] = useState(-1);
-  const onElectionCreated = args => {
-    console.log(args);
-    setElectionId(args[1]);
-  };
+  //   const addEventListener = async (contractName, eventName, callback) => {
+  //     await readContracts[contractName].removeListener(eventName);
+  //     readContracts[contractName].on(eventName, (...args) => {
+  //       callback(args);
+  //     });
+  //   };
+
+  //   const onElectionCreated = args => {
+  //     console.log(args);
+  //     setElectionId(args[1]);
+  //   };
 
   const confirmElection = async () => {
     setIsConfirmingElection(true);
     // Create a new election
-    const result = await dips[newElection.selectedDip].handler.createElection(
-      newElection,
-      tx,
-      writeContracts.Diplomacy,
-    );
-    console.log({ result });
-    if (!result) {
-      setIsConfirmingElection(false);
-    } else {
-      setIsConfirmingElection(false);
-      setIsCreatedElection(true);
-    }
 
-    // const result = tx(
-    //   writeContracts.Diplomacy.newElection(
-    //     newElection.name,
-    //     newElection.fundAmount,
-    //     // fundsType,
-    //     newElection.tokenAdr,
-    //     newElection.votes,
-    //     newElection.candidates,
-    //   ),
-    //   update => {
-    //     console.log("📡 Transaction Update:", update);
-    //     if (update.code == -32603 || update.code == 4001) {
-    //       setIsConfirmingElection(false);
-    //       return;
-    //     }
-    //     if (update && (update.status === "confirmed" || update.status === 1)) {
-    //       console.log(" 🍾 Transaction " + update.hash + " finished!");
-    //       setIsConfirmingElection(false);
-    //       // update the view!
-    //       setIsCreatedElection(true);
-    //     }
-    //     if (!update.status || update.status === "error") {
-    //       setIsConfirmingElection(false);
-    //     }
-    //   },
-    // );
-  };
-
-  const routeHistory = useHistory();
-
-  const viewElection = index => {
-    console.log({ index });
-    routeHistory.push("/voting/" + index);
+    qdipHandler
+      .createElection(newElection)
+      .then(success => {
+        setIsConfirmingElection(false);
+        setIsCreatedElection(true);
+      })
+      .catch(err => {
+        console.log(err);
+        setIsConfirmingElection(false);
+      });
   };
 
   return (

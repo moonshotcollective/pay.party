@@ -1,6 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { useHistory } from "react-router-dom";
-import { Button, Table, Modal, Form, Input, Divider, InputNumber, Select, Typography, Tag, Space } from "antd";
+import {
+  Button,
+  Table,
+  Modal,
+  Form,
+  Input,
+  Divider,
+  InputNumber,
+  Select,
+  Typography,
+  Tag,
+  Space,
+  PageHeader,
+} from "antd";
 import {
   DeleteRowOutlined,
   MinusCircleOutlined,
@@ -13,8 +26,8 @@ import dips from "../dips";
 import { mainnetProvider, blockExplorer } from "../App";
 
 export default function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
+  /***** Routes *****/
   const routeHistory = useHistory();
-
   const viewElection = record => {
     // console.log({ record });
     routeHistory.push("/vote/" + record.id);
@@ -24,9 +37,14 @@ export default function Home({ tx, readContracts, writeContracts, mainnetProvide
     routeHistory.push("/create");
   };
 
-  const [newElection, setNewElection] = useState(false);
-  const [selectedDip, setSelectedDip] = useState("onChain");
+  /***** States *****/
+
+  const [selectedQdip, setSelectedQdip] = useState("onChain");
+  const [qdipHandler, setSelectedQDip] = useState();
   const [electionsMap, setElectionsMap] = useState();
+  const [tableDataLoading, setTableDataLoading] = useState(false);
+
+  /***** Effects *****/
 
   useEffect(() => {
     if (readContracts) {
@@ -36,7 +54,19 @@ export default function Home({ tx, readContracts, writeContracts, mainnetProvide
     }
   }, [readContracts, address]);
 
-  const dipsKeys = Object.keys(dips);
+  useEffect(async () => {
+    if (qdipHandler) {
+      let electionsMap = await qdipHandler.getElections();
+      setElectionsMap(electionsMap);
+    }
+  }, [qdipHandler]);
+
+  /***** Methods *****/
+  const init = async () => {
+    setSelectedQDip(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
+  };
+
+  /***** Render *****/
 
   const dateCol = () => {
     return {
@@ -135,157 +165,44 @@ export default function Home({ tx, readContracts, writeContracts, mainnetProvide
   };
   const columns = [dateCol(), nameCol(), creatorCol(), votedCol(), tagsCol(), statusCol(), actionCol()];
 
-  const formItemLayout = {
-    labelCol: {
-      xs: { span: 24 },
-      sm: { span: 4 },
-    },
-    wrapperCol: {
-      xs: { span: 24 },
-      sm: { span: 20 },
-    },
+  let table_state = {
+    bordered: true,
+    loading: tableDataLoading,
   };
-  const formItemLayoutWithOutLabel = {
-    wrapperCol: {
-      xs: { span: 24, offset: 0 },
-      sm: { span: 20, offset: 4 },
-    },
-  };
-
-  const sampleElectionData = [
-    {
-      id: 1,
-      name: "Sample Election",
-      admin: "0xbF7877303B90297E7489AA1C067106331DfF7288",
-      candidates: 7,
-      status: 1,
-    },
-  ];
-
-  const init = async () => {
-    let electionsMap = await dips[selectedDip].handler.getElections(readContracts.Diplomacy, address);
-    console.log({ electionsMap });
-    setElectionsMap(electionsMap);
-  };
-
-  const handleNewElection = async data => {
-    // send new election data to specified QD handler
-    // data.name = "Test";
-    // data.fundAmount = 1;
-    // data.tokenAdr = "0x0000000000000000000000000000000000000000";
-    // data.votes = 4;
-    // data.candidates = ["0x7F2FA234AEd9F7FA0D5070Fb325D1c2C983E96b1"];
-    // const result = dips[selectedDip].handler.createElection(data, tx, writeContracts.Diplomacy);
-    console.log({ data });
-  };
-
-  const renderHeader = () => {
-    return (
-      <div className="flex flex-1 justify-between items-center mb-4">
-        <h1 className="m-0 font-semibold text-lg">Quadratic Elections</h1>
-        <Button type="primary" onClick={() => createElection()}>
-          Create Election
-        </Button>
-      </div>
-    );
-  };
-
   return (
-    <div style={{ width: 850, margin: "20px auto" }}>
-      <div style={{ width: "100%" }}>
+    <>
+      <div
+        className="elections-view"
+        style={{ border: "1px solid #cccccc", padding: 16, width: 1000, margin: "auto", marginTop: 64 }}
+      >
+        <PageHeader
+          ghost={false}
+          title="Elections"
+          extra={[
+            <Button
+              icon={<PlusOutlined />}
+              type="primary"
+              size="large"
+              shape="round"
+              style={{ margin: 4 }}
+              onClick={createElection}
+            >
+              Create Election
+            </Button>,
+          ]}
+        />
         {electionsMap && (
-          <Table title={renderHeader} columns={columns} dataSource={Array.from(electionsMap.values()).reverse()} />
+          <Table
+            {...table_state}
+            size="middle"
+            dataSource={Array.from(electionsMap.values()).reverse()}
+            columns={columns}
+            pagination={false}
+            scroll={{ y: 600 }}
+            style={{ padding: 10 }}
+          />
         )}
       </div>
-      <Modal
-        title="Create New Quadratic Election"
-        centered
-        visible={newElection}
-        onOk={() => setNewElection(false)}
-        onCancel={() => setNewElection(false)}
-        width={800}
-        footer={null}
-      >
-        <Form name="basic" onFinish={handleNewElection} layout="horizontal">
-          <Form.Item
-            label="Election Name"
-            className="flex-1"
-            labelCol={12}
-            name="name"
-            tooltip="Name of new election"
-            defaultValue="test"
-          >
-            <Input type="text" placeholder="Sample Election name..." className="w-full" />
-          </Form.Item>
-          <div className="flex flex-1 flex-row">
-            {/* Election Name */}
-            <Form.Item
-              label="Diplomacy Type"
-              className="flex-1"
-              labelCol={12}
-              name="type"
-              tooltip="Quadratic diplomacy of choice"
-            >
-              <Select placeholder="Quadratic Diplomacy build..." onChange={setSelectedDip} defaultValue={["onChain"]}>
-                {dipsKeys.map(k => (
-                  <Select.Option key={k} value={k}>
-                    {dips[k].name}
-                  </Select.Option>
-                ))}
-              </Select>
-            </Form.Item>
-            <div className="mx-2" />
-            {/* Election Votes Allocation */}
-            <Form.Item
-              label="Vote Allocation"
-              labelCol={16}
-              name="voteCredit"
-              tooltip="Number of votes each voter will have"
-            >
-              <InputNumber placeholder="100" />
-            </Form.Item>
-          </div>
-
-          {selectedDip && <div className="italic">{dips[selectedDip].description}</div>}
-          <Divider />
-
-          {/* Add voters here */}
-          <Form.List name="users" className="w-full">
-            {(fields, { add, remove }) => (
-              <>
-                {fields.map(({ key, ...restField }, index) => (
-                  <div key={key} className="flex flex-row">
-                    <Form.Item
-                      {...(index === 0 ? formItemLayout : formItemLayoutWithOutLabel)}
-                      label={index === 0 ? "Voters" : ""}
-                      className="w-full"
-                      {...restField}
-                      rules={[{ required: true, message: "Missing Address" }]}
-                    >
-                      <AddressInput style={{ width: "100%" }} ensProvider={mainnetProvider} />
-                    </Form.Item>
-                    <div className="ml-3">
-                      <UserDeleteOutlined onClick={() => remove(restField.name)} />
-                    </div>
-                  </div>
-                ))}
-                <Form.Item>
-                  <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                    Add field
-                  </Button>
-                </Form.Item>
-              </>
-            )}
-          </Form.List>
-
-          <Divider />
-          <Form.Item>
-            <Button type="primary" htmlType="submit" block>
-              Submit
-            </Button>
-          </Form.Item>
-        </Form>
-      </Modal>
-    </div>
+    </>
   );
 }

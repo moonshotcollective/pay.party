@@ -490,6 +490,7 @@ function App(props) {
               userSigner={userSigner}
               mainnetProvider={mainnetProvider}
               localProvider={localProvider}
+              yourLocalBalance={yourLocalBalance}
               price={price}
               tx={tx}
               writeContracts={writeContracts}
