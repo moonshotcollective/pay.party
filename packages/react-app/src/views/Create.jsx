@@ -109,7 +109,7 @@ export default function Create({
 
   useEffect(() => {
     if (readContracts) {
-      if (readContracts.Diplomacy) {
+      if (readContracts.Diplomat) {
         init();
       }
     }
