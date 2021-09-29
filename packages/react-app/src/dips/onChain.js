@@ -6,10 +6,14 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
     console.log(`Saving election data`, data);
     return new Promise((resolve, reject) => {
       tx(
-        writeContracts.Diplomacy.newElection(data.name, data.fundAmount, data.tokenAdr, data.votes, data.candidates, {
-          value: 0,
-          gasLimit: 124500,
-        }),
+        writeContracts.Diplomat.createElection(
+          data.name, 
+          data.candidates, 
+          data.fundAmount, 
+          data.tokenAdr, 
+          data.votes, 
+          data.selectedDip, 
+        ),
         update => {
           console.log("📡 Transaction Update:", update);
           if (update && (update.status === "confirmed" || update.status === 1)) {
@@ -25,7 +29,7 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
   const endElection = async id => {
     console.log(`Ending election`, id);
     return new Promise((resolve, reject) => {
-      tx(writeContracts.Diplomacy.endElection(id), update => {
+      tx(writeContracts.Diplomat.endElection(id), update => {
         console.log("📡 Transaction Update:", update);
         if (update && (update.status === "confirmed" || update.status === 1)) {
           resolve(update);
@@ -39,7 +43,7 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
   const castBallot = async (id, candidates, quad_scores) => {
     console.log(`casting ballot`);
     return new Promise((resolve, reject) => {
-      tx(writeContracts.Diplomacy.castBallot(id, candidates, quad_scores), update => {
+      tx(writeContracts.Diplomat.vote(id, candidates, quad_scores, {gasLimit: 12450000}), update => {
         console.log("📡 Transaction Update:", update);
         if (update && (update.status === "confirmed" || update.status === 1)) {
           resolve(update);
@@ -51,18 +55,18 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
   };
 
   const getElections = async () => {
-    const contract = readContracts.Diplomacy;
-    const numElections = await contract.numElections();
-    console.log("numElections ", numElections.toNumber());
+    const contract = readContracts.Diplomat;
+    const numElections = await contract.electionCount();
+    console.log({numElections});
     const newElectionsMap = new Map();
     for (let i = 0; i < numElections; i++) {
-      const election = await contract.getElectionById(i);
-      //   console.log({ election });
+      const election = await contract.getElection(i);
+      
       const electionVoted = await contract.getElectionVoted(i);
-      const hasVoted = await contract.hasVoted(i, address);
+      const hasVoted = await contract.getAddressVoted(i, address);
 
       const tags = [];
-      if (election.admin === address) {
+      if (election.creator === address) {
         tags.push("admin");
       }
       if (election.candidates.includes(address)) {
@@ -71,13 +75,13 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
       if (hasVoted) {
         tags.push("voted");
       }
-      let status = election.isActive;
-      let created = new Date(election.createdAt.toNumber() * 1000).toISOString().substring(0, 10);
+      let status = election.active;
+      let created = new Date(election.date * 1000).toISOString().substring(0, 10);
       let electionEntry = {
         id: i,
         created_date: created,
         name: election.name,
-        creator: election.admin,
+        creator: election.creator,
         n_voted: { n_voted: electionVoted.toNumber(), outOf: election.candidates.length },
         status: status,
         tags: tags,
@@ -89,35 +93,35 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
 
   const getElectionStateById = async id => {
     let election = {};
-    let loadedElection = await readContracts.Diplomacy.getElectionById(id);
+    let loadedElection = await readContracts.Diplomat.getElection(id);
     election = { ...loadedElection };
     election.isPaid = loadedElection.paid;
-    election.fundingAmount = fromWei(loadedElection.funds.toString(), "ether");
+    election.fundingAmount = fromWei(loadedElection.amount.toString(), "ether");
     election.isCandidate = loadedElection.candidates.includes(address);
-    election.isAdmin = loadedElection.admin === address;
-    const votedStatus = await readContracts.Diplomacy.hasVoted(id, address);
+    election.isAdmin = loadedElection.creator === address;
+    const votedStatus = await readContracts.Diplomat.addressVoted(id, address);
     election.canVote = !votedStatus && election.isCandidate;
     return election;
   };
 
   const getCandidatesScores = async id => {
-    const election = await readContracts.Diplomacy.getElectionById(id);
+    const election = await readContracts.Diplomat.getElection(id);
     const scores = [];
     for (let i = 0; i < election.candidates.length; i++) {
-      const candidateScore = (await readContracts.Diplomacy.getElectionScore(id, election.candidates[i])).toNumber();
+      const candidateScore = (await readContracts.Diplomat.getScore(id, election.candidates[i])).toNumber();
       scores.push(candidateScore);
     }
     return scores;
   };
 
   const getFinalPayout = async id => {
-    const election = await readContracts.Diplomacy.getElectionById(id);
-    const electionFunding = election.funds;
+    const election = await readContracts.Diplomat.getElection(id);
+    const electionFunding = election.amount;
     const scores = [];
     const payout = [];
-    const scoreSum = await readContracts.Diplomacy.electionScoreSum(id);
+    const scoreSum = await readContracts.Diplomat.electionScoreTotal(id);
     for (let i = 0; i < election.candidates.length; i++) {
-      const candidateScore = (await readContracts.Diplomacy.getElectionScore(id, election.candidates[i])).toNumber();
+      const candidateScore = (await readContracts.Diplomat.getScore(id, election.candidates[i])).toNumber();
       scores.push(candidateScore);
 
       const candidatePay = Math.floor((candidateScore / scoreSum) * electionFunding);
@@ -137,7 +141,7 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
   const distributeEth = async (id, adrs, weiDist, totalValueInWei) => {
     return new Promise((resolve, reject) => {
       tx(
-        writeContracts.Diplomacy.payoutElection(id, adrs, weiDist, {
+        writeContracts.Diplomat.payoutElection(id, adrs, weiDist, {
           value: totalValueInWei,
           gasLimit: 12450000,
         }),
