@@ -10,19 +10,12 @@ import "./App.css";
 import { Account, Contract, Faucet, GasGauge, Header, Ramp, ThemeSwitch } from "./components";
 import { INFURA_ID, NETWORK, NETWORKS } from "./constants";
 import { Transactor } from "./helpers";
-import {
-  useBalance,
-  useContractLoader,
-  useContractReader,
-  useGasPrice,
-  useOnBlock,
-  useUserProviderAndSigner,
-} from "eth-hooks";
+import { useBalance, useContractReader, useGasPrice, useOnBlock, useUserProviderAndSigner } from "eth-hooks";
 import { useEventListener } from "eth-hooks/events/useEventListener";
 import { useExchangeEthPrice } from "eth-hooks/dapps/dex";
-import { Home, Reward, Vote } from "./views";
+import { Home, Reward, Vote, Create } from "./views";
 
-import { useContractConfig } from "./hooks";
+import { useContractConfig, useContractLoader } from "./hooks";
 import Portis from "@portis/web3";
 import Fortmatic from "fortmatic";
 import Authereum from "authereum";
@@ -48,10 +41,10 @@ const { ethers } = require("ethers");
 */
 
 /// 📡 What chain are your contracts deployed to?
-const targetNetwork = NETWORKS.localhost; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
+const targetNetwork = NETWORKS.rinkeby; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
-const DEBUG = true;
+const DEBUG = false;
 const NETWORKCHECK = true;
 
 // 🛰 providers
@@ -82,7 +75,7 @@ if (DEBUG) console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
 const localProvider = new ethers.providers.StaticJsonRpcProvider(localProviderUrlFromEnv);
 
 // 🔭 block explorer URL
-const blockExplorer = targetNetwork.blockExplorer;
+export const blockExplorer = targetNetwork.blockExplorer;
 
 // Coinbase walletLink init
 const walletLink = new WalletLink({
@@ -235,7 +228,7 @@ function App(props) {
 
   // If you want to call a function on a new block
   useOnBlock(mainnetProvider, () => {
-    console.log(`⛓ A new mainnet block is here: ${mainnetProvider._lastBlockNumber}`);
+    // console.log(`⛓ A new mainnet block is here: ${mainnetProvider._lastBlockNumber}`);
   });
 
   // Then read your DAI balance like:
@@ -445,7 +438,7 @@ function App(props) {
       <Header />
       {networkDisplay}
       <BrowserRouter>
-        <Menu style={{ textAlign: "center" }} selectedKeys={[route]} mode="horizontal">
+        {/* <Menu style={{ textAlign: "center" }} selectedKeys={[route]} mode="horizontal">
           <Menu.Item key="/">
             <Link
               onClick={() => {
@@ -466,19 +459,43 @@ function App(props) {
               Debug
             </Link>
           </Menu.Item>
-        </Menu>
+        </Menu> */}
 
         <Switch>
-          <Route path="/">
+          <Route exact path="/">
             <Home
+              address={address}
               tx={tx}
               readContracts={readContracts}
               writeContracts={writeContracts}
               mainnetProvider={mainnetProvider}
             />
           </Route>
+          <Route path="/create">
+            <Create
+              address={address}
+              userSigner={userSigner}
+              mainnetProvider={mainnetProvider}
+              localProvider={localProvider}
+              yourLocalBalance={yourLocalBalance}
+              price={price}
+              tx={tx}
+              writeContracts={writeContracts}
+              readContracts={readContracts}
+            />
+          </Route>
           <Route path="/vote/:id">
-            <Vote />
+            <Vote
+              address={address}
+              userSigner={userSigner}
+              mainnetProvider={mainnetProvider}
+              localProvider={localProvider}
+              yourLocalBalance={yourLocalBalance}
+              price={price}
+              tx={tx}
+              writeContracts={writeContracts}
+              readContracts={readContracts}
+            />
           </Route>
           <Route path="/reward/:id">
             <Reward />

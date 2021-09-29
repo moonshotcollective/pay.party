@@ -1,28 +1,29 @@
 // import handler for specific QDip project
-import { default as onChainHandler } from "./sampleDip";
+import { default as OnChain } from "./onChain";
+import { default as OffChain } from "./offChain";
 
 // create DQip type and add details for the UI
 export default {
-  eventDriven: {
+  offChain: {
     id: 0,
-    name: "On-chain event driven",
-    description: "Election data is stored using contract events (not memory).",
-    handler: onChainHandler,
+    name: "Off-chain",
+    description: "Election data is stored on backend.",
+    handler: OffChain,
   },
   onChain: {
     id: 1,
     name: "On-chain (votes & election)",
     description: "",
-    handler: null,
+    handler: OnChain,
   },
-  ipfs: {
-    name: "IPFS (votes only)",
-    description: "",
-    handler: null,
-  },
-  offChain: {
-    name: "Off-chain (votes only)",
-    description: "",
-    handler: null,
-  },
+  //   ipfs: {
+  //     name: "IPFS (votes only)",
+  //     description: "",
+  //     handler: null,
+  //   },
+  //   offChain: {
+  //     name: "Off-chain (votes only)",
+  //     description: "",
+  //     handler: null,
+  //   },
 };
