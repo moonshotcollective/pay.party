@@ -27,7 +27,7 @@ export default function Vote({
 
   /***** States *****/
   const [selectedQdip, setSelectedQdip] = useState("onChain");
-  const [qdipHandler, setSelectedQDip] = useState();
+  const [qdipHandler, setQdipHandler] = useState();
 
   const [electionState, setElectionState] = useState({});
   const [votesLeft, setVotesLeft] = useState(0);
@@ -47,22 +47,6 @@ export default function Vote({
   const [token, setToken] = useState("ETH");
   const [spender, setSpender] = useState("");
   const [availableTokens, setAvailableTokens] = useState([]);
-
-  // const [votingData, setVotingData] = useState([]);
-  // const [votesLeft, setVotesLeft] = useState(election.votes);
-  // const [scoreSum, setScoreSum] = useState(0);
-
-  //
-  //   const [electionScoreFactor, setElectionScoreFactor] = useState();
-  //   const [canVote, setCanVote] = useState(false);
-  //   const [isElectionAdmin, setIsElectionAdmin] = useState(true);
-  //   const [isElectionActive, setIsElectionActive] = useState(false);
-  //   const [isElectionPaid, setIsElectionPaid] = useState(false);
-
-  //   const [electionFundingAmount, setElectionFundingAmount] = useState(0);
-  //
-  //   const [isElectionPaying, setIsElectionPaying] = useState(false);
-  //   const [electionCandidates, setElectionCandidates] = useState([]);
 
   /***** Effects *****/
   useEffect(() => {
@@ -87,7 +71,6 @@ export default function Vote({
 
   useEffect(() => {
     if (electionState.name) {
-      console.log(qdipHandler);
       updateTableSrc();
       setVotesLeft(electionState.votes);
       if (electionState.isActive) {
@@ -97,11 +80,24 @@ export default function Vote({
       }
     }
   }, [electionState, address]);
+
   /***** Methods *****/
 
   const init = async () => {
-    setSelectedQDip(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
+    setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
     setSpender(readContracts?.Diplomacy?.address);
+    loadERC20List();
+  };
+
+  const loadERC20List = async () => {
+    const erc20List = Object.keys(readContracts).reduce((acc, contract) => {
+      console.log(contract);
+      if (typeof readContracts[contract].decimals !== "undefined") {
+        acc.push(contract);
+      }
+      return acc;
+    }, []);
+    console.log({ erc20List });
   };
 
   const loadElectionState = async () => {
@@ -234,65 +230,6 @@ export default function Vote({
       }),
     );
   };
-
-  //     const SCORE_FACTOR = await readContracts.Diplomacy.electionScoreFactor();
-  //     setElectionScoreFactor(SCORE_FACTOR);
-  //
-
-  //   const updateVotingData = async loadedElection => {
-  //     const scoreSum = await readContracts.Diplomacy.electionScoreSum(id);
-  //     const electionFunding = loadedElection.funds;
-  //     const payout = [];
-  //     const scores = [];
-  //     for (let i = 0; i < loadedElection.candidates.length; i++) {
-  //       const candidateScore = (
-  //         await readContracts.Diplomacy.getElectionScore(id, loadedElection.candidates[i])
-  //       ).toNumber();
-  //       const candidatePay = Math.floor((candidateScore / scoreSum) * electionFunding);
-  //       if (!isNaN(candidatePay)) {
-  //         payout.push(fromWei(candidatePay.toString()));
-  //       } else {
-  //         payout.push(0);
-  //       }
-  //       scores.push(candidateScore);
-  //     }
-  //     console.log({ payout });
-  //     console.log({ scores });
-  //     setCandidatePayout(payout);
-  //     setCandidateScores(scores);
-  //     setElectionScoreSum(scoreSum);
-  //   };
-
-  //   const addEventListener = async (contractName, eventName, callback) => {
-  //     await readContracts[contractName].removeListener(eventName);
-  //     readContracts[contractName].on(eventName, (...args) => {
-  //       // let msg = args.pop().args;
-  //       callback(args);
-  //     });
-  //   };
-
-  //   const onBallotCast = async args => {
-  //     console.log("onBallotCast ", args);
-
-  //   };
-
-  //   const onElectionEnded = async args => {
-  //     console.log("onElectionEnded ", args);
-  //     if (args[0].toNumber() != id) return;
-  //     const loadedElection = await readContracts.Diplomacy.getElectionById(id);
-  //     console.log({ loadedElection });
-
-  //     updateVotingData(loadedElection);
-
-  //     setCanVote(false);
-  //     setIsElectionActive(false);
-  //     setIsElectionEnding(false);
-  //   };
-
-  //   const onElectionPaid = async (msg, electionsMap) => {
-  //     console.log("onElectionPaid ", msg);
-  //     setIsElectionPaid(true);
-  //   };
 
   /***** Render *****/
   const actionCol = () => {
@@ -433,7 +370,6 @@ export default function Vote({
         >
           {electionState.canVote && (
             <Typography.Title level={5}>
-              {" "}
               Funding: {electionState.fundingAmount} {<Divider type="vertical" />} Remaining Votes: {votesLeft}{" "}
             </Typography.Title>
           )}

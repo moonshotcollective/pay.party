@@ -40,7 +40,7 @@ export default function Home({ tx, readContracts, writeContracts, mainnetProvide
   /***** States *****/
 
   const [selectedQdip, setSelectedQdip] = useState("onChain");
-  const [qdipHandler, setSelectedQDip] = useState();
+  const [qdipHandler, setQdipHandler] = useState();
   const [electionsMap, setElectionsMap] = useState();
   const [tableDataLoading, setTableDataLoading] = useState(false);
 
@@ -63,7 +63,7 @@ export default function Home({ tx, readContracts, writeContracts, mainnetProvide
 
   /***** Methods *****/
   const init = async () => {
-    setSelectedQDip(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
+    setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
   };
 
   /***** Render *****/

@@ -6,7 +6,10 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
     console.log(`Saving election data`, data);
     return new Promise((resolve, reject) => {
       tx(
-        writeContracts.Diplomacy.newElection(data.name, data.fundAmount, data.tokenAdr, data.votes, data.candidates),
+        writeContracts.Diplomacy.newElection(data.name, data.fundAmount, data.tokenAdr, data.votes, data.candidates, {
+          value: 0,
+          gasLimit: 124500,
+        }),
         update => {
           console.log("📡 Transaction Update:", update);
           if (update && (update.status === "confirmed" || update.status === 1)) {
@@ -95,12 +98,6 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
     const votedStatus = await readContracts.Diplomacy.hasVoted(id, address);
     election.canVote = !votedStatus && election.isCandidate;
     return election;
-  };
-
-  const getElectionVotes = async id => {
-    console.log(`Fetching election data: `, id);
-
-    return {};
   };
 
   const getCandidatesScores = async id => {
