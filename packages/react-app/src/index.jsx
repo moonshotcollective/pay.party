@@ -1,9 +1,15 @@
 import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client";
 import React from "react";
 import { ThemeSwitcherProvider } from "react-css-theme-switcher";
+import { ChakraProvider } from "@chakra-ui/react";
+import { EmotionCache } from "@emotion/cache";
+import "@fontsource/space-mono";
+import "@fontsource/poppins";
+
 import ReactDOM from "react-dom";
 import App from "./App";
 import "./index.css";
+import customTheme from "styles/customTheme";
 
 const themes = {
   dark: `${process.env.PUBLIC_URL}/dark-theme.css`,
@@ -22,7 +28,11 @@ const client = new ApolloClient({
 ReactDOM.render(
   <ApolloProvider client={client}>
     <ThemeSwitcherProvider themeMap={themes} defaultTheme={prevTheme || "light"}>
-      <App subgraphUri={subgraphUri} />
+      <CacheProvider value={emotionCache}>
+        <ChakraProvider theme={customTheme}>
+          <App subgraphUri={subgraphUri} />
+        </ChakraProvider>
+      </CacheProvider>
     </ThemeSwitcherProvider>
   </ApolloProvider>,
   document.getElementById("root"),
