@@ -64,3 +64,4 @@ yarn-error.log*
 .netlify
 *.tsbuildinfo
 *.stackdump
+.next
