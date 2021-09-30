@@ -3,9 +3,26 @@ import { fromWei, toWei, toBN, numberToHex } from "web3-utils";
 
 export default function OffChain(tx, readContracts, writeContracts, mainnetProvider, address) {
   const createElection = async data => {
-    console.log(`createElection`, data);
+    console.log(`Saving election data`, data);
     return new Promise((resolve, reject) => {
-      resolve(null);
+      tx(
+        writeContracts.Diplomat.createElection(
+          data.name, 
+          data.candidates, 
+          data.fundAmount, 
+          data.tokenAdr, 
+          data.votes, 
+          data.selectedDip, 
+        ),
+        update => {
+          console.log("📡 Transaction Update:", update);
+          if (update && (update.status === "confirmed" || update.status === 1)) {
+            resolve(update);
+          } else {
+            reject(update);
+          }
+        },
+      );
     });
   };
 

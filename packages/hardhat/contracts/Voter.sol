@@ -10,10 +10,12 @@ contract Voter {
 
     // On Chain voting
     function _vote(uint256 electionId, address[] memory _adrs, uint256[] memory _scores) internal {
+        uint256 scoreTotal = 0;
         for (uint256 i = 0; i < _adrs.length; i++) {
             electionScore[electionId][_adrs[i]] += _scores[i];
-            electionScoreTotal[electionId] += _scores[i];
+            scoreTotal += _scores[i];
         }
+        electionScoreTotal[electionId] = scoreTotal;
         addressVoted[electionId][msg.sender] = true;
     }
 

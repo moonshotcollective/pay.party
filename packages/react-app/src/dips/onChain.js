@@ -43,7 +43,7 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
   const castBallot = async (id, candidates, quad_scores) => {
     console.log(`casting ballot`);
     return new Promise((resolve, reject) => {
-      tx(writeContracts.Diplomat.vote(id, candidates, quad_scores, {gasLimit: 12450000}), update => {
+      tx(writeContracts.Diplomat.vote(id, candidates, quad_scores), update => {
         console.log("📡 Transaction Update:", update);
         if (update && (update.status === "confirmed" || update.status === 1)) {
           resolve(update);
