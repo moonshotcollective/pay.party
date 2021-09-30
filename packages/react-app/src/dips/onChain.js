@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { fromWei, toWei, toBN, numberToHex } from "web3-utils";
 
-export default function OnChain(tx, readContracts, writeContracts, mainnetProvider, address) {
+export default function OnChain(tx, readContracts, writeContracts, mainnetProvider, address, userSigner) {
   const createElection = async data => {
     console.log(`Saving election data`, data);
     return new Promise((resolve, reject) => {
@@ -12,7 +12,7 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
           data.fundAmount, 
           data.tokenAdr, 
           data.votes, 
-          data.selectedDip, 
+          data.kind, 
         ),
         update => {
           console.log("📡 Transaction Update:", update);

@@ -84,7 +84,9 @@ export default function Vote({
   /***** Methods *****/
 
   const init = async () => {
-    setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
+    const election = await readContracts.Diplomat.getElection(id);
+    // setSelectedQdip();
+    setQdipHandler(dips[election.kind].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner));
     setSpender(readContracts?.Diplomat?.address);
     loadERC20List();
   };
@@ -163,7 +165,7 @@ export default function Vote({
     });
     console.log(candidates, scores);
     qdipHandler
-      .castBallot(id, candidates, scores)
+      .castBallot(id, candidates, scores, userSigner)
       .then(success => {
         console.log(success);
         loadElectionState();

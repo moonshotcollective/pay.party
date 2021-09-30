@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { fromWei, toWei, toBN, numberToHex } from "web3-utils";
+const axios = require("axios");
 
-export default function OffChain(tx, readContracts, writeContracts, mainnetProvider, address) {
+const serverUrl = "http://localhost:45622/";
+
+export default function OffChain(tx, readContracts, writeContracts, mainnetProvider, address, userSigner) {
   const createElection = async data => {
-    console.log(`Saving election data`, data);
+    console.log(`Saving election data off-chain`, data);
     return new Promise((resolve, reject) => {
       tx(
         writeContracts.Diplomat.createElection(
@@ -12,7 +15,7 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
           data.fundAmount, 
           data.tokenAdr, 
           data.votes, 
-          data.selectedDip, 
+          data.kind, 
         ),
         update => {
           console.log("📡 Transaction Update:", update);
@@ -22,6 +25,8 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
             reject(update);
           }
         },
+      
+
       );
     });
   };
@@ -31,7 +36,34 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
   };
 
   const castBallot = async (id, candidates, quad_scores) => {
-    console.log(`casting ballot`);
+
+    console.log(`casting ballot in offChain()`);
+      let message = "qdip-vote-" + address; //+ voteAllocation + filteredVoters.join();
+      console.log("Message:" + message);
+      let signature = await userSigner.provider.send("personal_sign", [message, address]);
+
+
+        axios
+        .post(serverUrl + "distributions/" + id + "/vote" , {
+          address: address,
+          candidates: candidates, 
+          scores: quad_scores,
+          // voteAllocation: voteAllocation,
+          // members: filteredVoters,
+          signature: signature,
+        })
+        .then(response => {
+          console.log(response);
+          // setCurrentDistribution(response);
+          // setVoters([""]);
+          // setVoteAllocation(0);
+          form.resetFields();
+          // setIsSendingTx(false);
+        })
+        .catch(e => {
+          console.log("Error on distributions post");
+        });
+
   };
 
   const getElections = async () => {};

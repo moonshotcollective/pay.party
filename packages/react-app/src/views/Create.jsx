@@ -139,6 +139,7 @@ export default function Create({
       },
     ];
     setSteps(steps);
+    
   };
 
   const confirmElection = async () => {
@@ -174,6 +175,11 @@ export default function Create({
         <Option value={TOKEN}>{TOKEN}</Option>
       </Select>
     );
+
+    const updateSelectedQdip = (qdip) => {
+      newElection.kind = qdip;
+      setSelectedQdip(dips[qdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
+    }
 
     return (
       <>
@@ -251,7 +257,7 @@ export default function Create({
             />
           </Form.Item>
           <Form.Item name="type" label="Diplomacy Type">
-            <Select placeholder="Quadratic Diplomacy build..." defaultValue={["onChain"]}>
+            <Select placeholder="Quadratic Diplomacy build..." defaultValue={["onChain"]} onSelect={updateSelectedQdip}>
               {DIP_TYPES.map(k => (
                 <Select.Option key={k} value={k}>
                   {dips[k].name}

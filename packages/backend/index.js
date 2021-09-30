@@ -52,7 +52,7 @@ const isAdmin = async (address) => {
 
   const contractData =
     contractList[_chainId][targetNetwork.name].contracts
-      .QuadraticDiplomacyContract;
+      .Diplomat;
   const contract = new ethers.Contract(
     contractData.address,
     contractData.abi,
@@ -97,9 +97,9 @@ app.post("/distributions", async function (request, response) {
   // TODO: add some nonce to avoid replay attacks
   const message =
     "qdip-creation-" +
-    request.body.address +
-    request.body.voteAllocation +
-    request.body.members.join();
+    request.body.address //+
+    // request.body.voteAllocation +
+    // request.body.members.join();
 
   const recovered = ethers.utils.verifyMessage(message, request.body.signature);
 
@@ -118,8 +118,8 @@ app.post("/distributions", async function (request, response) {
     const resAdd = await db.collection("distributions").add({
       owner: request.body.address,
       createdAt: Date.now(),
-      voteAllocation: request.body.voteAllocation,
-      members: request.body.members,
+      // voteAllocation: request.body.voteAllocation,
+      // members: request.body.members,
       votes: {},
       votesSignatures: {},
       signature: request.body.signature,
@@ -177,28 +177,28 @@ app.get("/currentDistribution", async function (request, response) {
   }
 });
 
-app.get("/ownedDistributions/:owner", async function (request, response) {
-  try {
-    const snapshot = await db
-      .collection("distributions")
-      .where("owner", "==", request.params.owner)
-      .get();
+// app.get("/ownedDistributions/:owner", async function (request, response) {
+//   try {
+//     const snapshot = await db
+//       .collection("distributions")
+//       .where("owner", "==", request.params.owner)
+//       .get();
 
-    let data = [];
+//     let data = [];
 
-    snapshot.forEach((doc) => {
-      data.push({
-        id: doc.id,
-        data: doc.data(),
-      });
-    });
+//     snapshot.forEach((doc) => {
+//       data.push({
+//         id: doc.id,
+//         data: doc.data(),
+//       });
+//     });
 
-    response.send(data);
-  } catch (exception) {
-    console.log(exception);
-    response.status(500).send("Error retrieving distributions");
-  }
-});
+//     response.send(data);
+//   } catch (exception) {
+//     console.log(exception);
+//     response.status(500).send("Error retrieving distributions");
+//   }
+// });
 
 app.get("/votingDistributions/:voter", async function (request, response) {
   try {
@@ -239,14 +239,16 @@ app.get("/distributions/:distributionId", async function (request, response) {
 app.post(
   "/distributions/:distributionId/vote",
   async function (request, response) {
-    const sortedVotes = Object.keys(request.body.votes).sort();
+    // const sortedVotes = Object.keys(request.body.votes).sort();
 
+    console.log("Casting ballot to db")
     const message =
       "qdip-vote-" +
-      request.params.distributionId +
-      request.body.address +
-      sortedVotes.join() +
-      sortedVotes.map((voter) => request.body.votes[voter]).join();
+      // request.params.distributionId +
+      request.body.address 
+
+      // sortedVotes.join() +
+      // sortedVotes.map((voter) => request.body.votes[voter]).join();
 
     const recovered = ethers.utils.verifyMessage(
       message,
@@ -258,47 +260,47 @@ app.post(
       return response.status(401).send("Wrong signature");
     }
 
-    const distributionRef = db
-      .collection("distributions")
-      .doc(request.params.distributionId);
-    const distribution = await distributionRef.get();
+    // const distributionRef = db
+    //   .collection("distributions")
+    //   .doc(request.params.distributionId);
+    // const distribution = await distributionRef.get();
 
-    if (!distribution.exists) {
+    if (!request.params.distributionId) {
       return response.status(404).send("Distribution not found");
     } else {
-      console.log(distribution.data());
-      if (!distribution.data().members.includes(recovered)) {
+      // console.log(distribution.data());
+      if (!candidates.includes(recovered)) {
         return response.status(401).send("Voter not allowed");
       }
 
-      let votes = distribution.data().votes;
-      let votesSignatures = distribution.data().votesSignatures;
+      let votes = request.body.scores;
+      // let votesSignatures = distribution.data().votesSignatures;
 
       // Check if all votes are to members
-      const allMembers = Object.keys(request.body.votes).every(
-        (voteAddress) => {
-          return distribution.data().members.includes(voteAddress);
-        }
-      );
-      if (!allMembers) {
-        return response.status(401).send("No member votes on voting data");
-      }
+      // const allMembers = Object.keys(request.body.scores).every(
+      //   (voteAddress) => {
+      //     return request.body.candidates.includes(voteAddress);
+      //   }
+      // );
+      // if (!allMembers) {
+      //   return response.status(401).send("No member votes on voting data");
+      // }
 
       // Check if the total votes are equal or less than the vote allocation
-      const reducer = (previousValue, currentValue) =>
-        previousValue + currentValue;
-      const totalVotes = Object.values(request.body.votes).reduce(reducer);
-      if (totalVotes > distribution.data().voteAllocation) {
-        return response.status(401).send("More total votes than allowed");
-      }
+      // const reducer = (previousValue, currentValue) =>
+      //   previousValue + currentValue;
+      // const totalVotes = Object.values(request.body.votes).reduce(reducer);
+      // if (totalVotes > distribution.data().voteAllocation) {
+      //   return response.status(401).send("More total votes than allowed");
+      // }
 
-      votes[recovered] = request.body.votes;
-      votesSignatures[recovered] = request.body.signature;
+      votes[recovered] = request.body.scores;
+      // votesSignatures[recovered] = request.body.signature;
 
-      const res = await distributionRef.update({
-        votes: votes,
-        votesSignatures: votesSignatures,
-      });
+      // const res = await distributionRef.update({
+      //   votes: votes,
+      //   votesSignatures: votesSignatures,
+      // });
 
       return response.send(res);
     }
