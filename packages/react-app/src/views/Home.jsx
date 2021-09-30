@@ -51,7 +51,7 @@ export default function Home({ tx, readContracts, writeContracts, mainnetProvide
 
   useEffect(() => {
     if (readContracts) {
-      if (readContracts.Diplomacy) {
+      if (readContracts.Diplomat) {
         init();
       }
     }
