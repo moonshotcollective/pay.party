@@ -2,12 +2,15 @@ import { PageHeader } from "antd";
 import { useParams, useHistory } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import { Button, Divider, Table, Space, Typography, Input } from "antd";
+import { Text, Heading, VStack, HStack, Divider as ChDivider, Button as ChButton, Avatar } from "@chakra-ui/react";
+import { useColorModeValue } from "@chakra-ui/color-mode";
 import { fromWei, toWei, toBN, numberToHex } from "web3-utils";
+import { CenteredFrame, VoteInput } from "../components/layout";
 import { Address, PayButton } from "../components";
+
+import { FaStepBackward } from "react-icons/fa";
 import { PlusSquareOutlined, MinusSquareOutlined, SendOutlined, CloseCircleOutlined } from "@ant-design/icons";
 import dips from "../dips";
-
-const { Text } = Typography;
 
 var Map = require("collections/map");
 
@@ -326,53 +329,63 @@ export default function Vote({
   //TODO: table votes are hard to update if we use useState, so has to be outside
   const tableCols = makeTableCols();
 
+  const headingColor = useColorModeValue("yellow.600", "yellow.500");
+
+  const members = ["0xad", "0xad", "0xad", "0xad", "0xad", "0xad"];
+
   return (
-    <>
-      <div
-        className="voting-view"
-        style={{ border: "1px solid #cccccc", padding: 16, width: 900, margin: "auto", marginTop: 64 }}
-      >
-        <PageHeader
-          ghost={false}
-          onBack={() => routeHistory.push("/")}
-          title={electionState ? electionState.name : "Loading Election..."}
-          extra={[
-            electionState.isActive && electionState.isAdmin && (
-              <Button
-                icon={<CloseCircleOutlined />}
-                type="danger"
-                size="large"
-                shape="round"
-                style={{ margin: 4 }}
-                onClick={() => endElection()}
-                loading={isElectionEnding}
-              >
-                End Election
-              </Button>
-            ),
-            !electionState.isActive && electionState.isAdmin && !electionState.isPaid && (
-              <PayButton
-                token={token}
-                appName="Quadratic Diplomacy"
-                tokenListHandler={tokens => setAvailableTokens(tokens)}
-                callerAddress={address}
-                maxApproval={electionState.fundingAmount}
-                amount={electionState.fundingAmount}
-                spender={spender}
-                yourLocalBalance={yourLocalBalance}
-                readContracts={readContracts}
-                writeContracts={writeContracts}
-                ethPayHandler={ethPayHandler}
-                tokenPayHandler={tokenPayHandler}
-              />
-            ),
-          ]}
-        >
-          {electionState.canVote && (
-            <Typography.Title level={5}>
-              Funding: {electionState.fundingAmount} {<Divider type="vertical" />} Remaining Votes: {votesLeft}{" "}
-            </Typography.Title>
+    <CenteredFrame>
+      <VStack align="left" w="100%" spacing="0.5rem">
+        <HStack>
+          <Button leftIcon={<FaStepBackward />} w="full" onClick={() => routeHistory.push("/")}>
+            Back
+          </Button>
+          {electionState.isActive && electionState.isAdmin && (
+            <Button
+              icon={<CloseCircleOutlined />}
+              type="danger"
+              size="large"
+              shape="round"
+              style={{ margin: 4 }}
+              onClick={() => endElection()}
+              loading={isElectionEnding}
+            >
+              End Election
+            </Button>
           )}
+          , (
+          {!electionState.isActive && electionState.isAdmin && !electionState.isPaid && (
+            <PayButton
+              token={token}
+              appName="Quadratic Diplomacy"
+              tokenListHandler={tokens => setAvailableTokens(tokens)}
+              callerAddress={address}
+              maxApproval={electionState.fundingAmount}
+              amount={electionState.fundingAmount}
+              spender={spender}
+              yourLocalBalance={yourLocalBalance}
+              readContracts={readContracts}
+              writeContracts={writeContracts}
+              ethPayHandler={ethPayHandler}
+              tokenPayHandler={tokenPayHandler}
+            />
+          )}
+          )
+        </HStack>
+        ,
+        <Heading fontSize="1.5rem" color={headingColor}>
+          Election: {electionState.name}
+        </Heading>
+        ,
+        {electionState.canVote && (
+          <Typography.Title level={5}>
+            Funding: {electionState.fundingAmount} {<Divider type="vertical" />} Remaining Votes: {votesLeft}{" "}
+          </Typography.Title>
+        )}
+        <Text pb="2rem" fontSize="1rem">
+          Vote each member based on their contributions.
+        </Text>
+        <VStack w="100%" align="left" spacing="1rem" pb="2rem">
           <Table
             dataSource={tableSrc}
             columns={tableCols}
@@ -387,18 +400,22 @@ export default function Vote({
               };
             }}
           />
-          <Divider />
-          <div>
-            {electionState.canVote && electionState.isActive && (
-              <Button icon={<SendOutlined />} size="large" shape="round" type="primary" onClick={() => castBallot()}>
-                Cast Ballot
-              </Button>
-            )}
-          </div>
-          <div>{errorMsg && <Text type="danger">{errorMsg}</Text>}</div>
-          <div>{electionState.paid && <Text type="success">Election Payout Complete!</Text>}</div>
-        </PageHeader>
-      </div>
-    </>
+        </VStack>
+        <VStack w="100%" align="left" spacing="1rem">
+          {electionState.canVote && electionState.isActive && (
+            <ChButton w="100%" variant="outline" onClick={() => castBallot()}>
+              Cast Ballot
+            </ChButton>
+          )}
+        </VStack>
+        <ChDivider />
+        <VStack w="100%" align="left" spacing="1rem">
+          {errorMsg && <Text type="danger">{errorMsg}</Text>}
+        </VStack>
+        <VStack w="100%" align="left" spacing="1rem">
+          {electionState.paid && <Text type="success">Election Payout Complete!</Text>}
+        </VStack>
+      </VStack>
+    </CenteredFrame>
   );
 }

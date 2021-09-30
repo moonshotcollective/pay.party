@@ -690,7 +690,7 @@ body {
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   font-variant: tabular-nums;
   line-height: 1.5715;
-  background-color: #212121;
+  background-color: #050113;
   font-feature-settings: "tnum";
 }
 [tabindex="-1"]:focus {

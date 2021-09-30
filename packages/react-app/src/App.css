@@ -4,6 +4,10 @@
   font-family: "Space Mono", monospace;
 }
 
+body {
+  background-color: #0b0228 !important;
+}
+
 .App {
   text-align: center;
 }

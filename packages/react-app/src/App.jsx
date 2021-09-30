@@ -7,7 +7,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { BrowserRouter, Link, Route, Switch } from "react-router-dom";
 import Web3Modal from "web3modal";
 import "./App.css";
-import { Account, Contract, Faucet, GasGauge, Header, Ramp, ThemeSwitch } from "./components";
+import { Account, Contract, Faucet, GasGauge, Header, Footer, Ramp, ThemeSwitch } from "./components";
 import { INFURA_ID, NETWORK, NETWORKS } from "./constants";
 import { Transactor } from "./helpers";
 import { useBalance, useContractReader, useGasPrice, useOnBlock, useUserProviderAndSigner } from "eth-hooks";
@@ -19,6 +19,8 @@ import { useContractConfig, useContractLoader } from "./hooks";
 import Portis from "@portis/web3";
 import Fortmatic from "fortmatic";
 import Authereum from "authereum";
+
+import { Box, Text, Heading, VStack, HStack, Divider, Button as ChakraButton } from "@chakra-ui/react";
 
 const { ethers } = require("ethers");
 /*
@@ -92,7 +94,7 @@ const walletLinkProvider = walletLink.makeWeb3Provider(`https://mainnet.infura.i
 const web3Modal = new Web3Modal({
   network: "mainnet", // Optional. If using WalletConnect on xDai, change network to "xdai" and add RPC info below for xDai chain.
   cacheProvider: true, // optional
-  theme: "light", // optional. Change to "dark" for a dark theme.
+  theme: "dark", // optional. Change to "dark" for a dark theme.
   providerOptions: {
     walletconnect: {
       package: WalletConnectProvider, // required
@@ -433,34 +435,11 @@ function App(props) {
   }
 
   return (
-    <div className="App">
+    <Box mb={8} w="full">
       {/* ✏️ Edit the header and change the title to your project name */}
       <Header />
       {networkDisplay}
       <BrowserRouter>
-        {/* <Menu style={{ textAlign: "center" }} selectedKeys={[route]} mode="horizontal">
-          <Menu.Item key="/">
-            <Link
-              onClick={() => {
-                setRoute("/");
-              }}
-              to="/"
-            >
-              Home
-            </Link>
-          </Menu.Item>
-          <Menu.Item key="/debug">
-            <Link
-              onClick={() => {
-                setRoute("/debug");
-              }}
-              to="/debug"
-            >
-              Debug
-            </Link>
-          </Menu.Item>
-        </Menu> */}
-
         <Switch>
           <Route exact path="/">
             <Home
@@ -501,12 +480,6 @@ function App(props) {
             <Reward />
           </Route>
           <Route exact path="/debug">
-            {/*
-                🎛 this scaffolding is full of commonly used components
-                this <Contract/> component will automatically parse your ABI
-                and give you a form to interact with it locally
-            */}
-
             <Contract
               name="YourContract"
               signer={userSigner}
@@ -520,7 +493,7 @@ function App(props) {
       </BrowserRouter>
 
       <ThemeSwitch />
-
+      <Footer />
       {/* 👨‍💼 Your account is in the top right with a wallet at connect options */}
       <div style={{ position: "fixed", textAlign: "right", right: 0, top: 0, padding: 10 }}>
         <Account
@@ -544,11 +517,11 @@ function App(props) {
             <Ramp price={price} address={address} networks={NETWORKS} />
           </Col>
 
-          <Col span={8} style={{ textAlign: "center", opacity: 0.8 }}>
+          {/* <Col span={8} style={{ textAlign: "center", opacity: 0.8 }}>
             <GasGauge gasPrice={gasPrice} />
-          </Col>
+          </Col> */}
           <Col span={8} style={{ textAlign: "center", opacity: 1 }}>
-            <Button
+            {/* <Button
               onClick={() => {
                 window.open("https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA");
               }}
@@ -559,7 +532,7 @@ function App(props) {
                 💬
               </span>
               Support
-            </Button>
+            </Button> */}
           </Col>
         </Row>
 
@@ -576,7 +549,7 @@ function App(props) {
           </Col>
         </Row>
       </div>
-    </div>
+    </Box>
   );
 }
 

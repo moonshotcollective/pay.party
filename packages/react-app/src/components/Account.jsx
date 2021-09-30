@@ -4,6 +4,7 @@ import { useThemeSwitcher } from "react-css-theme-switcher";
 import Address from "./Address";
 import Balance from "./Balance";
 import Wallet from "./Wallet";
+import { Text, Heading, VStack, HStack, Divider as ChDivider, Button as ChButton, Avatar } from "@chakra-ui/react";
 
 /*
   ~ What it does? ~
@@ -86,7 +87,7 @@ export default function Account({
   const display = minimized ? (
     ""
   ) : (
-    <span>
+    <HStack w="100%" align="left" spacing="1rem">
       {address ? (
         <Address address={address} ensProvider={mainnetProvider} blockExplorer={blockExplorer} />
       ) : (
@@ -101,13 +102,13 @@ export default function Account({
         price={price}
         color={currentTheme === "light" ? "#1890ff" : "#2caad9"}
       />
-    </span>
+    </HStack>
   );
 
   return (
-    <div>
+    <HStack w="100%" align="left">
       {display}
       {modalButtons}
-    </div>
+    </HStack>
   );
 }

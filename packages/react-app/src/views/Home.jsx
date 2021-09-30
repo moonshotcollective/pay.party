@@ -21,6 +21,9 @@ import {
   UserDeleteOutlined,
   LinkOutlined,
 } from "@ant-design/icons";
+// import { HStack, Button } from "@chakra-ui/react";
+
+import { CenteredFrame } from "../components/layout";
 import { Address, AddressInput } from "../components";
 import dips from "../dips";
 import { mainnetProvider, blockExplorer } from "../App";
@@ -170,39 +173,34 @@ export default function Home({ tx, readContracts, writeContracts, mainnetProvide
     loading: tableDataLoading,
   };
   return (
-    <>
-      <div
-        className="elections-view"
-        style={{ border: "1px solid #cccccc", padding: 16, width: 1000, margin: "auto", marginTop: 64 }}
-      >
-        <PageHeader
-          ghost={false}
-          title="Elections"
-          extra={[
-            <Button
-              icon={<PlusOutlined />}
-              type="primary"
-              size="large"
-              shape="round"
-              style={{ margin: 4 }}
-              onClick={createElection}
-            >
-              Create Election
-            </Button>,
-          ]}
+    <CenteredFrame>
+      <PageHeader
+        ghost={false}
+        title="Elections"
+        extra={[
+          <Button
+            icon={<PlusOutlined />}
+            type="primary"
+            size="large"
+            shape="round"
+            style={{ margin: 4 }}
+            onClick={createElection}
+          >
+            Create Election
+          </Button>,
+        ]}
+      />
+      {electionsMap && (
+        <Table
+          {...table_state}
+          size="middle"
+          dataSource={Array.from(electionsMap.values()).reverse()}
+          columns={columns}
+          pagination={false}
+          scroll={{ y: 600 }}
+          style={{ padding: 10, width: 1000 }}
         />
-        {electionsMap && (
-          <Table
-            {...table_state}
-            size="middle"
-            dataSource={Array.from(electionsMap.values()).reverse()}
-            columns={columns}
-            pagination={false}
-            scroll={{ y: 600 }}
-            style={{ padding: 10 }}
-          />
-        )}
-      </div>
-    </>
+      )}
+    </CenteredFrame>
   );
 }

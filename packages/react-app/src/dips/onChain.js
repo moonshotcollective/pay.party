@@ -6,14 +6,13 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
     console.log(`Saving election data`, data);
     return new Promise((resolve, reject) => {
       tx(
-        writeContracts.Diplomacy.newElection(data.name, data.fundAmount, data.tokenAdr, data.votes, data.candidates, {
-          value: 0,
-          gasLimit: 124500,
-        }),
+        writeContracts.Diplomacy.newElection(data.name, data.fundAmount, data.tokenAdr, data.votes, data.candidates),
         update => {
           console.log("📡 Transaction Update:", update);
-          if (update && (update.status === "confirmed" || update.status === 1)) {
-            resolve(update);
+          if (update) {
+            if (update.status === "confirmed" || update.status === 1) {
+              resolve(update);
+            }
           } else {
             reject(update);
           }
@@ -27,11 +26,16 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
     return new Promise((resolve, reject) => {
       tx(writeContracts.Diplomacy.endElection(id), update => {
         console.log("📡 Transaction Update:", update);
-        if (update && (update.status === "confirmed" || update.status === 1)) {
-          resolve(update);
-        } else {
-          reject(update);
-        }
+        update => {
+          console.log("📡 Transaction Update:", update);
+          if (update) {
+            if (update.status === "confirmed" || update.status === 1) {
+              resolve(update);
+            }
+          } else {
+            reject(update);
+          }
+        };
       });
     });
   };
@@ -41,11 +45,16 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
     return new Promise((resolve, reject) => {
       tx(writeContracts.Diplomacy.castBallot(id, candidates, quad_scores), update => {
         console.log("📡 Transaction Update:", update);
-        if (update && (update.status === "confirmed" || update.status === 1)) {
-          resolve(update);
-        } else {
-          reject(update);
-        }
+        update => {
+          console.log("📡 Transaction Update:", update);
+          if (update) {
+            if (update.status === "confirmed" || update.status === 1) {
+              resolve(update);
+            }
+          } else {
+            reject(update);
+          }
+        };
       });
     });
   };
@@ -143,11 +152,16 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
         }),
         update => {
           console.log("📡 Transaction Update:", update);
-          if (update && (update.status === "confirmed" || update.status === 1)) {
-            resolve(update);
-          } else {
-            reject(update);
-          }
+          update => {
+            console.log("📡 Transaction Update:", update);
+            if (update) {
+              if (update.status === "confirmed" || update.status === 1) {
+                resolve(update);
+              }
+            } else {
+              reject(update);
+            }
+          };
         },
       );
     });

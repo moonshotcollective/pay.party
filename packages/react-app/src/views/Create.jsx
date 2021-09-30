@@ -25,6 +25,9 @@ import {
   Col,
   Row,
 } from "antd";
+
+import { Input as ChakraInput } from "@chakra-ui/react";
+
 import {
   LeftOutlined,
   DeleteOutlined,
@@ -190,13 +193,10 @@ export default function Create({
             label="Election Name"
             rules={[{ required: true, message: "Please input election name!" }]}
           >
-            <Input
-              size="large"
+            <ChakraInput
               placeholder="Enter Name"
+              borderColor="purple.500"
               allowClear={true}
-              style={{
-                width: "100%",
-              }}
               onChange={e => {
                 newElection.name = e.target.value ? e.target.value : "";
               }}

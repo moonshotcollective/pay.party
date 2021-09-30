@@ -6,9 +6,9 @@ body {
   margin: 0;
 }
 
-canvas {
+/* canvas {
   display: inline-block;
-}
+} */
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
