@@ -1,8 +1,10 @@
+import axios from "axios";
 import React, { useState, useEffect, useRef } from "react";
 import { fromWei, toWei, toBN, numberToHex } from "web3-utils";
+import { serverUrl } from "./offChain";
 
-export default function OnChain(tx, readContracts, writeContracts, mainnetProvider, address) {
-  const createElection = async (data, qdipVersion) => {
+export default function OnChain(tx, readContracts, writeContracts, mainnetProvider, address, userSigner) {
+  const createElection = async data => {
     console.log(`Saving election data`, data);
     return new Promise((resolve, reject) => {
       tx(
@@ -12,7 +14,7 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
           data.fundAmount,
           data.tokenAdr,
           data.votes,
-          data.selectedDip,
+          data.kind,
         ),
         update => {
           console.log("📡 Transaction Update:", update);

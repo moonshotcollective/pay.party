@@ -16,6 +16,7 @@ export default function Vote({
   mainnetProvider,
   blockExplorer,
   localProvider,
+  userSigner,
   tx,
   readContracts,
   writeContracts,
@@ -70,8 +71,9 @@ export default function Vote({
   //   }, [candidateMap]);
 
   useEffect(() => {
-    if (electionState.name) {
+    if (electionState && electionState.name) {
       updateTableSrc();
+      console.log({ electionState });
       setVotesLeft(electionState.votes);
       if (electionState.active) {
         updateCandidateScore();
@@ -84,7 +86,12 @@ export default function Vote({
   /***** Methods *****/
 
   const init = async () => {
-    setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
+    const election = await readContracts.Diplomat.getElection(id);
+    console.log({ election });
+    // setSelectedQdip();
+    setQdipHandler(
+      dips[election.kind].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner),
+    );
     setSpender(readContracts?.Diplomat?.address);
     // loadERC20List();
   };
@@ -162,7 +169,7 @@ export default function Vote({
     });
     console.log(candidates, scores);
     qdipHandler
-      .castBallot(id, candidates, scores)
+      .castBallot(id, candidates, scores, userSigner)
       .then(success => {
         console.log("success");
         loadElectionState();
@@ -312,7 +319,7 @@ export default function Vote({
   };
 
   const makeTableCols = () => {
-    if (electionState.active) {
+    if (electionState && electionState.active) {
       if (electionState.canVote) {
         return [addressCol(), actionCol()];
       } else {
@@ -336,7 +343,7 @@ export default function Vote({
           onBack={() => routeHistory.push("/")}
           title={electionState ? electionState.name : "Loading Election..."}
           extra={[
-            electionState.active && electionState.isAdmin && (
+            electionState && electionState.active && electionState.isAdmin && (
               <Button
                 icon={<CloseCircleOutlined />}
                 type="danger"
@@ -349,7 +356,7 @@ export default function Vote({
                 End Election
               </Button>
             ),
-            !electionState.active && electionState.isAdmin && !electionState.isPaid && (
+            electionState && !electionState.active && electionState.isAdmin && !electionState.isPaid && (
               <PayButton
                 token={token}
                 appName="Quadratic Diplomacy"
