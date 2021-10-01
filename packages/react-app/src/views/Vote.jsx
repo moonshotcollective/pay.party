@@ -73,7 +73,7 @@ export default function Vote({
     if (electionState.name) {
       updateTableSrc();
       setVotesLeft(electionState.votes);
-      if (electionState.isActive) {
+      if (electionState.active) {
         updateCandidateScore();
       } else {
         updateFinalPayout();
@@ -86,7 +86,7 @@ export default function Vote({
   const init = async () => {
     setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
     setSpender(readContracts?.Diplomat?.address);
-    loadERC20List();
+    // loadERC20List();
   };
 
   const loadERC20List = async () => {
@@ -97,7 +97,6 @@ export default function Vote({
       }
       return acc;
     }, []);
-    console.log({ erc20List });
   };
 
   const loadElectionState = async () => {
@@ -165,7 +164,7 @@ export default function Vote({
     qdipHandler
       .castBallot(id, candidates, scores)
       .then(success => {
-        console.log(success);
+        console.log("success");
         loadElectionState();
       })
       .catch(err => {

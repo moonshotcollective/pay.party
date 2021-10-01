@@ -55,8 +55,9 @@ export default function Create({
   /***** Routes *****/
   const routeHistory = useHistory();
 
-  const viewElection = () => {
-    routeHistory.push("/vote/" + index);
+  const viewElection = async () => {
+    let index = await readContracts.Diplomat.electionCount();
+    routeHistory.push("/vote/" + (index.toNumber() - 1));
   };
 
   /***** States *****/
@@ -120,6 +121,11 @@ export default function Create({
     }
   }, [qdipHandler]);
 
+  useEffect(() => {
+    console.log(selectedQdip);
+    setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
+  }, [selectedQdip]);
+
   /***** Methods *****/
   const init = async () => {
     setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
@@ -146,7 +152,7 @@ export default function Create({
     // Create a new election
 
     qdipHandler
-      .createElection(newElection)
+      .createElection(newElection, selectedQdip)
       .then(success => {
         setIsConfirmingElection(false);
         setIsCreatedElection(true);
@@ -251,7 +257,14 @@ export default function Create({
             />
           </Form.Item>
           <Form.Item name="type" label="Diplomacy Type">
-            <Select placeholder="Quadratic Diplomacy build..." defaultValue={["onChain"]}>
+            <Select
+              placeholder="Quadratic Diplomacy build..."
+              defaultValue={["onChain"]}
+              value={selectedQdip}
+              onSelect={value => {
+                setSelectedQdip(value);
+              }}
+            >
               {DIP_TYPES.map(k => (
                 <Select.Option key={k} value={k}>
                   {dips[k].name}
@@ -350,7 +363,7 @@ export default function Create({
             {fromWei(newElection.fundAmount ? newElection.fundAmount.toString() : "0") + " " + newElection.funds}
           </Descriptions.Item>
           <Descriptions.Item label="Delegated Votes:">{newElection.votes}</Descriptions.Item>
-          <Descriptions.Item label="Diplomacy Type:">{newElection.selectedDip}</Descriptions.Item>
+          <Descriptions.Item label="Diplomacy Type:">{selectedQdip}</Descriptions.Item>
           <Descriptions.Item label="Candidates:">
             Count: {newElection.candidates.length}
             <br />
