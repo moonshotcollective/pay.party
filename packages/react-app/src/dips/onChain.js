@@ -1,5 +1,7 @@
+import axios from "axios";
 import React, { useState, useEffect, useRef } from "react";
 import { fromWei, toWei, toBN, numberToHex } from "web3-utils";
+import { serverUrl } from "./offChain";
 
 export default function OnChain(tx, readContracts, writeContracts, mainnetProvider, address, userSigner) {
   const createElection = async data => {
@@ -7,12 +9,12 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
     return new Promise((resolve, reject) => {
       tx(
         writeContracts.Diplomat.createElection(
-          data.name, 
-          data.candidates, 
-          data.fundAmount, 
-          data.tokenAdr, 
-          data.votes, 
-          data.kind, 
+          data.name,
+          data.candidates,
+          data.fundAmount,
+          data.tokenAdr,
+          data.votes,
+          data.kind,
         ),
         update => {
           console.log("📡 Transaction Update:", update);
@@ -57,11 +59,11 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
   const getElections = async () => {
     const contract = readContracts.Diplomat;
     const numElections = await contract.electionCount();
-    console.log({numElections});
+    console.log({ numElections });
     const newElectionsMap = new Map();
     for (let i = 0; i < numElections; i++) {
       const election = await contract.getElection(i);
-      
+
       const electionVoted = await contract.getElectionVoted(i);
       const hasVoted = await contract.getAddressVoted(i, address);
 

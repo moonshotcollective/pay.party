@@ -83,46 +83,44 @@ const db = admin.firestore();
 // checkWalletBalance();
 
 app.use(cors());
+app.use((req, res, next) => {
+  console.log(req.body);
+  next();
+});
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 app.post("/distributions", async function (request, response) {
+  console.log("IN DISTRIB", request.body.address, request.body.account);
   const ip =
     request.headers["x-forwarded-for"] || request.connection.remoteAddress;
   console.log("POST from ip address:", ip);
   console.log(request.body);
 
   // TODO: add some nonce to avoid replay attacks
-  const message = "qdip-creation-" + request.body.address; //+
-  // request.body.voteAllocation +
-  // request.body.members.join();
+  const message = "qdip-create-" + request.body.address;
 
   const recovered = ethers.utils.verifyMessage(message, request.body.signature);
+  console.log({ recovered, bodyAddr: request.body.address, message });
 
   if (recovered != request.body.address) {
     console.log("Wrong signature");
     return response.status(401).send("Wrong signature");
   }
 
-  const isAdminInContract = await isAdmin(recovered);
-  if (!isAdminInContract) {
-    console.log("No admin in contract");
-    return response.status(401).send("No admin in contract");
-  }
-
   try {
     const resAdd = await db.collection("distributions").add({
+      name: request.body.name,
+      candidates: request.body.candidates,
+      fundAmount: request.body.fundAmount,
+      tokenAdr: request.body.tokenAdr,
+      votes: request.body.votes,
+      kind: request.body.kind,
       owner: request.body.address,
-      createdAt: Date.now(),
-      // voteAllocation: request.body.voteAllocation,
-      // members: request.body.members,
-      votes: {},
-      votesSignatures: {},
-      signature: request.body.signature,
-      status: "started",
     });
 
+    console.log({ resAdd });
     console.log(resAdd.id);
     return response.status(201).send(resAdd);
   } catch (exception) {
@@ -286,6 +284,10 @@ app.post(
     const { scores } = request.body;
 
     console.log(scores);
+
+    // const votes = await db.collection("votes")
+    // .where("status", "==", "started")
+    // .get()
     // let votesSignatures = distribution.data().votesSignatures;
 
     // Check if all votes are to members

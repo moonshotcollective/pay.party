@@ -124,7 +124,7 @@ export default function Create({
   /***** Methods *****/
   const init = async () => {
     console.log("init");
-    setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
+    setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner));
 
     const steps = [
       {
@@ -182,7 +182,7 @@ export default function Create({
     const updateSelectedQdip = qdip => {
       console.log("update qdip", qdip);
       newElection.kind = qdip;
-      setQdipHandler(dips[qdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
+      setQdipHandler(dips[qdip].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner));
     };
 
     return (
