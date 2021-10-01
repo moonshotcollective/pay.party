@@ -49,10 +49,11 @@ contract Diplomat is AccessControl, ElectionFactory, Voter {
         address _token, 
         int16 _votes, 
         string memory _kind
-    ) public {
+    ) public returns (uint256 electionId) {
         // NOTE: Using electionCount as ID
         _createElection(electionCount, _name, _candidates, _amount, _token, _votes, _kind);
         electionCount++;
+		return electionCount;
     }
 
     // On Chain voting

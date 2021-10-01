@@ -119,30 +119,6 @@ export default function Create({
     }
   }, [readContracts, address]);
 
-  useEffect(() => {
-    (async () => {
-      if (readContracts) {
-        const message = "qdip-create-" + address;
-        const signature = await userSigner.provider.send("personal_sign", [message, address]);
-        readContracts.Diplomat.on("NewElection", data => {
-          const onChainElectionId = toBN(data._hex).toNumber();
-          console.log("new election created", onChainElectionId);
-          return axios.post(serverUrl + "distributions", {
-            onChainElectionId,
-            name: newElection.name,
-            candidates: newElection.candidates,
-            fundAmount: newElection.fundAmount,
-            tokenAdr: newElection.tokenAdr,
-            votes: newElection.votes,
-            kind: newElection.kind,
-            address,
-            signature,
-          });
-        });
-      }
-    })();
-  }, []);
-
   useEffect(async () => {
     if (qdipHandler) {
     }
@@ -154,10 +130,14 @@ export default function Create({
   }, [selectedQdip]);
 
   /***** Methods *****/
+
   const init = async () => {
     console.log("init");
     setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner));
-
+    // readContracts.Diplomat.on("NewElection", args => {
+    //   let sender = args[1];
+    //   console.log(sender);
+    // });
     const steps = [
       {
         title: "Election Details",

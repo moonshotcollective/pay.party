@@ -10,9 +10,27 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
 
     // const result = await
     return new Promise((resolve, reject) => {
-      tx(writeContracts.Diplomat.createElection(name, candidates, fundAmount, tokenAdr, votes, kind), update => {
+      tx(writeContracts.Diplomat.createElection(name, candidates, fundAmount, tokenAdr, votes, kind), async update => {
         console.log("📡 Transaction Update:", update);
         if (update && (update.status === "confirmed" || update.status === 1)) {
+          console.log({ update });
+          const receipt = await update.wait();
+          console.log(address);
+          const onChainElectionId = receipt.events[0].args.electionId.toNumber();
+          const message = "qdip-create-" + address;
+          const signature = await userSigner.provider.send("personal_sign", [message, address]);
+          console.log("new election created", onChainElectionId);
+          axios.post(serverUrl + "distributions", {
+            onChainElectionId,
+            name,
+            candidates,
+            fundAmount,
+            tokenAdr,
+            votes,
+            kind,
+            address,
+            signature,
+          });
           resolve(update);
         } else {
           reject(update);
@@ -76,6 +94,8 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
 
   const distributeEth = async (id, adrs, weiDist, totalValueInWei) => {};
 
+  const sendBackendOnCreate = async (newElection, address) => {};
+
   return {
     createElection,
     endElection,
@@ -85,5 +105,6 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
     getCandidatesScores,
     getFinalPayout,
     distributeEth,
+    sendBackendOnCreate,
   };
 }
