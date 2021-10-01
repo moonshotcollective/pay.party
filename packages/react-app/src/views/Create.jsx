@@ -125,11 +125,10 @@ export default function Create({
         const message = "qdip-create-" + address;
         const signature = await userSigner.provider.send("personal_sign", [message, address]);
         readContracts.Diplomat.on("NewElection", data => {
-          console.log("new election created");
-          const onChainId = toBN(data._hex).toNumber();
-          console.log({ onChainId });
-          axios.post(serverUrl + "distributions", {
-            onChainId,
+          const onChainElectionId = toBN(data._hex).toNumber();
+          console.log("new election created", onChainElectionId);
+          return axios.post(serverUrl + "distributions", {
+            onChainElectionId,
             name: newElection.name,
             candidates: newElection.candidates,
             fundAmount: newElection.fundAmount,

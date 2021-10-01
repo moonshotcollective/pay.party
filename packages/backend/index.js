@@ -57,7 +57,7 @@ const isElectionCandidates = async (candidatesToCheck, electionId) => {
     contractData.abi,
     localProvider
   );
-  const election = await contract.functions.getElectionById(electionId);
+  const [election] = await contract.functions.getElection(electionId);
   return election.candidates.every((candidate) =>
     candidatesToCheck.includes(candidate)
   );
@@ -128,10 +128,9 @@ app.post("/distributions", async function (request, response) {
     return response.status(401).send("Wrong signature");
   }
 
-  console.log(request.body.onChainId);
   try {
     const resAdd = await db.collection("distributions").add({
-      onChainId: request.body.onChainId,
+      onChainElectionId: request.body.onChainElectionId,
       name: request.body.name,
       candidates: request.body.candidates,
       fundAmount: request.body.fundAmount,
@@ -278,37 +277,29 @@ app.post(
       return response.status(401).send("Wrong signature");
     }
 
-    // TODO: get doc by onChainId
-    const distributionRef = db
-      .collection("distributions")
-      .doc(request.params.distributionId);
-    const distribution = await distributionRef.get();
-
-    console.log(distribution);
     if (!request.params.distributionId) {
       return response.status(404).send("Distribution not found");
     }
-    console.log(distribution.data());
+
     if (!request.body.candidates.includes(recovered)) {
-      console.log("is not a candidate");
       return response.status(401).send("Voter not allowed");
     }
 
-    console.log("we are candidate");
-
     // save vote to db
+    const electionSnapshot = await db
+      .collection("distributions")
+      .where(
+        "onChainElectionId",
+        "==",
+        parseInt(request.params.distributionId, 10)
+      )
+      .get();
+    const distribution = electionSnapshot.docs[0];
+    const distributionRef = distribution.ref;
+
     const { scores } = request.body;
 
-    console.log(scores);
-
     let votes = distribution.data().votes;
-    // votes = scores
-    // example election with 3 candidates with 5 votes each
-    // {
-    // "huxwell.eth": [5, 0, 0],
-    // "hans.eth": [2, 4, 3],
-    // "swap.eth": [10, 1, 5]
-    // }
 
     let votesSignatures = distribution.data().votesSignatures;
 
