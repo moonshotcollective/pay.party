@@ -56,7 +56,7 @@ contract ElectionFactory is Distributor {
             active: true, 
             paid: false
         });
-        _emitNewElection(block.number);
+        _emitNewElection(electionId);
     }
 
     function _endElection(uint256 electionId) 

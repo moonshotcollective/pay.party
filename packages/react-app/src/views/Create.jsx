@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import axios from "axios";
 import { useHistory } from "react-router-dom";
 import { useEventListener } from "../hooks";
 import { Address } from "../components";
@@ -35,6 +36,8 @@ import {
   DoubleRightOutlined,
 } from "@ant-design/icons";
 import dips from "../dips";
+import { serverUrl } from "../dips/offChain";
+import { ethers } from "ethers";
 
 const CURRENCY = "ETH";
 const TOKEN = "UNI";
@@ -116,6 +119,31 @@ export default function Create({
     }
   }, [readContracts, address]);
 
+  useEffect(() => {
+    (async () => {
+      if (readContracts) {
+        const message = "qdip-create-" + address;
+        const signature = await userSigner.provider.send("personal_sign", [message, address]);
+        readContracts.Diplomat.on("NewElection", data => {
+          console.log("new election created");
+          const onChainId = toBN(data._hex).toNumber();
+          console.log({ onChainId });
+          axios.post(serverUrl + "distributions", {
+            onChainId,
+            name: newElection.name,
+            candidates: newElection.candidates,
+            fundAmount: newElection.fundAmount,
+            tokenAdr: newElection.tokenAdr,
+            votes: newElection.votes,
+            kind: newElection.kind,
+            address,
+            signature,
+          });
+        });
+      }
+    })();
+  }, []);
+
   useEffect(async () => {
     if (qdipHandler) {
     }
@@ -152,6 +180,7 @@ export default function Create({
     qdipHandler
       .createElection(newElection)
       .then(success => {
+        console.log({ success });
         setIsConfirmingElection(false);
         setIsCreatedElection(true);
       })
