@@ -55,8 +55,9 @@ export default function Create({
   /***** Routes *****/
   const routeHistory = useHistory();
 
-  const viewElection = () => {
-    routeHistory.push("/vote/" + index);
+  const viewElection = async () => {
+    let index = await readContracts.Diplomat.electionCount();
+    routeHistory.push("/vote/" + (index.toNumber() - 1));
   };
 
   /***** States *****/
@@ -73,8 +74,8 @@ export default function Create({
     votes: 5,
     tokenAdr: "0x0000000000000000000000000000000000000000",
     tokenName: "",
+    kind: "onChain",
     candidates: [],
-    selectedDip: "onChain",
   });
   const [steps, setSteps] = useState([]);
 
@@ -122,6 +123,7 @@ export default function Create({
 
   /***** Methods *****/
   const init = async () => {
+    console.log("init");
     setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
 
     const steps = [
@@ -131,7 +133,9 @@ export default function Create({
       },
       {
         title: "Add Candidates",
-        content: <Step2 mainnetProvider={mainnetProvider} election={newElection} errorMsg={errorMsg} />,
+        content: (
+          <Step2 mainnetProvider={mainnetProvider} election={newElection} form={formStep2} errorMsg={errorMsg} />
+        ),
       },
       {
         title: "Review & Confirm",
@@ -139,7 +143,6 @@ export default function Create({
       },
     ];
     setSteps(steps);
-    
   };
 
   const confirmElection = async () => {
@@ -176,10 +179,11 @@ export default function Create({
       </Select>
     );
 
-    const updateSelectedQdip = (qdip) => {
+    const updateSelectedQdip = qdip => {
+      console.log("update qdip", qdip);
       newElection.kind = qdip;
-      setSelectedQdip(dips[qdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
-    }
+      setQdipHandler(dips[qdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
+    };
 
     return (
       <>
@@ -356,7 +360,7 @@ export default function Create({
             {fromWei(newElection.fundAmount ? newElection.fundAmount.toString() : "0") + " " + newElection.funds}
           </Descriptions.Item>
           <Descriptions.Item label="Delegated Votes:">{newElection.votes}</Descriptions.Item>
-          <Descriptions.Item label="Diplomacy Type:">{newElection.selectedDip}</Descriptions.Item>
+          <Descriptions.Item label="Diplomacy Type:">{newElection.kind}</Descriptions.Item>
           <Descriptions.Item label="Candidates:">
             Count: {newElection.candidates.length}
             <br />
@@ -453,15 +457,7 @@ export default function Create({
               )}
 
               {current === steps.length - 1 && isCreatedElection && (
-                <Button
-                  icon={<ExportOutlined />}
-                  type="default"
-                  size="large"
-                  shape="round"
-                  onClick={() => {
-                    viewElection();
-                  }}
-                >
+                <Button icon={<ExportOutlined />} type="default" size="large" shape="round" onClick={viewElection}>
                   View Election
                 </Button>
               )}
