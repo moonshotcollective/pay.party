@@ -211,7 +211,6 @@ export default function Create({
             <ChakraInput
               placeholder="Enter Name"
               borderColor="purple.500"
-              allowClear={true}
               onChange={e => {
                 newElection.name = e.target.value ? e.target.value : "";
               }}
