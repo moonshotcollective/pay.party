@@ -58,8 +58,9 @@ export default function Create({
   /***** Routes *****/
   const routeHistory = useHistory();
 
-  const viewElection = () => {
-    routeHistory.push("/vote/" + index);
+  const viewElection = async () => {
+    let index = await readContracts.Diplomat.electionCount();
+    routeHistory.push("/vote/" + (index.toNumber() - 1));
   };
 
   /***** States *****/
@@ -76,8 +77,8 @@ export default function Create({
     votes: 5,
     tokenAdr: "0x0000000000000000000000000000000000000000",
     tokenName: "",
+    kind: "onChain",
     candidates: [],
-    selectedDip: "onChain",
   });
   const [steps, setSteps] = useState([]);
 
@@ -123,9 +124,15 @@ export default function Create({
     }
   }, [qdipHandler]);
 
+  useEffect(() => {
+    console.log(selectedQdip);
+    setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
+  }, [selectedQdip]);
+
   /***** Methods *****/
   const init = async () => {
-    setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
+    console.log("init");
+    setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner));
 
     const steps = [
       {
@@ -134,7 +141,9 @@ export default function Create({
       },
       {
         title: "Add Candidates",
-        content: <Step2 mainnetProvider={mainnetProvider} election={newElection} errorMsg={errorMsg} />,
+        content: (
+          <Step2 mainnetProvider={mainnetProvider} election={newElection} form={formStep2} errorMsg={errorMsg} />
+        ),
       },
       {
         title: "Review & Confirm",
@@ -149,7 +158,7 @@ export default function Create({
     // Create a new election
 
     qdipHandler
-      .createElection(newElection)
+      .createElection(newElection, selectedQdip)
       .then(success => {
         setIsConfirmingElection(false);
         setIsCreatedElection(true);
@@ -177,6 +186,12 @@ export default function Create({
         <Option value={TOKEN}>{TOKEN}</Option>
       </Select>
     );
+
+    const updateSelectedQdip = qdip => {
+      console.log("update qdip", qdip);
+      newElection.kind = qdip;
+      setQdipHandler(dips[qdip].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner));
+    };
 
     return (
       <>
@@ -251,7 +266,7 @@ export default function Create({
             />
           </Form.Item>
           <Form.Item name="type" label="Diplomacy Type">
-            <Select placeholder="Quadratic Diplomacy build..." defaultValue={["onChain"]}>
+            <Select placeholder="Quadratic Diplomacy build..." defaultValue={["onChain"]} onSelect={updateSelectedQdip}>
               {DIP_TYPES.map(k => (
                 <Select.Option key={k} value={k}>
                   {dips[k].name}
@@ -350,7 +365,7 @@ export default function Create({
             {fromWei(newElection.fundAmount ? newElection.fundAmount.toString() : "0") + " " + newElection.funds}
           </Descriptions.Item>
           <Descriptions.Item label="Delegated Votes:">{newElection.votes}</Descriptions.Item>
-          <Descriptions.Item label="Diplomacy Type:">{newElection.selectedDip}</Descriptions.Item>
+          <Descriptions.Item label="Diplomacy Type:">{newElection.kind}</Descriptions.Item>
           <Descriptions.Item label="Candidates:">
             Count: {newElection.candidates.length}
             <br />
@@ -447,15 +462,7 @@ export default function Create({
               )}
 
               {current === steps.length - 1 && isCreatedElection && (
-                <Button
-                  icon={<ExportOutlined />}
-                  type="default"
-                  size="large"
-                  shape="round"
-                  onClick={() => {
-                    viewElection();
-                  }}
-                >
+                <Button icon={<ExportOutlined />} type="default" size="large" shape="round" onClick={viewElection}>
                   View Election
                 </Button>
               )}

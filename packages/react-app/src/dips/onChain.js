@@ -1,7 +1,9 @@
+import axios from "axios";
 import React, { useState, useEffect, useRef } from "react";
 import { fromWei, toWei, toBN, numberToHex } from "web3-utils";
+import { serverUrl } from "./offChain";
 
-export default function OnChain(tx, readContracts, writeContracts, mainnetProvider, address) {
+export default function OnChain(tx, readContracts, writeContracts, mainnetProvider, address, userSigner) {
   const createElection = async data => {
     console.log(`Saving election data`, data);
     return new Promise((resolve, reject) => {
@@ -12,13 +14,15 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
           data.fundAmount,
           data.tokenAdr,
           data.votes,
-          data.selectedDip,
+          data.kind,
         ),
         update => {
           console.log("📡 Transaction Update:", update);
           if (update) {
             if (update.status === "confirmed" || update.status === 1) {
               resolve(update);
+            } else if (!update.status) {
+              reject(update);
             }
           } else {
             reject(update);
@@ -33,33 +37,56 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
     return new Promise((resolve, reject) => {
       tx(writeContracts.Diplomat.endElection(id), update => {
         console.log("📡 Transaction Update:", update);
-        update => {
-          console.log("📡 Transaction Update:", update);
-          if (update) {
-            if (update.status === "confirmed" || update.status === 1) {
-              resolve(update);
-            }
-          } else {
+        if (update) {
+          if (update.status === "confirmed" || update.status === 1) {
+            resolve(update);
+          } else if (!update.status) {
             reject(update);
           }
-        };
+        } else {
+          reject(update);
+        }
       });
     });
   };
 
   const castBallot = async (id, candidates, quad_scores) => {
-    console.log(`casting ballot`);
+    // console.log(`casting ballot`);
     return new Promise((resolve, reject) => {
       tx(writeContracts.Diplomat.vote(id, candidates, quad_scores), update => {
         console.log("📡 Transaction Update:", update);
         if (update) {
           if (update.status === "confirmed" || update.status === 1) {
             resolve(update);
+          } else if (!update.status) {
+            reject(update);
           }
         } else {
           reject(update);
         }
       });
+    });
+  };
+
+  const distributeEth = async (id, adrs, weiDist, totalValueInWei) => {
+    return new Promise((resolve, reject) => {
+      tx(
+        writeContracts.Diplomat.payoutElection(id, adrs, weiDist, {
+          value: totalValueInWei,
+        }),
+        update => {
+          console.log("📡 Transaction Update:", update);
+          if (update) {
+            if (update.status === "confirmed" || update.status === 1) {
+              resolve(update);
+            } else if (!update.status) {
+              reject(update);
+            }
+          } else {
+            reject(update);
+          }
+        },
+      );
     });
   };
 
@@ -72,7 +99,7 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
       const election = await contract.getElection(i);
 
       const electionVoted = await contract.getElectionVoted(i);
-      const hasVoted = await readContracts.Voter.getAddressVoted(i, address);
+      const hasVoted = await contract.getAddressVoted(i, address);
 
       const tags = [];
       if (election.creator === address) {
@@ -108,7 +135,7 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
     election.fundingAmount = fromWei(loadedElection.amount.toString(), "ether");
     election.isCandidate = loadedElection.candidates.includes(address);
     election.isAdmin = loadedElection.creator === address;
-    const votedStatus = await readContracts.Voter.getAddressVoted(id, address);
+    const votedStatus = await readContracts.Diplomat.addressVoted(id, address);
     console.log({ votedStatus });
     election.canVote = !votedStatus && election.isCandidate;
     return election;
@@ -116,9 +143,11 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
 
   const getCandidatesScores = async id => {
     const election = await readContracts.Diplomat.getElection(id);
+    console.log(election.candidates);
     const scores = [];
     for (let i = 0; i < election.candidates.length; i++) {
-      const candidateScore = (await readContracts.Diplomat.getScore(id, election.candidates[i])).toNumber();
+      const candidateScore = (await readContracts.Voter.getScore(id, election.candidates[i])).toNumber();
+      console.log({ candidateScore });
       scores.push(candidateScore);
     }
     return scores;
@@ -129,9 +158,11 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
     const electionFunding = election.amount;
     const scores = [];
     const payout = [];
-    const scoreSum = await readContracts.Diplomat.electionScoreTotal(id);
+    const scoreSum = await readContracts.Voter.getElectionScoreTotal(id);
+    console.log({ scoreSum });
     for (let i = 0; i < election.candidates.length; i++) {
-      const candidateScore = (await readContracts.Diplomat.getScore(id, election.candidates[i])).toNumber();
+      const candidateScore = (await readContracts.Voter.getScore(id, election.candidates[i])).toNumber();
+      console.log({ candidateScore });
       scores.push(candidateScore);
 
       const candidatePay = Math.floor((candidateScore / scoreSum) * electionFunding);
@@ -146,30 +177,6 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
       payout: payout,
       scoreSum: scoreSum,
     };
-  };
-
-  const distributeEth = async (id, adrs, weiDist, totalValueInWei) => {
-    return new Promise((resolve, reject) => {
-      tx(
-        writeContracts.Diplomat.payoutElection(id, adrs, weiDist, {
-          value: totalValueInWei,
-          gasLimit: 12450000,
-        }),
-        update => {
-          console.log("📡 Transaction Update:", update);
-          update => {
-            console.log("📡 Transaction Update:", update);
-            if (update) {
-              if (update.status === "confirmed" || update.status === 1) {
-                resolve(update);
-              }
-            } else {
-              reject(update);
-            }
-          };
-        },
-      );
-    });
   };
 
   return {

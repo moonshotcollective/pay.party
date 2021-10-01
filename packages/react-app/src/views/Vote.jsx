@@ -2,15 +2,14 @@ import { PageHeader } from "antd";
 import { useParams, useHistory } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import { Button, Divider, Table, Space, Typography, Input } from "antd";
-import { Text, Heading, VStack, HStack, Divider as ChDivider, Button as ChButton, Avatar } from "@chakra-ui/react";
-import { useColorModeValue } from "@chakra-ui/color-mode";
 import { fromWei, toWei, toBN, numberToHex } from "web3-utils";
-import { CenteredFrame, VoteInput } from "../components/layout";
 import { Address, PayButton } from "../components";
-
-import { FaStepBackward } from "react-icons/fa";
 import { PlusSquareOutlined, MinusSquareOutlined, SendOutlined, CloseCircleOutlined } from "@ant-design/icons";
+
+import { CenteredFrame } from "../components/layout";
 import dips from "../dips";
+
+const { Text } = Typography;
 
 var Map = require("collections/map");
 
@@ -19,6 +18,7 @@ export default function Vote({
   mainnetProvider,
   blockExplorer,
   localProvider,
+  userSigner,
   tx,
   readContracts,
   writeContracts,
@@ -37,7 +37,6 @@ export default function Vote({
   const [tableSrc, setTableSrc] = useState([]);
   //   const [tableCols, setTableCols] = useState([]);
   const [errorMsg, setErrorMsg] = useState("");
-  const [isVoting, setIsVoting] = useState(false);
   const [isElectionEnding, setIsElectionEnding] = useState(false);
   const [candidateMap, setCandidateMap] = useState();
   const [candidateScores, setCandidateScores] = useState([]);
@@ -74,8 +73,9 @@ export default function Vote({
   //   }, [candidateMap]);
 
   useEffect(() => {
-    if (electionState.name) {
+    if (electionState && electionState.name) {
       updateTableSrc();
+      console.log({ electionState });
       setVotesLeft(electionState.votes);
       if (electionState.active) {
         updateCandidateScore();
@@ -88,9 +88,14 @@ export default function Vote({
   /***** Methods *****/
 
   const init = async () => {
-    setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
+    const election = await readContracts.Diplomat.getElection(id);
+    console.log({ election });
+    // setSelectedQdip();
+    setQdipHandler(
+      dips[election.kind].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner),
+    );
     setSpender(readContracts?.Diplomat?.address);
-    loadERC20List();
+    // loadERC20List();
   };
 
   const loadERC20List = async () => {
@@ -101,7 +106,6 @@ export default function Vote({
       }
       return acc;
     }, []);
-    console.log({ erc20List });
   };
 
   const loadElectionState = async () => {
@@ -167,9 +171,9 @@ export default function Vote({
     });
     console.log(candidates, scores);
     qdipHandler
-      .castBallot(id, candidates, scores)
+      .castBallot(id, candidates, scores, userSigner)
       .then(success => {
-        console.log("transaction confirmed!");
+        console.log("success");
         loadElectionState();
       })
       .catch(err => {
@@ -317,11 +321,7 @@ export default function Vote({
   };
 
   const makeTableCols = () => {
-    if (!electionState) {
-      return [];
-    }
-
-    if (electionState.active) {
+    if (electionState && electionState.active) {
       if (electionState.canVote) {
         return [addressCol(), actionCol()];
       } else {
@@ -334,66 +334,56 @@ export default function Vote({
   //TODO: table votes are hard to update if we use useState, so has to be outside
   const tableCols = makeTableCols();
 
-  const headingColor = useColorModeValue("yellow.600", "yellow.500");
-
-  const members = ["0xad", "0xad", "0xad", "0xad", "0xad", "0xad"];
-
   return (
-    <CenteredFrame>
-      <VStack align="left" w="100%" spacing="0.5rem">
-        <HStack>
-          <Button leftIcon={<FaStepBackward />} w="full" onClick={() => routeHistory.push("/")}>
-            Back
-          </Button>
-          {electionState.active && electionState.isAdmin && (
-            <Button
-              icon={<CloseCircleOutlined />}
-              type="danger"
-              size="large"
-              shape="round"
-              style={{ margin: 4 }}
-              onClick={() => endElection()}
-              loading={isElectionEnding}
-            >
-              End Election
-            </Button>
+    <>
+      <CenteredFrame>
+        <PageHeader
+          ghost={false}
+          onBack={() => routeHistory.push("/")}
+          title={electionState ? electionState.name : "Loading Election..."}
+          style={{ width: 1000 }}
+          extra={[
+            electionState && electionState.active && electionState.isAdmin && (
+              <Button
+                icon={<CloseCircleOutlined />}
+                type="danger"
+                size="large"
+                shape="round"
+                key="unique2"
+                style={{ margin: 4 }}
+                onClick={() => endElection()}
+                loading={isElectionEnding}
+              >
+                End Election
+              </Button>
+            ),
+            electionState && !electionState.active && electionState.isAdmin && !electionState.isPaid && (
+              <PayButton
+                token={token}
+                appName="Quadratic Diplomacy"
+                tokenListHandler={tokens => setAvailableTokens(tokens)}
+                callerAddress={address}
+                maxApproval={electionState.fundingAmount}
+                amount={electionState.fundingAmount}
+                spender={spender}
+                yourLocalBalance={yourLocalBalance}
+                readContracts={readContracts}
+                writeContracts={writeContracts}
+                ethPayHandler={ethPayHandler}
+                tokenPayHandler={tokenPayHandler}
+              />
+            ),
+          ]}
+        >
+          {electionState.canVote && (
+            <Typography.Title level={5}>
+              Funding: {electionState.fundingAmount} {<Divider type="vertical" />} Remaining Votes: {votesLeft}{" "}
+            </Typography.Title>
           )}
-          , (
-          {!electionState.active && electionState.isAdmin && !electionState.isPaid && (
-            <PayButton
-              token={token}
-              appName="Quadratic Diplomacy"
-              tokenListHandler={tokens => setAvailableTokens(tokens)}
-              callerAddress={address}
-              maxApproval={electionState.fundingAmount}
-              amount={electionState.fundingAmount}
-              spender={spender}
-              yourLocalBalance={yourLocalBalance}
-              readContracts={readContracts}
-              writeContracts={writeContracts}
-              ethPayHandler={ethPayHandler}
-              tokenPayHandler={tokenPayHandler}
-            />
-          )}
-          )
-        </HStack>
-        ,
-        <Heading fontSize="1.5rem" color={headingColor}>
-          Election: {electionState.name}
-        </Heading>
-        ,
-        {electionState.canVote && (
-          <Typography.Title level={5}>
-            Funding: {electionState.fundingAmount} {<Divider type="vertical" />} Remaining Votes: {votesLeft}{" "}
-          </Typography.Title>
-        )}
-        <Text pb="2rem" fontSize="1rem">
-          Vote each member based on their contributions.
-        </Text>
-        <VStack w="100%" align="left" spacing="1rem" pb="2rem">
           <Table
             dataSource={tableSrc}
             columns={tableCols}
+            rowKey="address"
             pagination={false}
             onRow={(record, rowIndex) => {
               return {
@@ -405,22 +395,18 @@ export default function Vote({
               };
             }}
           />
-        </VStack>
-        <VStack w="100%" align="left" spacing="1rem">
-          {electionState.canVote && electionState.active && (
-            <ChButton w="100%" variant="outline" onClick={() => castBallot()} loading>
-              Cast Ballot
-            </ChButton>
-          )}
-        </VStack>
-        <ChDivider />
-        <VStack w="100%" align="left" spacing="1rem">
-          {errorMsg && <Text type="danger">{errorMsg}</Text>}
-        </VStack>
-        <VStack w="100%" align="left" spacing="1rem">
-          {electionState.paid && <Text type="success">Election Payout Complete!</Text>}
-        </VStack>
-      </VStack>
-    </CenteredFrame>
+          <Divider />
+          <div>
+            {electionState.canVote && electionState.active && (
+              <Button icon={<SendOutlined />} size="large" shape="round" type="primary" onClick={() => castBallot()}>
+                Cast Ballot
+              </Button>
+            )}
+          </div>
+          <div>{errorMsg && <Text type="danger">{errorMsg}</Text>}</div>
+          <div>{electionState.paid && <Text type="success">Election Payout Complete!</Text>}</div>
+        </PageHeader>
+      </CenteredFrame>
+    </>
   );
 }

@@ -184,6 +184,7 @@ export default function Home({ tx, readContracts, writeContracts, mainnetProvide
             size="large"
             shape="round"
             style={{ margin: 4 }}
+            key="unique"
             onClick={createElection}
           >
             Create Election
@@ -196,6 +197,7 @@ export default function Home({ tx, readContracts, writeContracts, mainnetProvide
           size="middle"
           dataSource={Array.from(electionsMap.values()).reverse()}
           columns={columns}
+          rowKey="name"
           pagination={false}
           scroll={{ y: 600 }}
           style={{ padding: 10, width: 1000 }}
