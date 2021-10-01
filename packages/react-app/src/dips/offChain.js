@@ -2,30 +2,17 @@ import React, { useState, useEffect, useRef } from "react";
 import { fromWei, toWei, toBN, numberToHex } from "web3-utils";
 const axios = require("axios");
 
-const serverUrl = "http://localhost:45622/";
+export const serverUrl = "http://localhost:45622/";
 
 export default function OffChain(tx, readContracts, writeContracts, mainnetProvider, address, userSigner) {
   const createElection = async ({ name, candidates, fundAmount, tokenAdr, votes, kind }) => {
-    const message = "qdip-create-" + address;
-    console.log({ message });
     console.log(`Saving election data off-chain`);
-    const signature = await userSigner.provider.send("personal_sign", [message, address]);
+
+    // const result = await
     return new Promise((resolve, reject) => {
       tx(writeContracts.Diplomat.createElection(name, candidates, fundAmount, tokenAdr, votes, kind), update => {
         console.log("📡 Transaction Update:", update);
         if (update && (update.status === "confirmed" || update.status === 1)) {
-          axios.post(serverUrl + "distributions", {
-            name,
-            candidates,
-            fundAmount,
-            tokenAdr,
-            votes,
-            kind,
-            address,
-            account: "hello",
-            signature,
-          });
-          console.log(address);
           resolve(update);
         } else {
           reject(update);
@@ -40,7 +27,8 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
 
   const castBallot = async (id, candidates, quad_scores) => {
     console.log(`casting ballot in offChain()`);
-    let message = "qdip-vote-" + address; //+ voteAllocation + filteredVoters.join();
+    console.log(id);
+    const message = "qdip-vote-" + id + address;
     console.log("Message:" + message);
     let signature = await userSigner.provider.send("personal_sign", [message, address]);
     console.log(signature);
