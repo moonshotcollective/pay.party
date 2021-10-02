@@ -191,9 +191,10 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
   };
 
   const distributeEth = async (id, adrs, weiDist, totalValueInWei) => {
+    console.log("Distributing...")
     return new Promise((resolve, reject) => {
       tx(
-        writeContracts.Diplomat.payoutElection(id, adrs, weiDist, {
+        writeContracts.Diplomat.payElection(id, adrs, weiDist, {
           value: totalValueInWei,
           gasLimit: 12450000,
         }),
