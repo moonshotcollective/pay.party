@@ -19,15 +19,15 @@ contract Voter {
         addressVoted[electionId][msg.sender] = true;
     }
 
-    function getElectionScoreTotal(uint256 electionId) public view returns(uint256) {
+    function _getElectionScoreTotal(uint256 electionId) internal view returns(uint256) {
         return electionScoreTotal[electionId];
     }
 
-    function getScore(uint256 electionId, address _adr) public view returns(uint256) {
+    function _getScore(uint256 electionId, address _adr) internal view returns(uint256) {
         return electionScore[electionId][_adr];
     }
 
-    function getAddressVoted(uint256 electionId, address _adr) public view returns(bool) {
+    function _getAddressVoted(uint256 electionId, address _adr) internal view returns(bool) {
         return addressVoted[electionId][_adr]; 
     }
 
