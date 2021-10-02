@@ -81,8 +81,10 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
         n_voted: { outOf: election.candidates.length },
       };
       let hasVoted = false;
+      let isActive = false;
       if (election.kind === "onChain") {
         hasVoted = await contract.getAddressVoted(i, address);
+        isActive = election.active;
         console.log({ hasVoted });
         const electionVoted = await contract.getElectionNumVoted(i);
         electionEntry.n_voted = {
@@ -91,8 +93,9 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
         };
       }
       if (election.kind === "offChain") {
-        const votedResult = await axios.get(serverUrl + `distribution/${i}/${address}`);
+        const votedResult = await axios.get(serverUrl + `distribution/state/${i}/${address}`);
         hasVoted = votedResult.data.hasVoted;
+        isActive = votedResult.data.isActive;
         const offChainElectionResult = await axios.get(serverUrl + `distribution/${i}`);
         const { election: offChainElection } = offChainElectionResult.data;
         const nVoted = Object.keys(offChainElection.votes).length;
@@ -112,7 +115,7 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
       if (hasVoted) {
         tags.push("voted");
       }
-      let status = election.active;
+      let status = isActive;
       let created = new Date(election.date * 1000).toISOString().substring(0, 10);
       electionEntry = {
         ...electionEntry,
@@ -144,8 +147,8 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
       votedStatus = await readContracts.Diplomat.getAddressVoted(id, address);
     }
     if (election.kind === "offChain") {
-      const votedResult = await axios.get(serverUrl + `distribution/${id}/${address}`);
-      const { hasVoted } = votedResult.data;
+      const votedResult = await axios.get(serverUrl + `distribution/state/${id}/${address}`);
+      const { hasVoted, isActive } = votedResult.data;
       votedStatus = hasVoted;
     }
     election.canVote = !votedStatus && election.isCandidate;
@@ -157,7 +160,9 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
     console.log(election.candidates);
     const scores = [];
     for (let i = 0; i < election.candidates.length; i++) {
-      const candidateScore = (await readContracts.Diplomat.getElectionAddressScore(id, election.candidates[i])).toNumber();
+      const candidateScore = (
+        await readContracts.Diplomat.getElectionAddressScore(id, election.candidates[i])
+      ).toNumber();
       console.log({ candidateScore });
       scores.push(candidateScore);
     }
@@ -172,7 +177,9 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
     const scoreSum = await readContracts.Diplomat.getElectionScoreTotal(id);
     console.log({ scoreSum });
     for (let i = 0; i < election.candidates.length; i++) {
-      const candidateScore = (await readContracts.Diplomat.getElectionAddressScore(id, election.candidates[i])).toNumber();
+      const candidateScore = (
+        await readContracts.Diplomat.getElectionAddressScore(id, election.candidates[i])
+      ).toNumber();
       console.log({ candidateScore });
       scores.push(candidateScore);
 
@@ -191,7 +198,7 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
   };
 
   const distributeEth = async (id, adrs, weiDist, totalValueInWei) => {
-    console.log("Distributing...")
+    console.log("Distributing...");
     return new Promise((resolve, reject) => {
       tx(
         writeContracts.Diplomat.payElection(id, adrs, weiDist, {

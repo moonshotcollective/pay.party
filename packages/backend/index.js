@@ -134,8 +134,9 @@ app.post("/distributions", async function (request, response) {
       kind: request.body.kind,
       owner: request.body.address,
       votes: {},
+      active: true,
+      paid: false,
       votesSignatures: {},
-      status: "started",
       signature: request.body.signature,
     });
 
@@ -339,55 +340,67 @@ app.post(
   async function (request, response) {
     const message =
       "qdip-finish-" + request.params.distributionId + request.body.address;
+    console.log({ message });
 
-    const recovered = ethers.utils.verifyMessage(
-      message,
-      request.body.signature
-    );
+    // const recovered = ethers.utils.verifyMessage(
+    //   message,
+    //   request.body.signature
+    // );
 
-    if (recovered != request.body.address) {
-      console.log("Wrong signature");
-      return response.status(401).send("Wrong signature");
-    }
+    // console.log(recovered);
 
-    const isAdminInContract = await isAdmin(recovered);
-    if (!isAdminInContract) {
-      console.log("No admin in contract");
-      return response.status(401).send("No admin in contract");
-    }
+    // if (recovered != request.body.address) {
+    //   console.log("Wrong signature");
+    //   return response.status(401).send("Wrong signature");
+    // }
 
-    const distributionRef = db
+    // const isAdminInContract = await isAdmin(recovered);
+    // if (!isAdminInContract) {
+    //   console.log("No admin in contract");
+    //   return response.status(401).send("No admin in contract");
+    // }
+
+    const electionSnapshot = await db
       .collection("distributions")
-      .doc(request.params.distributionId);
-    const distribution = await distributionRef.get();
+      .where(
+        "onChainElectionId",
+        "==",
+        parseInt(request.params.distributionId, 10)
+      )
+      .get();
+    const distribution = electionSnapshot.docs[0];
 
     if (!distribution.exists) {
-      return response.status(404).send("Distribution not found");
+      return response.status(400).send("Distribution not found");
     } else {
       console.log(distribution.data());
-
-      const res = await distributionRef.update({ status: "finished" });
+      const distributionRef = distribution.ref;
+      const res = await distributionRef.update({ active: false });
 
       return response.send(res);
     }
   }
 );
 
-app.get("/distribution/:distributionId/:address", async (req, res, next) => {
-  const electionSnapshot = await db
-    .collection("distributions")
-    .where("onChainElectionId", "==", parseInt(req.params.distributionId, 10))
-    .get();
-  if (!electionSnapshot || !electionSnapshot.docs[0]) {
-    return res.status(404);
+app.get(
+  "/distribution/state/:distributionId/:address",
+  async (req, res, next) => {
+    const electionSnapshot = await db
+      .collection("distributions")
+      .where("onChainElectionId", "==", parseInt(req.params.distributionId, 10))
+      .get();
+    if (!electionSnapshot || !electionSnapshot.docs[0]) {
+      return res.status(404);
+    }
+    console.log("wtf", electionSnapshot.docs[0].data());
+    const election = electionSnapshot.docs[0].data();
+    const hasVoted = Object.keys(election.votes).some(
+      (voterAddress) => voterAddress === req.params.address
+    );
+    const isActive = election.active;
+    return res.send({ hasVoted, isActive });
   }
-  console.log("wtf", electionSnapshot.docs[0].data());
-  const election = electionSnapshot.docs[0].data();
-  const hasVoted = Object.keys(election.votes).some(
-    (voterAddress) => voterAddress === req.params.address
-  );
-  return res.send({ hasVoted });
-});
+);
 
 app.get("/distribution/:distributionId", async (req, res, next) => {
   const electionSnapshot = await db

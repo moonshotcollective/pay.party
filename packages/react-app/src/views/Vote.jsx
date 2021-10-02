@@ -165,7 +165,7 @@ export default function Vote({
     const candidates = Array.from(candidateMap.keys());
     const scores = [];
     candidateMap.forEach(d => {
-      scores.push(Math.floor(d.score * 10));
+      scores.push(Math.floor(d.score * 100));
     });
     console.log(candidates, scores);
     qdipHandler
@@ -197,6 +197,7 @@ export default function Vote({
         setIsElectionEnding(false);
       })
       .catch(err => {
+        console.log("err endElection", err);
         setIsElectionEnding(false);
       });
   };
