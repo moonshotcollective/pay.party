@@ -69,12 +69,16 @@ contract Diplomat is AccessControl, ElectionFactory, Voter {
         _payElection(electionId, _adrs, _shares);
     }
 
-    function getElectionVoted(uint256 electionId) public view returns(uint256 voted) {
+    function getElectionNumVoted(uint256 electionId) public view returns(uint256 voted) {
         for (uint256 i = 0; i < elections[electionId].candidates.length; i++) {
-            if (addressVoted[electionId][elections[electionId].candidates[i]]) {
+            if (_getAddressVoted(electionId, elections[electionId].candidates[i])) {
                 voted++;
             } 
         }
+    }
+
+    function getAddressVoted(uint256 electionId, address _adrs) public view returns(bool) {
+        return _getAddressVoted(electionId, _adrs);
     }
 
     function deposit() public payable {}
