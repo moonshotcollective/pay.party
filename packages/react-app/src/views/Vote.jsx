@@ -171,7 +171,7 @@ export default function Vote({
     qdipHandler
       .castBallot(id, candidates, scores, userSigner)
       .then(success => {
-        console.log("success");
+        console.log("success", success);
         loadElectionState();
       })
       .catch(err => {
@@ -271,7 +271,7 @@ export default function Vote({
   };
 
   const scoreCol = () => {
-    if (electionState.active) {
+    if (electionState.active && candidateScores) {
       return {
         title: "Quadratic Score",
         key: "score",
@@ -281,9 +281,7 @@ export default function Vote({
       return {
         title: "Quadratic Score",
         key: "score",
-        render: (text, record, index) => (
-          <>{Math.floor(candidateMap.get(text.address).score * 10 ** electionScoreFactor)}</>
-        ),
+        render: (text, record, index) => <>{Math.floor(candidateMap.get(text.address).score * 10)}</>,
       };
     }
   };
@@ -396,7 +394,7 @@ export default function Vote({
           <Divider />
           <div>
             {electionState.canVote && electionState.active && (
-              <Button icon={<SendOutlined />} size="large" shape="round" type="primary" onClick={() => castBallot()}>
+              <Button icon={<SendOutlined />} size="large" shape="round" type="primary" onClick={castBallot}>
                 Cast Ballot
               </Button>
             )}

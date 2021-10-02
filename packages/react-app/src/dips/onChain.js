@@ -73,11 +73,34 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
     const numElections = await contract.electionCount();
     console.log({ numElections });
     const newElectionsMap = new Map();
+
     for (let i = 0; i < numElections; i++) {
       const election = await contract.getElection(i);
-
-      const electionVoted = await contract.getElectionVoted(i);
-      const hasVoted = await contract.getAddressVoted(i, address);
+      console.log({ election });
+      let electionEntry = {
+        n_voted: { outOf: election.candidates.length },
+      };
+      let hasVoted = false;
+      if (election.kind === "onChain") {
+        hasVoted = await contract.getAddressVoted(i, address);
+        console.log({ hasVoted });
+        const electionVoted = await contract.getElectionVoted(i);
+        electionEntry.n_voted = {
+          ...electionEntry.n_voted,
+          n_voted: electionVoted.toNumber(),
+        };
+      }
+      if (election.kind === "offChain") {
+        const votedResult = await axios.get(serverUrl + `distribution/${i}/${address}`);
+        hasVoted = votedResult.data.hasVoted;
+        const offChainElectionResult = await axios.get(serverUrl + `distribution/${i}`);
+        const { election: offChainElection } = offChainElectionResult.data;
+        const nVoted = Object.keys(offChainElection.votes).length;
+        electionEntry.n_voted = {
+          ...electionEntry.n_voted,
+          n_voted: nVoted,
+        };
+      }
 
       const tags = [];
       if (election.creator === address) {
@@ -91,30 +114,40 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
       }
       let status = election.active;
       let created = new Date(election.date * 1000).toISOString().substring(0, 10);
-      let electionEntry = {
+      electionEntry = {
+        ...electionEntry,
         id: i,
         created_date: created,
         name: election.name,
         creator: election.creator,
-        n_voted: { n_voted: electionVoted.toNumber(), outOf: election.candidates.length },
         status: status,
         tags: tags,
       };
       newElectionsMap.set(i, electionEntry);
     }
+    console.log(newElectionsMap);
     return newElectionsMap;
   };
 
   const getElectionStateById = async id => {
     let election = {};
     let loadedElection = await readContracts.Diplomat.getElection(id);
+    console.log(loadedElection);
     election = { ...loadedElection };
     election.isPaid = loadedElection.paid;
     election.fundingAmount = fromWei(loadedElection.amount.toString(), "ether");
     election.isCandidate = loadedElection.candidates.includes(address);
     election.isAdmin = loadedElection.creator === address;
-    const votedStatus = await readContracts.Diplomat.addressVoted(id, address);
-    console.log({ votedStatus });
+    let votedStatus = false;
+    console.log(election.kind);
+    if (election.kind === "onChain") {
+      votedStatus = await readContracts.Diplomat.addressVoted(id, address);
+    }
+    if (election.kind === "offChain") {
+      const votedResult = await axios.get(serverUrl + `distribution/${id}/${address}`);
+      const { hasVoted } = votedResult.data;
+      votedStatus = hasVoted;
+    }
     election.canVote = !votedStatus && election.isCandidate;
     return election;
   };

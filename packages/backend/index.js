@@ -102,10 +102,6 @@ const db = admin.firestore();
 // checkWalletBalance();
 
 app.use(cors());
-app.use((req, res, next) => {
-  console.log(req.body);
-  next();
-});
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -115,7 +111,6 @@ app.post("/distributions", async function (request, response) {
   const ip =
     request.headers["x-forwarded-for"] || request.connection.remoteAddress;
   console.log("POST from ip address:", ip);
-  console.log(request.body);
 
   // TODO: add some nonce to avoid replay attacks
   const message = "qdip-create-" + request.body.address;
@@ -272,6 +267,8 @@ app.post(
       request.body.signature
     );
 
+    console.log(recovered, request.body.address);
+
     if (recovered !== request.body.address) {
       console.log("Wrong signature");
       return response.status(401).send("Wrong signature");
@@ -295,6 +292,7 @@ app.post(
       )
       .get();
     const distribution = electionSnapshot.docs[0];
+    console.log(distribution.data());
     const distributionRef = distribution.ref;
 
     const { scores } = request.body;
@@ -308,6 +306,7 @@ app.post(
       request.body.candidates,
       request.params.distributionId
     );
+    console.log(isValidBallot);
     if (!isValidBallot) {
       return response.status(401).send("Invalid ballot");
     }
@@ -373,6 +372,35 @@ app.post(
     }
   }
 );
+
+app.get("/distribution/:distributionId/:address", async (req, res, next) => {
+  const electionSnapshot = await db
+    .collection("distributions")
+    .where("onChainElectionId", "==", parseInt(req.params.distributionId, 10))
+    .get();
+  if (!electionSnapshot || !electionSnapshot.docs[0]) {
+    return res.status(404);
+  }
+  console.log("wtf", electionSnapshot.docs[0].data());
+  const election = electionSnapshot.docs[0].data();
+  const hasVoted = Object.keys(election.votes).some(
+    (voterAddress) => voterAddress === req.params.address
+  );
+  return res.send({ hasVoted });
+});
+
+app.get("/distribution/:distributionId", async (req, res, next) => {
+  const electionSnapshot = await db
+    .collection("distributions")
+    .where("onChainElectionId", "==", parseInt(req.params.distributionId, 10))
+    .get();
+
+  if (!electionSnapshot || !electionSnapshot.docs[0]) {
+    return res.status(404);
+  }
+  const election = electionSnapshot.docs[0].data();
+  return res.send({ election });
+});
 
 if (fs.existsSync("server.key") && fs.existsSync("server.cert")) {
   https
