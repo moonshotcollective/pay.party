@@ -134,7 +134,19 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
     return election;
   };
 
-  const getCandidatesScores = async id => {};
+  const getCandidatesScores = async id => {
+    let loadedElection = await readContracts.Diplomat.getElection(id);
+    const offChainElectionResult = await axios.get(serverUrl + `distribution/${id}`);
+    const { election: offChainElection } = offChainElectionResult.data;
+    // console.log(offChainElection.votes);
+    const scores = [];
+    for (let i = 0; i < loadedElection.candidates.length; i++) {
+      const candidateScore = offChainElection.votes[loadedElection.candidates[i]];
+      console.log({ candidateScore });
+      scores.push(candidateScore);
+    }
+    return scores;
+  };
 
   const getFinalPayout = async id => {};
 
