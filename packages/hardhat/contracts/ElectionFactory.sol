@@ -76,7 +76,7 @@ contract ElectionFactory is Distributor {
         _emitPaidElection(electionId);
     }
 
-    function getElection(uint256 electionId) public view returns (Election memory) {
+    function _getElection(uint256 electionId) internal view returns (Election memory) {
         return elections[electionId];
     }
 

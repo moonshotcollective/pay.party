@@ -1,3 +1,36 @@
+/**                                                                              
+                                            ..                                  
+                                          ,*.                                   
+                                        .**,                                    
+                                       ,***.                                    
+                                 .,.   ,***,                                    
+                               .**,    *****.                                   
+                             .****.    ,*****,                                  
+                           .******,     ,******,                                
+                         .*******.       .********,              .              
+                       ,******.            .*************,,*****.               
+                     ,*****.        ,,.        ,************,.                  
+                  .,****.         ,*****,                                       
+                 ,***,          ,*******,.              ..                      
+               ,**,          .*******,.       ,********.                        
+                           .******,.       .********,                           
+                         .*****,         .*******,                              
+                       ,****,          .******,                                 
+                     ,***,.          .*****,                                    
+                   ,**,.           ./***,                                       
+                  ,,             .***,                                          
+                               .**,                                 
+            __  _______  ____  _   _______ __  ______  ______         
+           /  |/  / __ \/ __ \/ | / / ___// / / / __ \/_  __/         
+          / /|_/ / / / / / / /  |/ /\__ \/ /_/ / / / / / /            
+         / /  / / /_/ / /_/ / /|  /___/ / __  / /_/ / / /             
+        /_/  /_/\____/\____/_/_|_//____/_/_/_/\____/_/_/__    ________
+          / ____/ __ \/ /   / /   / ____/ ____/_  __/  _/ |  / / ____/
+         / /   / / / / /   / /   / __/ / /     / /  / / | | / / __/   
+        / /___/ /_/ / /___/ /___/ /___/ /___  / / _/ /  | |/ / /___   
+        \____/\____/_____/_____/_____/\____/ /_/ /___/  |___/_____/                                                           
+*/
+
 pragma solidity >=0.6.7 <0.9.0;
 pragma experimental ABIEncoderV2;
 //SPDX-License-Identifier: MIT
@@ -69,6 +102,10 @@ contract Diplomat is AccessControl, ElectionFactory, Voter {
         _payElection(electionId, _adrs, _shares);
     }
 
+    function getElection(uint256 electionId) public view returns(Election memory) {
+        return _getElection(electionId);
+    }
+
     function getElectionNumVoted(uint256 electionId) public view returns(uint256 voted) {
         for (uint256 i = 0; i < elections[electionId].candidates.length; i++) {
             if (_getAddressVoted(electionId, elections[electionId].candidates[i])) {
@@ -77,8 +114,12 @@ contract Diplomat is AccessControl, ElectionFactory, Voter {
         }
     }
 
-    function getAddressVoted(uint256 electionId, address _adrs) public view returns(bool) {
-        return _getAddressVoted(electionId, _adrs);
+    function getAddressVoted(uint256 electionId, address _adr) public view returns(bool) {
+        return _getAddressVoted(electionId, _adr);
+    }
+
+    function getElectionAddressScore(uint256 electionId, address _adr) public view returns(uint256 score) {
+        return _getScore(electionId, _adr);
     }
 
     function deposit() public payable {}
