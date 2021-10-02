@@ -98,7 +98,7 @@ contract Diplomat is AccessControl, ElectionFactory, Voter {
         _endElection(electionId);
     }
 
-    function payElection(uint256 electionId, address[] memory _adrs, uint256[] memory _shares) public {
+    function payElection(uint256 electionId, address[] memory _adrs, uint256[] memory _shares) public payable {
         _payElection(electionId, _adrs, _shares);
     }
 
