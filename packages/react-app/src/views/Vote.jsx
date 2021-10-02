@@ -170,8 +170,8 @@ export default function Vote({
     console.log(candidates, scores);
     qdipHandler
       .castBallot(id, candidates, scores, userSigner)
-      .then(success => {
-        console.log("success", success);
+      .then(totalScores => {
+        setCandidateScores(totalScores);
         loadElectionState();
       })
       .catch(err => {

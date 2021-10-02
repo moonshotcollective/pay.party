@@ -80,20 +80,16 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
         address: address,
         candidates: candidates,
         scores: quad_scores,
-        // voteAllocation: voteAllocation,
-        // members: filteredVoters,
         signature: signature,
       })
-      .then(response => {
-        console.log(response);
-        // setCurrentDistribution(response);
-        // setVoters([""]);
-        // setVoteAllocation(0);
-        // setIsSendingTx(false);
-        return response.data.success;
+      .then(async response => {
+        if (response.data && response.data.success) {
+          const totalScores = await getCandidatesScores(id);
+          return totalScores;
+        }
       })
       .catch(e => {
-        console.log("Error on distributions post");
+        console.log("Error on distributions post", e);
       });
   };
 
@@ -158,13 +154,20 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
   };
 
   const getCandidatesScores = async id => {
-    let loadedElection = await readContracts.Diplomat.getElection(id);
+    let onChainElection = await readContracts.Diplomat.getElection(id);
     const offChainElectionResult = await axios.get(serverUrl + `distribution/${id}`);
     const { election: offChainElection } = offChainElectionResult.data;
-    // console.log(offChainElection.votes);
-    const scores = offChainElection.votes[loadedElection.candidates[address]];
+    let totalScores = [];
+    for (const candidateVotes of Object.values(offChainElection.votes)) {
+      candidateVotes.forEach((voteScore, i) => {
+        if (!totalScores[i]) {
+          return totalScores.push(voteScore);
+        }
+        totalScores[i] = totalScores[i] + voteScore;
+      });
+    }
 
-    return scores;
+    return totalScores;
   };
 
   const getFinalPayout = async id => {
