@@ -122,6 +122,10 @@ contract Diplomat is AccessControl, ElectionFactory, Voter {
         return _getScore(electionId, _adr);
     }
 
+    function getElectionScoreTotal(uint256 electionId) public view returns (uint256)  {
+        return _getElectionScoreTotal(electionId);
+    }
+
     function deposit() public payable {}
 
     // payable fallback function

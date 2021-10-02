@@ -84,7 +84,7 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
       if (election.kind === "onChain") {
         hasVoted = await contract.getAddressVoted(i, address);
         console.log({ hasVoted });
-        const electionVoted = await contract.getElectionVoted(i);
+        const electionVoted = await contract.getElectionNumVoted(i);
         electionEntry.n_voted = {
           ...electionEntry.n_voted,
           n_voted: electionVoted.toNumber(),
@@ -141,7 +141,7 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
     let votedStatus = false;
     console.log(election.kind);
     if (election.kind === "onChain") {
-      votedStatus = await readContracts.Diplomat.addressVoted(id, address);
+      votedStatus = await readContracts.Diplomat.getAddressVoted(id, address);
     }
     if (election.kind === "offChain") {
       const votedResult = await axios.get(serverUrl + `distribution/${id}/${address}`);
@@ -157,7 +157,7 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
     console.log(election.candidates);
     const scores = [];
     for (let i = 0; i < election.candidates.length; i++) {
-      const candidateScore = (await readContracts.Voter.getScore(id, election.candidates[i])).toNumber();
+      const candidateScore = (await readContracts.Diplomat.getElectionAddressScore(id, election.candidates[i])).toNumber();
       console.log({ candidateScore });
       scores.push(candidateScore);
     }
@@ -169,10 +169,10 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
     const electionFunding = election.amount;
     const scores = [];
     const payout = [];
-    const scoreSum = await readContracts.Voter.getElectionScoreTotal(id);
+    const scoreSum = await readContracts.Diplomat.getElectionScoreTotal(id);
     console.log({ scoreSum });
     for (let i = 0; i < election.candidates.length; i++) {
-      const candidateScore = (await readContracts.Voter.getScore(id, election.candidates[i])).toNumber();
+      const candidateScore = (await readContracts.Diplomat.getElectionAddressScore(id, election.candidates[i])).toNumber();
       console.log({ candidateScore });
       scores.push(candidateScore);
 
