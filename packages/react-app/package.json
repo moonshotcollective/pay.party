@@ -18,6 +18,7 @@
     "@ant-design/icons": "^4.6.4",
     "@apollo/react-hooks": "^4.0.0",
     "@chakra-ui/color-mode": "^1.1.12",
+    "@chakra-ui/icons": "^1.0.15",
     "@chakra-ui/react": "^1.6.8",
     "@chakra-ui/theme-tools": "^1.2.1",
     "@emotion/cache": "^11.4.0",

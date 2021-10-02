@@ -13,7 +13,7 @@ import { Transactor } from "./helpers";
 import { useBalance, useContractReader, useGasPrice, useOnBlock, useUserProviderAndSigner } from "eth-hooks";
 import { useEventListener } from "eth-hooks/events/useEventListener";
 import { useExchangeEthPrice } from "eth-hooks/dapps/dex";
-import { Home, Reward, Vote, Create } from "./views";
+import { Home, Reward, Vote, Create, MockHome, MockCreate } from "./views";
 
 import { useContractConfig, useContractLoader } from "./hooks";
 import Portis from "@portis/web3";
@@ -487,6 +487,24 @@ function App(props) {
               address={address}
               blockExplorer={blockExplorer}
               contractConfig={contractConfig}
+            />
+          </Route>
+          <Route exact path="/mockhome">
+            <MockHome
+              address={address}
+              tx={tx}
+              readContracts={readContracts}
+              writeContracts={writeContracts}
+              mainnetProvider={mainnetProvider}
+            />
+          </Route>
+          <Route exact path="/mockcreate">
+            <MockCreate
+              address={address}
+              tx={tx}
+              readContracts={readContracts}
+              writeContracts={writeContracts}
+              mainnetProvider={mainnetProvider}
             />
           </Route>
         </Switch>
