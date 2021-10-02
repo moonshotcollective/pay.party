@@ -46,6 +46,26 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
 
   const endElection = async id => {
     console.log(`Ending election`, id);
+    const message = "qdip-finish-" + id + address;
+    console.log("Message:" + message);
+    let signature = await userSigner.provider.send("personal_sign", [message, address]);
+    // console.log(signature);
+    return axios
+      .post(serverUrl + "distributions/" + id + "/finish", {
+        address: address,
+      })
+      .then(response => {
+        // console.log(response);
+        if (response.status == 200) {
+          return response.statusText;
+        } else {
+          throw response;
+        }
+      })
+      .catch(e => {
+        console.log("Error on 'endElection' distributions post");
+        throw e;
+      });
   };
 
   const castBallot = async (id, candidates, quad_scores) => {
@@ -128,15 +148,59 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
     election.fundingAmount = fromWei(loadedElection.amount.toString(), "ether");
     election.isCandidate = loadedElection.candidates.includes(address);
     election.isAdmin = loadedElection.creator === address;
-    const votedResult = await axios.get(serverUrl + `distribution/${id}/${address}`);
-    const { hasVoted } = votedResult.data;
+
+    const votedResult = await axios.get(serverUrl + `distribution/state/${id}/${address}`);
+    const { hasVoted, isActive } = votedResult.data;
     election.canVote = !hasVoted && election.isCandidate;
+    console.log({ isActive });
+    election.active = isActive;
     return election;
   };
 
-  const getCandidatesScores = async id => {};
+  const getCandidatesScores = async id => {
+    let loadedElection = await readContracts.Diplomat.getElection(id);
+    const offChainElectionResult = await axios.get(serverUrl + `distribution/${id}`);
+    const { election: offChainElection } = offChainElectionResult.data;
+    // console.log(offChainElection.votes);
+    const scores = offChainElection.votes[loadedElection.candidates[address]];
 
-  const getFinalPayout = async id => {};
+    return scores;
+  };
+
+  const getFinalPayout = async id => {
+    const election = await readContracts.Diplomat.getElection(id);
+    const electionFunding = election.amount;
+    const offChainElectionResult = await axios.get(serverUrl + `distribution/${id}`);
+    const { election: offChainElection } = offChainElectionResult.data;
+
+    let scores = [];
+    let payout = [];
+    let scoreSum = 0;
+    for (let i = 0; i < election.candidates.length; i++) {
+      const candidateScore = offChainElection.votes[election.candidates[i]];
+      console.log({ candidateScore });
+      if (!candidateScore) {
+        scores.push(candidateScore);
+        scoreSum += candidateScore;
+      } else {
+        scores.push(0);
+      }
+    }
+
+    for (let i = 0; i < scores.length; i++) {
+      const candidatePay = Math.floor((scores[i] / scoreSum) * electionFunding);
+      if (!isNaN(candidatePay)) {
+        payout.push(fromWei(candidatePay.toString()));
+      } else {
+        payout.push(0);
+      }
+    }
+    return {
+      scores: scores,
+      payout: payout,
+      scoreSum: scoreSum,
+    };
+  };
 
   const distributeEth = async (id, adrs, weiDist, totalValueInWei) => {};
 
