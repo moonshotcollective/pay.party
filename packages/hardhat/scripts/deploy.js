@@ -26,12 +26,12 @@ And learn more here: https://www.npmjs.com/package/hardhat-deploy
 const main = async () => {
   console.log("\n\n 📡 Deploying...\n");
 
-  const yourContract = await deploy("YourContract"); // <-- add in constructor args like line 19 vvvv
+  // const yourContract = await deploy("YourContract"); // <-- add in constructor args like line 19 vvvv
   // use for local token bridging
   // const mockToken = await deploy("MockERC20") // <-- add in constructor args like line 19 vvvv
 
-  //const yourContract = await ethers.getContractAt('YourContract', "0xaAC799eC2d00C013f1F11c37E654e59B0429DF6A") //<-- if you want to instantiate a version of a contract at a specific address!
-  //const secondContract = await deploy("SecondContract")
+  // const yourContract = await ethers.getContractAt('YourContract', "0xaAC799eC2d00C013f1F11c37E654e59B0429DF6A") //<-- if you want to instantiate a version of a contract at a specific address!
+  // const secondContract = await deploy("SecondContract")
 
   // const exampleToken = await deploy("ExampleToken")
   // const examplePriceOracle = await deploy("ExamplePriceOracle")
@@ -61,7 +61,7 @@ const main = async () => {
   });
   */
 
-  //If you want to verify your contract on tenderly.co (see setup details in the scaffold-eth README!)
+  // If you want to verify your contract on tenderly.co (see setup details in the scaffold-eth README!)
   /*
   await tenderlyVerify(
     {contractName: "YourContract",
