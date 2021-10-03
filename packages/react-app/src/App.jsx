@@ -75,6 +75,7 @@ const localProviderUrl = targetNetwork.rpcUrl;
 const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl;
 if (DEBUG) console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
 const localProvider = new ethers.providers.StaticJsonRpcProvider(localProviderUrlFromEnv);
+console.log({ localProvider });
 
 // 🔭 block explorer URL
 export const blockExplorer = targetNetwork.blockExplorer;

@@ -50,6 +50,7 @@ export default function Vote({
   const [token, setToken] = useState("ETH");
   const [spender, setSpender] = useState("");
   const [availableTokens, setAvailableTokens] = useState([]);
+  const [isPaying, setIsPaying] = useState(false);
 
   /***** Effects *****/
   useEffect(() => {
@@ -90,6 +91,9 @@ export default function Vote({
   const init = async () => {
     const election = await readContracts.Diplomat.getElection(id);
     console.log({ election });
+    if (election.token == "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984") {
+      setToken("UNI");
+    }
     // setSelectedQdip();
     setQdipHandler(
       dips[election.kind].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner),
@@ -167,13 +171,13 @@ export default function Vote({
     const candidates = Array.from(candidateMap.keys());
     const scores = [];
     candidateMap.forEach(d => {
-      scores.push(Math.floor(d.score * 10));
+      scores.push(Math.floor(d.score * 100));
     });
     console.log(candidates, scores);
     qdipHandler
       .castBallot(id, candidates, scores, userSigner)
-      .then(success => {
-        console.log("success");
+      .then(totalScores => {
+        setCandidateScores(totalScores);
         loadElectionState();
       })
       .catch(err => {
@@ -199,12 +203,12 @@ export default function Vote({
         setIsElectionEnding(false);
       })
       .catch(err => {
+        console.log("err endElection", err);
         setIsElectionEnding(false);
       });
   };
 
   const ethPayHandler = () => {
-    // setIsElectionPaying(true);
     const adrs = Array.from(candidateMap.keys());
     const totalValueInWei = toWei(electionState.fundingAmount);
     //convert payout to wei
@@ -226,14 +230,13 @@ export default function Vote({
   };
 
   const tokenPayHandler = async opts => {
-    setIsElectionPaying(true);
-    console.log(opts);
-    console.log({ payoutInfo });
-    const election = await readContracts.Diplomat.getElectionById(id);
+    const adrs = Array.from(candidateMap.keys());
+    //convert payout to wei
+    let payoutInWei = finalPayout.payout.map(p => toWei(p));
+    const election = await readContracts.Diplomat.getElection(id);
     console.log({ election });
-
     tx(
-      writeContracts.Diplomat.payoutElection(id, payoutInfo.candidates, payoutInfo.payout, {
+      writeContracts.Diplomat.payElection(id, adrs, payoutInWei, {
         gasLimit: 12450000,
       }),
     );
@@ -273,7 +276,7 @@ export default function Vote({
   };
 
   const scoreCol = () => {
-    if (electionState.active) {
+    if (electionState.active && candidateScores) {
       return {
         title: "Quadratic Score",
         key: "score",
@@ -283,9 +286,7 @@ export default function Vote({
       return {
         title: "Quadratic Score",
         key: "score",
-        render: (text, record, index) => (
-          <>{Math.floor(candidateMap.get(text.address).score * 10 ** electionScoreFactor)}</>
-        ),
+        render: (text, record, index) => <>{Math.floor(candidateMap.get(text.address).score * 10)}</>,
       };
     }
   };
@@ -398,7 +399,7 @@ export default function Vote({
           <Divider />
           <div>
             {electionState.canVote && electionState.active && (
-              <Button icon={<SendOutlined />} size="large" shape="round" type="primary" onClick={() => castBallot()}>
+              <Button icon={<SendOutlined />} size="large" shape="round" type="primary" onClick={castBallot}>
                 Cast Ballot
               </Button>
             )}

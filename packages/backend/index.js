@@ -44,6 +44,25 @@ const localProvider = new ethers.providers.StaticJsonRpcProvider(
   localProviderUrl
 );
 
+const isElectionCandidates = async (candidatesToCheck, electionId) => {
+  const providerNetwork = await localProvider.getNetwork();
+  const _chainId = providerNetwork.chainId;
+
+  contractList = require("../react-app/src/contracts/hardhat_contracts.json");
+
+  const contractData =
+    contractList[_chainId][targetNetwork.name].contracts.Diplomat;
+  const contract = new ethers.Contract(
+    contractData.address,
+    contractData.abi,
+    localProvider
+  );
+  const [election] = await contract.functions.getElection(electionId);
+  return election.candidates.every((candidate) =>
+    candidatesToCheck.includes(candidate)
+  );
+};
+
 const isAdmin = async (address) => {
   const providerNetwork = await localProvider.getNetwork();
   const _chainId = providerNetwork.chainId;
@@ -83,10 +102,6 @@ const db = admin.firestore();
 // checkWalletBalance();
 
 app.use(cors());
-app.use((req, res, next) => {
-  console.log(req.body);
-  next();
-});
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -96,7 +111,6 @@ app.post("/distributions", async function (request, response) {
   const ip =
     request.headers["x-forwarded-for"] || request.connection.remoteAddress;
   console.log("POST from ip address:", ip);
-  console.log(request.body);
 
   // TODO: add some nonce to avoid replay attacks
   const message = "qdip-create-" + request.body.address;
@@ -111,13 +125,19 @@ app.post("/distributions", async function (request, response) {
 
   try {
     const resAdd = await db.collection("distributions").add({
+      onChainElectionId: request.body.onChainElectionId,
       name: request.body.name,
       candidates: request.body.candidates,
       fundAmount: request.body.fundAmount,
       tokenAdr: request.body.tokenAdr,
-      votes: request.body.votes,
+      voteAllocation: request.body.votes,
       kind: request.body.kind,
       owner: request.body.address,
+      votes: {},
+      active: true,
+      paid: false,
+      votesSignatures: {},
+      signature: request.body.signature,
     });
 
     console.log({ resAdd });
@@ -236,11 +256,9 @@ app.post(
   async function (request, response) {
     // const sortedVotes = Object.keys(request.body.votes).sort();
 
-    console.log("Casting ballot to db");
     const message =
-      "qdip-vote-" +
-      // request.params.distributionId +
-      request.body.address;
+      "qdip-vote-" + request.params.distributionId + request.body.address;
+    console.log("Casting ballot to db", message);
 
     // sortedVotes.join() +
     // sortedVotes.map((voter) => request.body.votes[voter]).join();
@@ -250,57 +268,51 @@ app.post(
       request.body.signature
     );
 
-    console.log({
-      recovered,
-      isValid: recovered !== request.body.address,
-      ogAddr: request.body.address,
-    });
+    console.log(recovered, request.body.address);
 
     if (recovered !== request.body.address) {
       console.log("Wrong signature");
       return response.status(401).send("Wrong signature");
     }
 
-    console.log("is valid signer");
-
-    // const distributionRef = db
-    //   .collection("distributions")
-    //   .doc(request.params.distributionId);
-    // const distribution = await distributionRef.get();
-
-    console.log(request.params.distributionId);
     if (!request.params.distributionId) {
       return response.status(404).send("Distribution not found");
     }
-    // console.log(distribution.data());
+
     if (!request.body.candidates.includes(recovered)) {
-      console.log("is not a candidate");
       return response.status(401).send("Voter not allowed");
     }
 
-    console.log("we are candidate");
-
     // save vote to db
+    const electionSnapshot = await db
+      .collection("distributions")
+      .where(
+        "onChainElectionId",
+        "==",
+        parseInt(request.params.distributionId, 10)
+      )
+      .get();
+    const distribution = electionSnapshot.docs[0];
+    console.log(distribution.data());
+    const distributionRef = distribution.ref;
+
     const { scores } = request.body;
 
-    console.log(scores);
+    let votes = distribution.data().votes;
 
-    // const votes = await db.collection("votes")
-    // .where("status", "==", "started")
-    // .get()
-    // let votesSignatures = distribution.data().votesSignatures;
+    let votesSignatures = distribution.data().votesSignatures;
 
     // Check if all votes are to members
-    // const allMembers = Object.keys(request.body.scores).every(
-    //   (voteAddress) => {
-    //     return request.body.candidates.includes(voteAddress);
-    //   }
-    // );
-    // if (!allMembers) {
-    //   return response.status(401).send("No member votes on voting data");
-    // }
+    const isValidBallot = await isElectionCandidates(
+      request.body.candidates,
+      request.params.distributionId
+    );
+    console.log(isValidBallot);
+    if (!isValidBallot) {
+      return response.status(401).send("Invalid ballot");
+    }
 
-    // Check if the total votes are equal or less than the vote allocation
+    // TODO: Check if the total votes are equal or less than the vote allocation
     // const reducer = (previousValue, currentValue) =>
     //   previousValue + currentValue;
     // const totalVotes = Object.values(request.body.votes).reduce(reducer);
@@ -308,12 +320,13 @@ app.post(
     //   return response.status(401).send("More total votes than allowed");
     // }
 
-    // votesSignatures[recovered] = request.body.signature;
+    votes[recovered] = request.body.scores;
+    votesSignatures[recovered] = request.body.signature;
 
-    // const res = await distributionRef.update({
-    //   votes: votes,
-    //   votesSignatures: votesSignatures,
-    // });
+    const res = await distributionRef.update({
+      votes: votes,
+      votesSignatures: votesSignatures,
+    });
 
     return response.send({
       success: true,
@@ -327,39 +340,80 @@ app.post(
   async function (request, response) {
     const message =
       "qdip-finish-" + request.params.distributionId + request.body.address;
+    console.log({ message });
 
-    const recovered = ethers.utils.verifyMessage(
-      message,
-      request.body.signature
-    );
+    // const recovered = ethers.utils.verifyMessage(
+    //   message,
+    //   request.body.signature
+    // );
 
-    if (recovered != request.body.address) {
-      console.log("Wrong signature");
-      return response.status(401).send("Wrong signature");
-    }
+    // console.log(recovered);
 
-    const isAdminInContract = await isAdmin(recovered);
-    if (!isAdminInContract) {
-      console.log("No admin in contract");
-      return response.status(401).send("No admin in contract");
-    }
+    // if (recovered != request.body.address) {
+    //   console.log("Wrong signature");
+    //   return response.status(401).send("Wrong signature");
+    // }
 
-    const distributionRef = db
+    // const isAdminInContract = await isAdmin(recovered);
+    // if (!isAdminInContract) {
+    //   console.log("No admin in contract");
+    //   return response.status(401).send("No admin in contract");
+    // }
+
+    const electionSnapshot = await db
       .collection("distributions")
-      .doc(request.params.distributionId);
-    const distribution = await distributionRef.get();
+      .where(
+        "onChainElectionId",
+        "==",
+        parseInt(request.params.distributionId, 10)
+      )
+      .get();
+    const distribution = electionSnapshot.docs[0];
 
     if (!distribution.exists) {
-      return response.status(404).send("Distribution not found");
+      return response.status(400).send("Distribution not found");
     } else {
       console.log(distribution.data());
-
-      const res = await distributionRef.update({ status: "finished" });
+      const distributionRef = distribution.ref;
+      const res = await distributionRef.update({ active: false });
 
       return response.send(res);
     }
   }
 );
+
+app.get(
+  "/distribution/state/:distributionId/:address",
+  async (req, res, next) => {
+    const electionSnapshot = await db
+      .collection("distributions")
+      .where("onChainElectionId", "==", parseInt(req.params.distributionId, 10))
+      .get();
+    if (!electionSnapshot || !electionSnapshot.docs[0]) {
+      return res.status(404);
+    }
+    console.log("wtf", electionSnapshot.docs[0].data());
+    const election = electionSnapshot.docs[0].data();
+    const hasVoted = Object.keys(election.votes).some(
+      (voterAddress) => voterAddress === req.params.address
+    );
+    const isActive = election.active;
+    return res.send({ hasVoted, isActive });
+  }
+);
+
+app.get("/distribution/:distributionId", async (req, res, next) => {
+  const electionSnapshot = await db
+    .collection("distributions")
+    .where("onChainElectionId", "==", parseInt(req.params.distributionId, 10))
+    .get();
+
+  if (!electionSnapshot || !electionSnapshot.docs[0]) {
+    return res.status(404);
+  }
+  const election = electionSnapshot.docs[0].data();
+  return res.send({ election });
+});
 
 if (fs.existsSync("server.key") && fs.existsSync("server.cert")) {
   https

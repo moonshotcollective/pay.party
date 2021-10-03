@@ -113,8 +113,7 @@ contract Distributor {
                     // transfer ETH otherwise (we do not care if the transfer is successful 
                     // or not, as this would block all other transfers)
                     // NOTE: add re-entrancy guard for this ^ 
-                    (bool ok, ) = users[i].call{value: shares[i]}("");
-                    require(ok, "Failed Election ETH Payout");
+                    users[i].call{value: shares[i]}("");
                 }
             }
         }

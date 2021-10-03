@@ -20,6 +20,7 @@ import {
   PlusOutlined,
   UserDeleteOutlined,
   LinkOutlined,
+  CopyTwoTone,
 } from "@ant-design/icons";
 // import { HStack, Button } from "@chakra-ui/react";
 
@@ -57,11 +58,15 @@ export default function Home({ tx, readContracts, writeContracts, mainnetProvide
     }
   }, [readContracts, address]);
 
-  useEffect(async () => {
-    if (qdipHandler) {
-      let electionsMap = await qdipHandler.getElections();
-      setElectionsMap(electionsMap);
-    }
+  useEffect(() => {
+    (async () => {
+      if (qdipHandler) {
+        console.log("get elections");
+        let electionsMap = await qdipHandler.getElections();
+        console.log(electionsMap);
+        setElectionsMap(electionsMap);
+      }
+    })();
   }, [qdipHandler]);
 
   /***** Methods *****/

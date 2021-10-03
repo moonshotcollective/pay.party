@@ -4,9 +4,9 @@ import "./Distributor.sol";
 
 contract ElectionFactory is Distributor {
 
-    event NewElection(uint256 electionId); 
-    event EndedElection(uint256 electionId);
-    event PaidElection(uint256 electionId);
+    event NewElection(uint256 electionId, address sender); 
+    event EndedElection(uint256 electionId, address sender);
+    event PaidElection(uint256 electionId, address sender);
     
     struct Election {
         address creator;
@@ -24,15 +24,15 @@ contract ElectionFactory is Distributor {
     mapping(uint256 => Election) public elections;
 
     function _emitNewElection(uint256 electionId) internal {
-        emit NewElection(electionId);
+        emit NewElection(electionId, msg.sender);
     }
 
     function _emitEndedElection(uint256 electionId) internal {
-        emit EndedElection(electionId);
+        emit EndedElection(electionId, msg.sender);
     }
 
     function _emitPaidElection(uint256 electionId) internal {
-        emit PaidElection(electionId);
+        emit PaidElection(electionId, msg.sender);
     }
 
     function _createElection(
@@ -56,7 +56,7 @@ contract ElectionFactory is Distributor {
             active: true, 
             paid: false
         });
-        _emitNewElection(block.number);
+        _emitNewElection(electionId);
     }
 
     function _endElection(uint256 electionId) 
@@ -76,7 +76,7 @@ contract ElectionFactory is Distributor {
         _emitPaidElection(electionId);
     }
 
-    function getElection(uint256 electionId) public view returns (Election memory) {
+    function _getElection(uint256 electionId) internal view returns (Election memory) {
         return elections[electionId];
     }
 

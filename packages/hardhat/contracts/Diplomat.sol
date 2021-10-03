@@ -1,3 +1,36 @@
+/**                                                                              
+                                            ..                                  
+                                          ,*.                                   
+                                        .**,                                    
+                                       ,***.                                    
+                                 .,.   ,***,                                    
+                               .**,    *****.                                   
+                             .****.    ,*****,                                  
+                           .******,     ,******,                                
+                         .*******.       .********,              .              
+                       ,******.            .*************,,*****.               
+                     ,*****.        ,,.        ,************,.                  
+                  .,****.         ,*****,                                       
+                 ,***,          ,*******,.              ..                      
+               ,**,          .*******,.       ,********.                        
+                           .******,.       .********,                           
+                         .*****,         .*******,                              
+                       ,****,          .******,                                 
+                     ,***,.          .*****,                                    
+                   ,**,.           ./***,                                       
+                  ,,             .***,                                          
+                               .**,                                 
+            __  _______  ____  _   _______ __  ______  ______         
+           /  |/  / __ \/ __ \/ | / / ___// / / / __ \/_  __/         
+          / /|_/ / / / / / / /  |/ /\__ \/ /_/ / / / / / /            
+         / /  / / /_/ / /_/ / /|  /___/ / __  / /_/ / / /             
+        /_/  /_/\____/\____/_/_|_//____/_/_/_/\____/_/_/__    ________
+          / ____/ __ \/ /   / /   / ____/ ____/_  __/  _/ |  / / ____/
+         / /   / / / / /   / /   / __/ / /     / /  / / | | / / __/   
+        / /___/ /_/ / /___/ /___/ /___/ /___  / / _/ /  | |/ / /___   
+        \____/\____/_____/_____/_____/\____/ /_/ /___/  |___/_____/                                                           
+*/
+
 pragma solidity >=0.6.7 <0.9.0;
 pragma experimental ABIEncoderV2;
 //SPDX-License-Identifier: MIT
@@ -49,10 +82,11 @@ contract Diplomat is AccessControl, ElectionFactory, Voter {
         address _token, 
         int16 _votes, 
         string memory _kind
-    ) public {
+    ) public returns (uint256 electionId) {
         // NOTE: Using electionCount as ID
         _createElection(electionCount, _name, _candidates, _amount, _token, _votes, _kind);
         electionCount++;
+		return electionCount;
     }
 
     // On Chain voting
@@ -64,16 +98,32 @@ contract Diplomat is AccessControl, ElectionFactory, Voter {
         _endElection(electionId);
     }
 
-    function payElection(uint256 electionId, address[] memory _adrs, uint256[] memory _shares) public {
+    function payElection(uint256 electionId, address[] memory _adrs, uint256[] memory _shares) public payable {
         _payElection(electionId, _adrs, _shares);
     }
 
-    function getElectionVoted(uint256 electionId) public view returns(uint256 voted) {
+    function getElection(uint256 electionId) public view returns(Election memory) {
+        return _getElection(electionId);
+    }
+
+    function getElectionNumVoted(uint256 electionId) public view returns(uint256 voted) {
         for (uint256 i = 0; i < elections[electionId].candidates.length; i++) {
-            if (addressVoted[electionId][elections[electionId].candidates[i]]) {
+            if (_getAddressVoted(electionId, elections[electionId].candidates[i])) {
                 voted++;
             } 
         }
+    }
+
+    function getAddressVoted(uint256 electionId, address _adr) public view returns(bool) {
+        return _getAddressVoted(electionId, _adr);
+    }
+
+    function getElectionAddressScore(uint256 electionId, address _adr) public view returns(uint256 score) {
+        return _getScore(electionId, _adr);
+    }
+
+    function getElectionScoreTotal(uint256 electionId) public view returns (uint256)  {
+        return _getElectionScoreTotal(electionId);
     }
 
     function deposit() public payable {}
