@@ -1,17 +1,5 @@
 import { useColorModeValue } from "@chakra-ui/color-mode";
-import {
-  Avatar,
-  Divider,
-  Heading,
-  Table,
-  Tbody,
-  Td,
-  Text,
-  Th,
-  Thead,
-  Tr,
-  VStack,
-} from "@chakra-ui/react";
+import { Avatar, Divider, Heading, Table, Tbody, Td, Text, Th, Thead, Tr, VStack } from "@chakra-ui/react";
 
 function DistributionCard() {
   const headingColor = useColorModeValue("yellow.600", "yellow.500");
@@ -43,8 +31,8 @@ function DistributionCard() {
             </Tr>
           </Thead>
           <Tbody>
-            {members.map((member) => (
-              <Tr>
+            {members.map(member => (
+              <Tr key={member.address}>
                 <Td>
                   <Text>
                     <Avatar

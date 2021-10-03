@@ -1,7 +1,7 @@
 import { Avatar, Box, Button, Heading, Text } from "@chakra-ui/react";
 import { useHistory } from "react-router-dom";
 
-function ElectionCard({ id, name, owner, voted, status, createdAt, amount }) {
+function ElectionCard({ id, name, owner, voted, active, createdAt, amount }) {
   const routeHistory = useHistory();
 
   function openElection() {
@@ -22,7 +22,7 @@ function ElectionCard({ id, name, owner, voted, status, createdAt, amount }) {
         This is an election description that is maximum 2 lines long
       </Text>
       <Text color="violet.50" fontSize="1rem">
-        {amount} ETH {voted} voted {status ? "Active" : "Inactive"}
+        {amount} ETH {voted} voted {active ? "Active" : "Inactive"}
       </Text>
       <Text color="violet.50" pb="2rem" fontSize="1rem">
         Created on {createdAt}

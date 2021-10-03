@@ -7,7 +7,7 @@ import { Address, PayButton } from "../components";
 import { PlusSquareOutlined, MinusSquareOutlined, SendOutlined, CloseCircleOutlined } from "@ant-design/icons";
 
 import { CenteredFrame } from "../components/layout";
-import dips from "../dips";
+import { handlers } from "../dips";
 
 const { Text } = Typography;
 
@@ -96,7 +96,7 @@ export default function Vote({
     }
     // setSelectedQdip();
     setQdipHandler(
-      dips[election.kind].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner),
+      handlers[election.kind].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner),
     );
     setSpender(readContracts?.Diplomat?.address);
     // loadERC20List();

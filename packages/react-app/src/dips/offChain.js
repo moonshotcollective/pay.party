@@ -139,10 +139,10 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
     for (let i = 0; i < numElections; i++) {
       const election = await contract.getElection(i);
 
-      const votedResult = await axios.get(serverUrl + `distribution/${id}/${address}`);
+      const votedResult = await axios.get(serverUrl + `distribution/${i}/${address}`);
       const { hasVoted } = votedResult.data;
 
-      const offChainElectionResult = await axios.get(serverUrl + `distribution/${id}`);
+      const offChainElectionResult = await axios.get(serverUrl + `distribution/${i}`);
       const { election: offChainElection } = offChainElectionResult.data;
       console.log({ offChainElection });
       const nVoted = Object.keys(offChainElection.votes).length + 1;
@@ -157,7 +157,6 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
       if (hasVoted) {
         tags.push("voted");
       }
-      let status = election.active;
       let created = new Date(election.date * 1000).toISOString().substring(0, 10);
       let electionEntry = {
         id: i,
@@ -165,7 +164,7 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
         name: election.name,
         creator: election.creator,
         n_voted: { n_voted: nVoted, outOf: election.candidates.length },
-        status: status,
+        active: election.active,
         tags: tags,
       };
       newElectionsMap.set(i, electionEntry);
@@ -175,20 +174,78 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
   };
 
   const getElectionStateById = async id => {
-    let election = {};
-    let loadedElection = await readContracts.Diplomat.getElection(id);
-    election = { ...loadedElection };
-    election.isPaid = loadedElection.paid;
-    election.fundingAmount = fromWei(loadedElection.amount.toString(), "ether");
-    election.isCandidate = loadedElection.candidates.includes(address);
-    election.isAdmin = loadedElection.creator === address;
+    // let election = {};
+    let election = await readContracts.Diplomat.getElection(id);
+    // election = { ...loadedElection };
+    // election.isPaid = loadedElection.paid;
+    // election.fundingAmount = fromWei(loadedElection.amount.toString(), "ether");
+    // election.isCandidate = loadedElection.candidates.includes(address);
+    // election.isAdmin = loadedElection.creator === address;
 
-    const votedResult = await axios.get(serverUrl + `distribution/state/${id}/${address}`);
-    const { hasVoted, isActive } = votedResult.data;
-    election.canVote = !hasVoted && election.isCandidate;
-    console.log({ isActive });
-    election.active = isActive;
-    return election;
+    // const votedResult = await axios.get(serverUrl + `distribution/state/${id}/${address}`);
+    // const { hasVoted, isActive } = votedResult.data;
+    // election.canVote = !hasVoted && election.isCandidate;
+    // console.log({ isActive });
+    // election.active = isActive;
+    // const electionTest = await contract.getElection(id);
+    // console.log({ election });
+    let electionEntry = {
+      n_voted: { outOf: election.candidates.length },
+    };
+    let hasVoted = false;
+    let isActive = false;
+    if (election.kind === "onChain") {
+      hasVoted = await contract.getAddressVoted(id, address);
+      isActive = election.active;
+      console.log({ hasVoted });
+      const electionVoted = await contract.getElectionNumVoted(id);
+      electionEntry.n_voted = {
+        ...electionEntry.n_voted,
+        n_voted: electionVoted.toNumber(),
+      };
+    }
+    if (election.kind === "offChain") {
+      const votedResult = await axios.get(serverUrl + `distribution/state/${id}/${address}`);
+      hasVoted = votedResult.data.hasVoted;
+      isActive = votedResult.data.isActive;
+      const offChainElectionResult = await axios.get(serverUrl + `distribution/${id}`);
+      const { election: offChainElection } = offChainElectionResult.data;
+      const nVoted = Object.keys(offChainElection.votes).length;
+      electionEntry.n_voted = {
+        ...electionEntry.n_voted,
+        n_voted: nVoted,
+      };
+    }
+
+    const tags = [];
+    if (election.creator === address) {
+      tags.push("admin");
+    }
+    if (election.candidates.includes(address)) {
+      tags.push("candidate");
+    }
+    if (hasVoted) {
+      tags.push("voted");
+    }
+    const created = new Date(election.date * 1000).toISOString().substring(0, 10);
+    const isCandidate = election.candidates.includes(address);
+    const formattedElection = {
+      ...electionEntry,
+      id: id,
+      created_date: created,
+      isPaid: election.paid,
+      isCandidate,
+      isAdmin: election.creator === address,
+      name: election.name,
+      voteAllocation: election.votes,
+      canVote: !hasVoted && isCandidate,
+      amount: fromWei(election.amount.toString(), "ether"),
+      creator: election.creator,
+      active: isActive,
+      tags: tags,
+      candidates: election.candidates,
+    };
+    return formattedElection;
   };
 
   const getCandidatesScores = async id => {

@@ -4,3 +4,4 @@ export { default as Reward } from "./Reward";
 export { default as Create } from "./Create";
 export { default as MockHome } from "./MockHome";
 export { default as MockCreate } from "./MockCreate";
+export { default as MockElection } from "./MockElection";

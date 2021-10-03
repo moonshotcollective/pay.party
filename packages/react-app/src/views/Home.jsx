@@ -26,7 +26,8 @@ import {
 
 import { CenteredFrame } from "../components/layout";
 import { Address, AddressInput } from "../components";
-import dips from "../dips";
+import { handlers } from "../dips";
+
 import { mainnetProvider, blockExplorer } from "../App";
 
 export default function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {

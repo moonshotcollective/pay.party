@@ -30,7 +30,7 @@ import { useHistory } from "react-router-dom";
 import QRCodeIcon from "../components/Icons/QRCodeIcon";
 import { ControllerPlus } from "../components/Inputs/ControllerPlus";
 import CenteredFrame from "../components/layout/CenteredFrame";
-import dips from "../dips";
+import { handlers } from "../dips";
 
 const CreateElectionPage = ({
   address,
@@ -91,7 +91,9 @@ const CreateElectionPage = ({
 
   useEffect(() => {
     console.log(selectedQdip);
-    setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner));
+    setQdipHandler(
+      handlers[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner),
+    );
   }, [selectedQdip]);
 
   useEffect(() => {
@@ -106,7 +108,9 @@ const CreateElectionPage = ({
   };
 
   const init = async () => {
-    setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner));
+    setQdipHandler(
+      handlers[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner),
+    );
   };
 
   const onSubmit = async values => {
@@ -122,7 +126,7 @@ const CreateElectionPage = ({
         return fValues;
       }
       if (currentKey === "funds") {
-        // TODO: handle other tokens
+        // TODO: handle other tokens & display election kind
         if (currentValue === "ETH") {
           fValues.tokenAdr = "0x0000000000000000000000000000000000000000";
           return fValues;

@@ -2,14 +2,13 @@ import React from "react";
 import { HStack, Button, Input, useNumberInput } from "@chakra-ui/react";
 
 function VoteInput() {
-  const { getInputProps, getIncrementButtonProps, getDecrementButtonProps } =
-    useNumberInput({
-      step: 1,
-      defaultValue: 0,
-      min: 0,
-      max: 6,
-      precision: 0,
-    });
+  const { getInputProps, getIncrementButtonProps, getDecrementButtonProps } = useNumberInput({
+    step: 1,
+    defaultValue: 0,
+    min: 0,
+    max: 6,
+    precision: 0,
+  });
 
   const inc = getIncrementButtonProps();
   const dec = getDecrementButtonProps();

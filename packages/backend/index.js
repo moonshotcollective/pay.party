@@ -172,7 +172,7 @@ app.get("/distributions", async function (request, response) {
 app.get("/currentDistribution", async function (request, response) {
   try {
     db.collection("distributions")
-      .where("status", "==", "started")
+      .where("active", "==", true)
       .get()
       .then((snapshot) => {
         if (!snapshot.empty) {

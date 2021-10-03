@@ -1,7 +1,7 @@
 import { Button } from "@chakra-ui/button";
 import { AddIcon } from "@chakra-ui/icons";
-import { Box, Heading, HStack, SimpleGrid } from "@chakra-ui/layout";
-import { Tab, TabList, TabPanel, TabPanels, Tabs, Text } from "@chakra-ui/react";
+import { Box, Flex, Heading, HStack, SimpleGrid } from "@chakra-ui/layout";
+import { Tab, TabList, TabPanel, TabPanels, Spinner, Tabs, Text } from "@chakra-ui/react";
 import { useColorModeValue } from "@chakra-ui/color-mode";
 import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
@@ -11,9 +11,10 @@ import Container from "../components/layout/Container";
 import TabListItem from "../components/Tabs/TabListItem";
 import ElectionCard from "../components/Cards/ElectionCard";
 
-import dips from "../dips";
+import { handlers } from "../dips";
 import { serverUrl } from "../dips/offChain";
 import { fromWei, toBN } from "web3-utils";
+import CenteredFrame from "../components/layout/CenteredFrame";
 
 function MockHome({ tx, readContracts, writeContracts, mainnetProvider, address }) {
   /***** Routes *****/
@@ -23,7 +24,7 @@ function MockHome({ tx, readContracts, writeContracts, mainnetProvider, address 
   const [selectedQdip, setSelectedQdip] = useState("onChain");
   const [qdipHandler, setQdipHandler] = useState();
   const [electionsMap, setElectionsMap] = useState();
-  const [tableDataLoading, setTableDataLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const viewElection = record => {
     // console.log({ record });
@@ -45,6 +46,7 @@ function MockHome({ tx, readContracts, writeContracts, mainnetProvider, address 
   useEffect(() => {
     if (qdipHandler) {
       console.log("rerendered");
+      setIsLoading(true);
       const contract = readContracts.Diplomat;
       console.log(contract);
       (async () => {
@@ -99,7 +101,6 @@ function MockHome({ tx, readContracts, writeContracts, mainnetProvider, address 
             if (hasVoted) {
               tags.push("voted");
             }
-            let status = isActive;
             let created = new Date(election.date * 1000).toISOString().substring(0, 10);
             electionEntry = {
               ...electionEntry,
@@ -110,21 +111,22 @@ function MockHome({ tx, readContracts, writeContracts, mainnetProvider, address 
               token: "",
               name: election.name,
               creator: election.creator,
-              status: status,
+              active: isActive,
               tags: tags,
             };
             newElectionsMap.set(iterator, electionEntry);
             console.log(newElectionsMap);
-            setElectionsMap(newElectionsMap);
           }
         }
+        setIsLoading(false);
+        setElectionsMap(newElectionsMap);
       })();
     }
   }, [qdipHandler]);
   console.log({ electionsMap });
   /***** Methods *****/
   const init = async () => {
-    setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
+    setQdipHandler(handlers[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
   };
   const headingColor = useColorModeValue("yellow.600", "yellow.500");
   // const createElection = () => {
@@ -143,17 +145,26 @@ function MockHome({ tx, readContracts, writeContracts, mainnetProvider, address 
         </Box>
       </HStack>
 
-      <HStack w="full" justifyContent="space-between">
-        <Tabs py="2rem" variant="unstyled">
-          <TabList>
-            <TabListItem title="Elections I'm part of" />
-            <TabListItem title="My Elections" />
-          </TabList>
-          <TabPanels>
-            <TabPanel>
-              <SimpleGrid columns={3} spacing={10} justifyItems="center">
-                {electionsMap &&
-                  Array.from(electionsMap.values())
+      {isLoading || !electionsMap ? (
+        <CenteredFrame>
+          <Flex flexDirection="column" justifyContent="center" alignItems="center">
+            <Heading fontSize="1.5rem" color={headingColor}>
+              Loading elections
+            </Heading>
+            <Spinner color="purple.700" size="xl" />
+          </Flex>
+        </CenteredFrame>
+      ) : (
+        <HStack w="full" justifyContent="space-between">
+          <Tabs py="2rem" variant="unstyled">
+            <TabList>
+              <TabListItem title="Elections I'm part of" />
+              <TabListItem title="My Elections" />
+            </TabList>
+            <TabPanels>
+              <TabPanel>
+                <SimpleGrid columns={3} spacing={10} justifyItems="center">
+                  {Array.from(electionsMap.values())
                     .reverse()
                     .map(
                       election =>
@@ -163,38 +174,39 @@ function MockHome({ tx, readContracts, writeContracts, mainnetProvider, address 
                             name={election.name}
                             owner={election.creator}
                             voted={`${election.n_voted.n_voted} / ${election.n_voted.outOf}`}
-                            status={election.status}
+                            active={election.active}
                             amount={election.amount}
                             createdAt={election.created_date}
                           />
                         ),
                     )}
-              </SimpleGrid>
-            </TabPanel>
-            <TabPanel>
-              <SimpleGrid columns={3} spacing={10} justifyItems="center">
-                {electionsMap &&
-                  Array.from(electionsMap.values())
-                    .reverse()
-                    .map(
-                      election =>
-                        election.tags.includes("admin") && (
-                          <ElectionCard
-                            id={election.id}
-                            name={election.name}
-                            owner={election.creator}
-                            voted={`${election.n_voted.n_voted} / ${election.n_voted.outOf}`}
-                            status={election.status}
-                            amount={election.amount}
-                            createdAt={election.created_date}
-                          />
-                        ),
-                    )}
-              </SimpleGrid>
-            </TabPanel>
-          </TabPanels>
-        </Tabs>
-      </HStack>
+                </SimpleGrid>
+              </TabPanel>
+              <TabPanel>
+                <SimpleGrid columns={3} spacing={10} justifyItems="center">
+                  {electionsMap &&
+                    Array.from(electionsMap.values())
+                      .reverse()
+                      .map(
+                        election =>
+                          election.tags.includes("admin") && (
+                            <ElectionCard
+                              id={election.id}
+                              name={election.name}
+                              owner={election.creator}
+                              voted={`${election.n_voted.n_voted} / ${election.n_voted.outOf}`}
+                              active={election.active}
+                              amount={election.amount}
+                              createdAt={election.created_date}
+                            />
+                          ),
+                      )}
+                </SimpleGrid>
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
+        </HStack>
+      )}
     </Container>
   );
 }

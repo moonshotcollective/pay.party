@@ -2,7 +2,7 @@ import { ChevronLeftIcon } from "@chakra-ui/icons";
 import { Avatar, Box, Button, Heading, Text } from "@chakra-ui/react";
 import { useHistory } from "react-router-dom";
 
-function ElectionCard() {
+function ElectionCard({ name, creator, voted, active, amount, createdAt }) {
   const routeHistory = useHistory();
   function goBack() {
     routeHistory.push("/create");
@@ -15,7 +15,7 @@ function ElectionCard() {
         Back
       </Text>
       <Heading fontSize="1.5rem" color="violet.50">
-        Election Title
+        {name}
       </Heading>
 
       <Text pb="2rem" fontSize="1rem">
@@ -24,24 +24,24 @@ function ElectionCard() {
       <Text fontSize="1rem">Admin</Text>
       <Text pt="1rem" pb="2rem">
         <Avatar mr="0.5rem" boxSize="1.5em" src="https://siasky.net/AAB-yQ5MuGLqpb5fT9w0gd54RbDfRS9sZDb2aMx9NeJ8QA" />
-        huxwell.eth
+        {creator}
       </Text>
 
       <Text fontSize="1rem">Funding</Text>
       <Text pt="1rem" pb="2rem">
-        100 ETH
+        {amount} ETH
       </Text>
       <Text fontSize="1rem">Voters</Text>
       <Text pt="1rem" pb="2rem">
-        1/16 Voted
+        {voted} Voted
       </Text>
       <Text fontSize="1rem">Status</Text>
       <Text pt="1rem" pb="2rem">
-        Active
+        {active ? "Active" : "Inactive"}
       </Text>
       <Text fontSize="1rem">Created</Text>
       <Text pt="1rem" pb="2rem">
-        2021-09-03
+        {createdAt}
       </Text>
 
       {/* If the suer is Admin show: */}

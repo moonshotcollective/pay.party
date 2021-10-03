@@ -23,12 +23,7 @@ function QRCodeIcon() {
       </g>
       <defs>
         <clipPath id="clip0">
-          <rect
-            width="14"
-            height="16"
-            fill="white"
-            transform="translate(0.25)"
-          />
+          <rect width="14" height="16" fill="white" transform="translate(0.25)" />
         </clipPath>
       </defs>
     </Box>

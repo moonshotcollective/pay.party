@@ -115,7 +115,6 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
       if (hasVoted) {
         tags.push("voted");
       }
-      let status = isActive;
       let created = new Date(election.date * 1000).toISOString().substring(0, 10);
       electionEntry = {
         ...electionEntry,
@@ -124,7 +123,7 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
         name: election.name,
         amount: election.amount,
         creator: election.creator,
-        status: status,
+        active: isActive,
         tags: tags,
       };
       newElectionsMap.set(i, electionEntry);
@@ -137,7 +136,7 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
     let election = {};
     let loadedElection = await readContracts.Diplomat.getElection(id);
     console.log(loadedElection);
-    election = { ...loadedElection };
+    election = loadedElection;
     election.isPaid = loadedElection.paid;
     election.fundingAmount = fromWei(loadedElection.amount.toString(), "ether");
     election.isCandidate = loadedElection.candidates.includes(address);
@@ -153,7 +152,60 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
       votedStatus = hasVoted;
     }
     election.canVote = !votedStatus && election.isCandidate;
-    return election;
+
+    const electionTest = await contract.getElection(i);
+    console.log({ election });
+    let electionEntry = {
+      n_voted: { outOf: election.candidates.length },
+    };
+    let hasVoted = false;
+    let isActive = false;
+    if (election.kind === "onChain") {
+      hasVoted = await contract.getAddressVoted(i, address);
+      isActive = election.active;
+      console.log({ hasVoted });
+      const electionVoted = await contract.getElectionNumVoted(i);
+      electionEntry.n_voted = {
+        ...electionEntry.n_voted,
+        n_voted: electionVoted.toNumber(),
+      };
+    }
+    if (election.kind === "offChain") {
+      const votedResult = await axios.get(serverUrl + `distribution/state/${i}/${address}`);
+      hasVoted = votedResult.data.hasVoted;
+      isActive = votedResult.data.isActive;
+      const offChainElectionResult = await axios.get(serverUrl + `distribution/${i}`);
+      const { election: offChainElection } = offChainElectionResult.data;
+      const nVoted = Object.keys(offChainElection.votes).length;
+      electionEntry.n_voted = {
+        ...electionEntry.n_voted,
+        n_voted: nVoted,
+      };
+    }
+
+    const tags = [];
+    if (election.creator === address) {
+      tags.push("admin");
+    }
+    if (election.candidates.includes(address)) {
+      tags.push("candidate");
+    }
+    if (hasVoted) {
+      tags.push("voted");
+    }
+    let status = isActive;
+    let created = new Date(election.date * 1000).toISOString().substring(0, 10);
+    electionEntry = {
+      ...electionEntry,
+      id: i,
+      created_date: created,
+      name: election.name,
+      amount: election.amount,
+      creator: election.creator,
+      active: isActive,
+      tags: tags,
+    };
+    return electionEntry;
   };
 
   const getCandidatesScores = async id => {

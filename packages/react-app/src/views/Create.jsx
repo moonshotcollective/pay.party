@@ -38,13 +38,13 @@ import {
   ExportOutlined,
   DoubleRightOutlined,
 } from "@ant-design/icons";
-import dips from "../dips";
+import { handlers } from "../dips";
 import { serverUrl } from "../dips/offChain";
 import { ethers } from "ethers";
 
 const CURRENCY = "ETH";
 const TOKEN = "UNI";
-const DIP_TYPES = Object.keys(dips);
+const DIP_TYPES = Object.keys(handlers);
 
 export default function Create({
   address,
@@ -129,13 +129,15 @@ export default function Create({
 
   useEffect(() => {
     console.log(selectedQdip);
-    setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
+    setQdipHandler(handlers[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
   }, [selectedQdip]);
 
   /***** Methods *****/
 
   const init = async () => {
-    setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner));
+    setQdipHandler(
+      handlers[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner),
+    );
     const steps = [
       {
         title: "Election Details",
@@ -193,7 +195,7 @@ export default function Create({
     const updateSelectedQdip = qdip => {
       console.log("update qdip", qdip);
       newElection.kind = qdip;
-      setQdipHandler(dips[qdip].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner));
+      setQdipHandler(handlers[qdip].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner));
     };
 
     return (
@@ -271,7 +273,7 @@ export default function Create({
             <Select placeholder="Quadratic Diplomacy build..." defaultValue={["onChain"]} onSelect={updateSelectedQdip}>
               {DIP_TYPES.map(k => (
                 <Select.Option key={k} value={k}>
-                  {dips[k].name}
+                  {handlers[k].name}
                 </Select.Option>
               ))}
             </Select>
