@@ -71,7 +71,7 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
   const getElections = async () => {
     const contract = readContracts.Diplomat;
     const numElections = await contract.electionCount();
-    console.log({ numElections });
+    console.log({ numElections, n: numElections.toNumber() });
     const newElectionsMap = new Map();
 
     for (let i = 0; i < numElections; i++) {
@@ -122,6 +122,7 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
         id: i,
         created_date: created,
         name: election.name,
+        amount: election.amount,
         creator: election.creator,
         status: status,
         tags: tags,
