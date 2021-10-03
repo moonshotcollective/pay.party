@@ -135,12 +135,7 @@ export default function Create({
   /***** Methods *****/
 
   const init = async () => {
-    console.log("init");
     setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner));
-    // readContracts.Diplomat.on("NewElection", args => {
-    //   let sender = args[1];
-    //   console.log(sender);
-    // });
     const steps = [
       {
         title: "Election Details",

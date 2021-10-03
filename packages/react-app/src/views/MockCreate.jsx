@@ -23,19 +23,42 @@ import {
   Textarea,
   Select,
 } from "@chakra-ui/react";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
 import { FiX } from "react-icons/fi";
 import { useHistory } from "react-router-dom";
 import QRCodeIcon from "../components/Icons/QRCodeIcon";
 import { ControllerPlus } from "../components/Inputs/ControllerPlus";
 import CenteredFrame from "../components/layout/CenteredFrame";
+import dips from "../dips";
 
-const CreateElectionPage = () => {
+const CreateElectionPage = ({
+  address,
+  mainnetProvider,
+  localProvider,
+  mainnetContracts,
+  userSigner,
+  yourLocalBalance,
+  price,
+  tx,
+  readContracts,
+  writeContracts,
+}) => {
+  /***** Routes *****/
   const routeHistory = useHistory();
-  const goBack = () => {
-    routeHistory.push("/mockhome");
+
+  const viewElection = async () => {
+    let index = await readContracts.Diplomat.electionCount();
+    routeHistory.push("/vote/" + (index.toNumber() - 1));
   };
+
+  /***** States *****/
+  const [selectedQdip, setSelectedQdip] = useState("onChain");
+  const [qdipHandler, setQdipHandler] = useState();
+  const [current, setCurrent] = useState(0);
+  const [errorMsg, setErrorMsg] = useState();
+  const [isConfirmingElection, setIsConfirmingElection] = useState(false);
+  const [isCreatedElection, setIsCreatedElection] = useState(false);
 
   const {
     handleSubmit,
@@ -50,14 +73,76 @@ const CreateElectionPage = () => {
     name: "candidates", // unique name for your Field Array
     // keyName: "id", default to "id", you can change the key name
   });
+
+  /***** Effects *****/
+
+  useEffect(() => {
+    if (readContracts && writeContracts) {
+      if (readContracts.Diplomat) {
+        init();
+      }
+    }
+  }, [writeContracts, readContracts, address]);
+
+  useEffect(async () => {
+    if (qdipHandler) {
+    }
+  }, [qdipHandler]);
+
+  useEffect(() => {
+    console.log(selectedQdip);
+    setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner));
+  }, [selectedQdip]);
+
   useEffect(() => {
     append("");
     return () => {
       remove();
     };
   }, [append]);
+  /***** Methods *****/
+  const goBack = () => {
+    routeHistory.push("/mockhome");
+  };
 
-  const onSubmit = async values => {};
+  const init = async () => {
+    setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner));
+  };
+
+  const onSubmit = async values => {
+    setIsConfirmingElection(true);
+    // Create a new election
+    const formattedValues = Object.entries(values).reduce((fValues, [currentKey, currentValue]) => {
+      if (currentKey === "candidates") {
+        fValues[currentKey] = currentValue.map(({ value }) => value);
+        return fValues;
+      }
+      if (currentKey === "fundAmount" || currentKey === "votes") {
+        fValues[currentKey] = parseInt(currentValue);
+        return fValues;
+      }
+      if (currentKey === "funds") {
+        // TODO: handle other tokens
+        if (currentValue === "ETH") {
+          fValues.tokenAdr = "0x0000000000000000000000000000000000000000";
+          return fValues;
+        }
+      }
+      fValues[currentKey] = currentValue;
+      return fValues;
+    }, {});
+    return qdipHandler
+      .createElection(formattedValues, selectedQdip)
+      .then(success => {
+        console.log({ success });
+        setIsConfirmingElection(false);
+        setIsCreatedElection(true);
+      })
+      .catch(err => {
+        console.log(err);
+        setIsConfirmingElection(false);
+      });
+  };
   return (
     <CenteredFrame>
       <Text onClick={goBack} _hover={{ cursor: "pointer" }} pb="1rem">
@@ -67,7 +152,7 @@ const CreateElectionPage = () => {
       <Heading py="15" fontSize="1.5rem" color={headingColor}>
         Configure Election
       </Heading>
-      <Stack as="form" onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <FormControl isInvalid={errors.name}>
           <FormLabel htmlFor="name">Election name</FormLabel>
           <Input
@@ -85,69 +170,62 @@ const CreateElectionPage = () => {
         </FormControl>
 
         <FormControl>
-          <FormLabel htmlFor="name">Election description</FormLabel>
+          <FormLabel htmlFor="description">Election description</FormLabel>
           <Textarea
             placeholder="Election description"
             borderColor="purple.500"
-            {...register("name", {
-              required: "This is required",
+            {...register("description", {
               maxLength: {
                 value: 150,
                 message: "Maximum length should be 150",
               },
             })}
           />
-          <FormErrorMessage>{errors.name && errors.name.message}</FormErrorMessage>
+          <FormErrorMessage>{errors.description && errors.description.message}</FormErrorMessage>
         </FormControl>
 
-        <FormControl>
-          <FormLabel htmlFor="name">Funding</FormLabel>
+        <FormControl isInvalid={errors.fundAmount || errors.funds}>
+          <FormLabel htmlFor="fundAmount">fundAmount Allocation (amount to be distributed)</FormLabel>
           <HStack pb="1rem" justify="space-between">
-            <Text>Total funds to be distributed</Text>
             <HStack>
               <InputGroup w="300px">
-                <Input
-                  placeholder="Election name"
-                  borderColor="purple.500"
-                  {...register("name", {
-                    required: "This is required",
-                    maxLength: {
-                      value: 150,
-                      message: "Maximum length should be 150",
-                    },
-                  })}
-                />
+                <NumberInput max={50} min={0.001}>
+                  <NumberInputField
+                    placeholder="fundAmount"
+                    borderColor="purple.500"
+                    {...register("fundAmount", {
+                      required: "This is required",
+                    })}
+                  />
+                  <NumberInputStepper>
+                    <NumberIncrementStepper />
+                    <NumberDecrementStepper />
+                  </NumberInputStepper>
+                </NumberInput>
               </InputGroup>
-              <Select placeholder="Select">
-                <option value="option1">ETH</option>
-                <option value="option2">UNI</option>
-                <option value="option3">BTC</option>
+              <Select
+                defaultValue="ETH"
+                {...register("funds", {
+                  required: "This is required",
+                  maxLength: {
+                    value: 10,
+                    message: "Maximum length should be 10",
+                  },
+                })}
+              >
+                <option value="ETH">ETH</option>
+                <option value="UNI">UNI</option>
+                <option value="BTC">BTC</option>
               </Select>
             </HStack>
           </HStack>
-          <FormErrorMessage>{errors.name && errors.name.message}</FormErrorMessage>
+          <FormErrorMessage>
+            {(errors.fundAmount && errors.fundAmount.message) || (errors.funds && errors.funds.message)}
+          </FormErrorMessage>
         </FormControl>
 
-        <FormControl isInvalid={errors.funding}>
-          <FormLabel htmlFor="funding">Funding Allocation (amount to be distributed)</FormLabel>
-          <NumberInput max={50} min={0.001}>
-            <NumberInputField
-              placeholder="funding"
-              borderColor="purple.500"
-              {...register("funding", {
-                required: "This is required",
-              })}
-            />
-            <NumberInputStepper>
-              <NumberIncrementStepper />
-              <NumberDecrementStepper />
-            </NumberInputStepper>
-          </NumberInput>
-          <FormErrorMessage>{errors.funding && errors.funding.message}</FormErrorMessage>
-        </FormControl>
-
-        <FormControl isInvalid={errors.voteAllocation}>
-          <FormLabel htmlFor="voteAllocation">
+        <FormControl isInvalid={errors.votes}>
+          <FormLabel htmlFor="votes">
             Vote Allocation (number of votes for each voter)
             <br />
           </FormLabel>
@@ -155,7 +233,7 @@ const CreateElectionPage = () => {
             <NumberInputField
               placeholder="Vote allocation"
               borderColor="purple.500"
-              {...register("voteAllocation", {
+              {...register("votes", {
                 required: "This is required",
               })}
             />
@@ -164,14 +242,26 @@ const CreateElectionPage = () => {
               <NumberDecrementStepper />
             </NumberInputStepper>
           </NumberInput>
-          <FormErrorMessage>{errors.voteAllocation && errors.voteAllocation.message}</FormErrorMessage>
+          <FormErrorMessage>{errors.votes && errors.votes.message}</FormErrorMessage>
         </FormControl>
 
-        <FormControl>
-          <FormLabel htmlFor="name">Diplomacy Type</FormLabel>
-          <Select>
-            <option value="option1">Off-chain</option>
-            <option value="option2">On-chain (votes & election)</option>
+        <FormControl isInvalid={errors.kind}>
+          <FormLabel htmlFor="kind">Diplomacy Type</FormLabel>
+          <Select
+            defaultValue="onChain"
+            {...register("kind", {
+              required: "This is required",
+              maxLength: {
+                value: 10,
+                message: "Maximum length should be 10",
+              },
+              onChange: e => {
+                setSelectedQdip(e.target.value);
+              },
+            })}
+          >
+            <option value="offChain">Off-chain</option>
+            <option value="onChain">On-chain (votes & election)</option>
           </Select>
         </FormControl>
 
@@ -200,7 +290,7 @@ const CreateElectionPage = () => {
               </HStack>
             </HStack>
           ))}
-          <FormErrorMessage>{errors.voteAllocation && errors.voteAllocation.message}</FormErrorMessage>
+          <FormErrorMessage>{errors.votes && errors.votes.message}</FormErrorMessage>
         </FormControl>
 
         <Button w="100%" variant="outline" onClick={() => append({ address: "", ens: "" })}>
@@ -209,11 +299,17 @@ const CreateElectionPage = () => {
         <Box pb="1rem"></Box>
         <Divider backgroundColor="purple.500" />
         <Box pt="1rem" align="end">
-          <Button mt={4} colorScheme="teal" isLoading={isSubmitting} type="submit">
+          <Button
+            mt={4}
+            colorScheme="teal"
+            isLoading={isSubmitting || isConfirmingElection}
+            loadingText="Submitting"
+            type="submit"
+          >
             Submit
           </Button>
         </Box>
-      </Stack>
+      </form>
     </CenteredFrame>
   );
 };
