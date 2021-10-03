@@ -48,6 +48,7 @@ export default function Vote({
   const [token, setToken] = useState("ETH");
   const [spender, setSpender] = useState("");
   const [availableTokens, setAvailableTokens] = useState([]);
+  const [isPaying, setIsPaying] = useState(false);
 
   /***** Effects *****/
   useEffect(() => {
@@ -88,6 +89,9 @@ export default function Vote({
   const init = async () => {
     const election = await readContracts.Diplomat.getElection(id);
     console.log({ election });
+    if (election.token == "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984") {
+      setToken("UNI");
+    }
     // setSelectedQdip();
     setQdipHandler(
       dips[election.kind].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner),
@@ -203,7 +207,6 @@ export default function Vote({
   };
 
   const ethPayHandler = () => {
-    // setIsElectionPaying(true);
     const adrs = Array.from(candidateMap.keys());
     const totalValueInWei = toWei(electionState.fundingAmount);
     //convert payout to wei
@@ -225,14 +228,13 @@ export default function Vote({
   };
 
   const tokenPayHandler = async opts => {
-    setIsElectionPaying(true);
-    console.log(opts);
-    console.log({ payoutInfo });
-    const election = await readContracts.Diplomat.getElectionById(id);
+    const adrs = Array.from(candidateMap.keys());
+    //convert payout to wei
+    let payoutInWei = finalPayout.payout.map(p => toWei(p));
+    const election = await readContracts.Diplomat.getElection(id);
     console.log({ election });
-
     tx(
-      writeContracts.Diplomat.payoutElection(id, payoutInfo.candidates, payoutInfo.payout, {
+      writeContracts.Diplomat.payElection(id, adrs, payoutInWei, {
         gasLimit: 12450000,
       }),
     );

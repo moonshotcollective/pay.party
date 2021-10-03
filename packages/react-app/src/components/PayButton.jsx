@@ -7,6 +7,7 @@ const disabledStatus = [...loadingStatus, 5];
 
 export default function PayButton({
   token,
+  tokenAddr,
   amount = "0",
   appName,
   spender,
@@ -28,6 +29,7 @@ export default function PayButton({
   };
 
   const refreshTokenDetails = async () => {
+    console.log(readContracts);
     if (!readContracts[token]) {
       console.log("cannot read token", token);
       return;
@@ -86,6 +88,14 @@ export default function PayButton({
           console.log(err);
           setStatus(3);
         });
+    } else {
+      if (status === 1) {
+        await approveTokenAllowance();
+      } else {
+        setStatus(4);
+        await tokenPayHandler(payParams);
+        await refreshTokenDetails();
+      }
     }
     // if (isETH()) {
     //   setStatus(4);
@@ -96,13 +106,7 @@ export default function PayButton({
     //   await ethPayHandler();
     //   setStatus(3);
     // } else {
-    //   if (status === 1) {
-    //     await approveTokenAllowance();
-    //   } else {
-    //     setStatus(4);
-    //     await tokenPayHandler(payParams);
-    //     await refreshTokenDetails();
-    //   }
+
     // }
   };
 

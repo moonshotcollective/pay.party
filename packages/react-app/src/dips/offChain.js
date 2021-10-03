@@ -24,7 +24,7 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
     console.log(address);
     const onChainElectionId = receipt.events[0].args.electionId.toNumber();
     const message = "qdip-create-" + address;
-    const signature = await userSigner.provider.send("personal_sign", [message, address]);
+    const signature = await provider.send("personal_sign", [message, address]);
     console.log("new election created", onChainElectionId);
     const result = await axios.post(serverUrl + "distributions", {
       onChainElectionId,
@@ -254,8 +254,12 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
         }),
         update => {
           console.log("📡 Transaction Update:", update);
-          if (update && (update.status === "confirmed" || update.status === 1)) {
-            resolve(update);
+          if (update) {
+            if (update.status === "confirmed" || update.status === 1) {
+              resolve(update);
+            } else if (!update.status) {
+              reject(update);
+            }
           } else {
             reject(update);
           }

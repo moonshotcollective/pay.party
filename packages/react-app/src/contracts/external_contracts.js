@@ -792,8 +792,36 @@ module.exports = {
         address: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
         abi: DAIABI,
       },
+      GTC: {
+        address: "0xde30da39c46104798bb5aa3fe8b9e0e1f348163f",
+        abi: ERC20ABI,
+      },
+    },
+  },
+  4: {
+    contracts: {
+      DAI: {
+        address: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+        abi: DAIABI,
+      },
       UNI: {
         address: "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",
+        abi: ERC20ABI,
+      },
+    },
+  },
+  80001: {
+    contracts: {
+      LINK: {
+        address: "0x326C977E6efc84E512bB9C30f76E30c160eD06FB",
+        abi: ERC20ABI,
+      },
+    },
+  },
+  137: {
+    contracts: {
+      GTC: {
+        address: "0xdb95f9188479575F3F718a245EcA1B3BF74567EC",
         abi: ERC20ABI,
       },
     },
