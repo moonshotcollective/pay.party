@@ -11,13 +11,13 @@ const app = express();
 const INFURA_ID = "460f40a260564ac4a4f4b3fffb032dad";
 
 /// 📡 What chain are your contracts deployed to?
-const targetNetwork = {
-  name: "localhost",
-  color: "#666666",
-  chainId: 31337,
-  blockExplorer: "",
-  rpcUrl: "http://localhost:8545",
-};
+// const targetNetwork = {
+//   name: "localhost",
+//   color: "#666666",
+//   chainId: 31337,
+//   blockExplorer: "",
+//   rpcUrl: "http://localhost:8545",
+// };
 
 /*
 const targetNetwork = {
@@ -27,15 +27,16 @@ const targetNetwork = {
     rpcUrl: `https://mainnet.infura.io/v3/${INFURA_ID}`,
     blockExplorer: "https://etherscan.io/",
   };
-const targetNetwork = {
-    name: "rinkeby",
-    color: "#e0d068",
-    chainId: 4,
-    rpcUrl: `https://rinkeby.infura.io/v3/${INFURA_ID}`,
-    faucet: "https://faucet.rinkeby.io/",
-    blockExplorer: "https://rinkeby.etherscan.io/",
-  };
 */
+
+const targetNetwork = {
+  name: "rinkeby",
+  color: "#e0d068",
+  chainId: 4,
+  rpcUrl: `https://rinkeby.infura.io/v3/${INFURA_ID}`,
+  faucet: "https://faucet.rinkeby.io/",
+  blockExplorer: "https://rinkeby.etherscan.io/",
+};
 
 // 🏠 Your local provider is usually pointed at your local blockchain
 const localProviderUrl = targetNetwork.rpcUrl;
