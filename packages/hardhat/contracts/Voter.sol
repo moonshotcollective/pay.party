@@ -15,7 +15,7 @@ contract Voter {
             electionScore[electionId][_adrs[i]] += _scores[i];
             scoreTotal += _scores[i];
         }
-        electionScoreTotal[electionId] = scoreTotal;
+        electionScoreTotal[electionId] += scoreTotal;
         addressVoted[electionId][msg.sender] = true;
     }
 

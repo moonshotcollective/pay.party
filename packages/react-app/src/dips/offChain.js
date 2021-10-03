@@ -10,37 +10,45 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
 
     // const result = await
     return new Promise((resolve, reject) => {
-      tx(writeContracts.Diplomat.createElection(name, candidates, fundAmount, tokenAdr, votes, kind), async update => {
-        console.log("📡 Transaction Update:", update);
-        if (update && (update.status === "confirmed" || update.status === 1)) {
-          console.log({ update });
-          const receipt = await update.wait();
-          console.log(address);
-          const onChainElectionId = receipt.events[0].args.electionId.toNumber();
-          const message = "qdip-create-" + address;
-          const signature = await userSigner.provider.send("personal_sign", [message, address]);
-          console.log("new election created", onChainElectionId);
-          return axios
-            .post(serverUrl + "distributions", {
-              onChainElectionId,
-              name,
-              candidates,
-              fundAmount,
-              tokenAdr,
-              votes,
-              kind,
-              address,
-              signature,
-            })
-            .then(res => {
-              console.log(res.data, res.data.success);
-              resolve(res.data.success);
-            })
-            .catch(reject);
-        } else {
-          reject(update);
-        }
-      });
+      tx(
+        writeContracts.Diplomat.createElection(name, candidates, fundAmount, tokenAdr, votes, kind, {
+          gasLimit: 12300000,
+        }),
+        async update => {
+          console.log("📡 Transaction Update:", update);
+          if (update && (update.status === "confirmed" || update.status === 1)) {
+            console.log({ update });
+            readContracts.getTransactionReceipt(transactionHash).then(receipt => {
+              console.log(receipt);
+            });
+            // const receipt = await update.wait();
+            // console.log(address);
+            // const onChainElectionId = receipt.events[0].args.electionId.toNumber();
+            // const message = "qdip-create-" + address;
+            // const signature = await userSigner.provider.send("personal_sign", [message, address]);
+            // console.log("new election created", onChainElectionId);
+            // return axios
+            //   .post(serverUrl + "distributions", {
+            //     onChainElectionId,
+            //     name,
+            //     candidates,
+            //     fundAmount,
+            //     tokenAdr,
+            //     votes,
+            //     kind,
+            //     address,
+            //     signature,
+            //   })
+            //   .then(res => {
+            //     console.log(res.data, res.data.success);
+            //     resolve(res.data.success);
+            //   })
+            //   .catch(reject);
+          } else {
+            reject(update);
+          }
+        },
+      );
     });
   };
 
@@ -160,7 +168,7 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
     let totalScores = [];
     for (const candidateVotes of Object.values(offChainElection.votes)) {
       candidateVotes.forEach((voteScore, i) => {
-        if (!totalScores[i]) {
+        if (totalScores[i] !== 0 && !totalScores[i]) {
           return totalScores.push(voteScore);
         }
         totalScores[i] = totalScores[i] + voteScore;
@@ -176,22 +184,24 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
     const offChainElectionResult = await axios.get(serverUrl + `distribution/${id}`);
     const { election: offChainElection } = offChainElectionResult.data;
 
-    let scores = [];
+    let totalScores = await getCandidatesScores(id);
     let payout = [];
-    let scoreSum = 0;
-    for (let i = 0; i < election.candidates.length; i++) {
-      const candidateScore = offChainElection.votes[election.candidates[i]];
-      console.log({ candidateScore });
-      if (!candidateScore) {
-        scores.push(candidateScore);
-        scoreSum += candidateScore;
-      } else {
-        scores.push(0);
-      }
-    }
+    let totalScoresSum = totalScores.reduce((sum, curr) => sum + curr, 0);
+    console.log({ totalScoresSum });
 
-    for (let i = 0; i < scores.length; i++) {
-      const candidatePay = Math.floor((scores[i] / scoreSum) * electionFunding);
+    // for (let i = 0; i < election.candidates.length; i++) {
+    //   const candidateScore = offChainElection.votes[election.candidates[i]];
+    //   console.log({ candidateScore });
+    //   if (!candidateScore) {
+    //     scores.push(candidateScore);
+    //     scoreSum += candidateScore;
+    //   } else {
+    //     scores.push(0);
+    //   }
+    // }
+
+    for (let i = 0; i < totalScores.length; i++) {
+      const candidatePay = Math.floor((totalScores[i] / totalScoresSum) * electionFunding);
       if (!isNaN(candidatePay)) {
         payout.push(fromWei(candidatePay.toString()));
       } else {
@@ -199,13 +209,30 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
       }
     }
     return {
-      scores: scores,
+      scores: totalScores,
       payout: payout,
-      scoreSum: scoreSum,
+      scoreSum: totalScoresSum,
     };
   };
 
-  const distributeEth = async (id, adrs, weiDist, totalValueInWei) => {};
+  const distributeEth = async (id, adrs, weiDist, totalValueInWei) => {
+    console.log("Distributing...");
+    return new Promise((resolve, reject) => {
+      tx(
+        writeContracts.Diplomat.payElection(id, adrs, weiDist, {
+          value: totalValueInWei,
+        }),
+        update => {
+          console.log("📡 Transaction Update:", update);
+          if (update && (update.status === "confirmed" || update.status === 1)) {
+            resolve(update);
+          } else {
+            reject(update);
+          }
+        },
+      );
+    });
+  };
 
   const sendBackendOnCreate = async (newElection, address) => {};
 

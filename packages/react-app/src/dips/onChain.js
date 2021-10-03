@@ -57,7 +57,7 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
         console.log("📡 Transaction Update:", update);
         if (update) {
           if (update.status === "confirmed" || update.status === 1) {
-            resolve(update);
+            return getCandidatesScores(id).then(resolve).catch(reject);
           } else if (!update.status) {
             reject(update);
           }
@@ -175,7 +175,7 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
     const scores = [];
     const payout = [];
     const scoreSum = await readContracts.Diplomat.getElectionScoreTotal(id);
-    console.log({ scoreSum });
+    console.log(scoreSum.toNumber());
     for (let i = 0; i < election.candidates.length; i++) {
       const candidateScore = (
         await readContracts.Diplomat.getElectionAddressScore(id, election.candidates[i])
@@ -203,7 +203,7 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
       tx(
         writeContracts.Diplomat.payElection(id, adrs, weiDist, {
           value: totalValueInWei,
-          gasLimit: 12450000,
+          gasLimit: 1245000,
         }),
         update => {
           console.log("📡 Transaction Update:", update);
