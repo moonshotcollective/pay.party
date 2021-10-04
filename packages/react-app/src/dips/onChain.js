@@ -93,6 +93,12 @@ export default function OnChain(tx, readContracts, writeContracts, mainnetProvid
         };
       }
       if (election.kind === "offChain") {
+        const offChainElections = await axios.get(serverUrl + "distributions");
+        console.log({ offChainElections });
+        const electionExists = offChainElections.data.some(offChainElec => offChainElec.data.onChainElectionId === i);
+        if (!electionExists) {
+          continue;
+        }
         const votedResult = await axios.get(serverUrl + `distribution/state/${i}/${address}`);
         hasVoted = votedResult.data.hasVoted;
         isActive = votedResult.data.isActive;

@@ -99,7 +99,7 @@
     "extends": "react-app"
   },
   "scripts": {
-    "build": "react-scripts build",
+    "build": "npm install && react-scripts build && cp build/index.html build/200.html",
     "eject": "react-scripts eject",
     "prestart": "node ./scripts/create_contracts.js",
     "start": "react-scripts start",

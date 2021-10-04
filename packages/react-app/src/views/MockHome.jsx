@@ -54,10 +54,8 @@ function MockHome({ tx, readContracts, writeContracts, mainnetProvider, address 
         console.log({ numElections, n: numElections.toNumber() });
         const newElectionsMap = new Map();
         for await (const iterator of [...Array(numElections.toNumber()).keys()]) {
-          console.log(iterator);
           const election = await contract.getElection(iterator);
           if (election) {
-            console.log(iterator, election);
             let electionEntry = {
               n_voted: { outOf: election.candidates.length },
             };

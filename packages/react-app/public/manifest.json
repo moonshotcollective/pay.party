@@ -1,7 +1,8 @@
 {
-  "short_name": "🏗 Scaffold-Eth App",
+  "short_name": "QD",
   "start_url": ".",
-  "name": "🏗 Scaffold-Eth App",
+  "homepage": ".",
+  "name": "Quadratic Diplomacy",
   "icons": [
     {
       "src": "favicon.ico",
@@ -19,7 +20,6 @@
       "sizes": "512x512"
     }
   ],
-  "start_url": ".",
   "display": "standalone",
   "theme_color": "#000000",
   "background_color": "#ffffff"

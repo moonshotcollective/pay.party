@@ -41,29 +41,18 @@ import "./Voter.sol";
 
 contract Diplomat is AccessControl, ElectionFactory, Voter {
 
-    bytes32 public constant VOTER_ROLE = keccak256("VOTER_ROLE");
-
+    bytes32 public constant VOTER_ROLE = 
+        keccak256("VOTER_ROLE");
+    
     uint256 public currentElectionStartBlock;
     uint256 public electionCount;
 
-    constructor(
-        //address startingAdmin
-        ) public {
-        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);//startingAdmin);
+    constructor() {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        currentElectionStartBlock = block.number; 
     }
 
     modifier onlyAdmin() {
         require(hasRole(DEFAULT_ADMIN_ROLE, msg.sender), "NOT ADMIN");
-        _;
-    }
-
-    modifier canVote() {
-        require(
-            hasRole(VOTER_ROLE, msg.sender),
-            "You don't have the permission to vote."
-        );
         _;
     }
 
