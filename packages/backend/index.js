@@ -9,14 +9,16 @@ const app = express();
 
 // MY INFURA_ID, SWAP IN YOURS FROM https://infura.io/dashboard/ethereum
 const INFURA_ID = "460f40a260564ac4a4f4b3fffb032dad";
-
+const PORT = process.env.PORT || 45622;
 /// 📡 What chain are your contracts deployed to?
+
 const targetNetwork = {
-  name: "localhost",
-  color: "#666666",
-  chainId: 31337,
-  blockExplorer: "",
-  rpcUrl: "http://localhost:8545",
+  name: "rinkeby",
+  color: "#e0d068",
+  chainId: 4,
+  rpcUrl: `https://rinkeby.infura.io/v3/${INFURA_ID}`,
+  faucet: "https://faucet.rinkeby.io/",
+  blockExplorer: "https://rinkeby.etherscan.io/",
 };
 
 /*
@@ -27,14 +29,13 @@ const targetNetwork = {
     rpcUrl: `https://mainnet.infura.io/v3/${INFURA_ID}`,
     blockExplorer: "https://etherscan.io/",
   };
-const targetNetwork = {
-    name: "rinkeby",
-    color: "#e0d068",
-    chainId: 4,
-    rpcUrl: `https://rinkeby.infura.io/v3/${INFURA_ID}`,
-    faucet: "https://faucet.rinkeby.io/",
-    blockExplorer: "https://rinkeby.etherscan.io/",
-  };
+ const targetNetwork = {
+   name: "localhost",
+   color: "#666666",
+   chainId: 31337,
+   blockExplorer: "",
+   rpcUrl: "http://localhost:8545",
+};
 */
 
 // 🏠 Your local provider is usually pointed at your local blockchain
@@ -48,7 +49,8 @@ const isElectionCandidates = async (candidatesToCheck, electionId) => {
   const providerNetwork = await localProvider.getNetwork();
   const _chainId = providerNetwork.chainId;
 
-  contractList = require("../react-app/src/contracts/hardhat_contracts.json");
+  contractList = require("./contracts.json");
+  console.log({ contractList });
 
   const contractData =
     contractList[_chainId][targetNetwork.name].contracts.Diplomat;
@@ -67,7 +69,7 @@ const isAdmin = async (address) => {
   const providerNetwork = await localProvider.getNetwork();
   const _chainId = providerNetwork.chainId;
 
-  contractList = require("../react-app/src/contracts/hardhat_contracts.json");
+  contractList = require("./contracts.json");
 
   const contractData =
     contractList[_chainId][targetNetwork.name].contracts.Diplomat;
@@ -101,7 +103,11 @@ const db = admin.firestore();
 // }
 // checkWalletBalance();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.REACT_APP_URL,
+  })
+);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -424,11 +430,11 @@ if (fs.existsSync("server.key") && fs.existsSync("server.cert")) {
       },
       app
     )
-    .listen(45622, () => {
-      console.log("HTTPS Listening: 45622");
+    .listen(PORT, () => {
+      console.log(`HTTPS Listening: ${PORT}`);
     });
 } else {
-  var server = app.listen(45622, function () {
+  var server = app.listen(PORT, function () {
     console.log("HTTP Listening on port:", server.address().port);
   });
 }
