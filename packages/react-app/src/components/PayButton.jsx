@@ -90,11 +90,14 @@ export default function PayButton({
         });
     } else {
       if (status === 1) {
+        setStatus(3);
         await approveTokenAllowance();
-      } else {
         setStatus(4);
+      } else {
+        setStatus(1);
         await tokenPayHandler(payParams);
         await refreshTokenDetails();
+        setStatus(4);
       }
     }
     // if (isETH()) {

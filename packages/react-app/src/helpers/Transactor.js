@@ -100,10 +100,11 @@ export default function Transactor(providerOrSigner, gasPrice, etherscan) {
           // but locally we will set an interval to listen...
           if (callback) {
             const txResult = await tx;
+            const receipt = await txResult.wait();
+            callback(receipt);
             const listeningInterval = setInterval(async () => {
               if (DEBUG) console.log("CHECK IN ON THE TX", txResult, provider);
               const currentTransactionReceipt = await provider.getTransactionReceipt(txResult.hash);
-              console.log({ currentTransactionReceipt });
               if (currentTransactionReceipt && currentTransactionReceipt.confirmations) {
                 callback({ ...txResult, ...currentTransactionReceipt });
                 clearInterval(listeningInterval);
@@ -113,7 +114,8 @@ export default function Transactor(providerOrSigner, gasPrice, etherscan) {
         }
 
         if (typeof result.wait === "function") {
-          await result.wait();
+          const receipt = await result.wait();
+          callback(receipt);
         }
 
         return result;
