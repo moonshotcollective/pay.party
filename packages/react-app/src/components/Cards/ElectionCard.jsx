@@ -1,7 +1,9 @@
-import { Avatar, Box, Button, Heading, Text } from "@chakra-ui/react";
+import { Avatar, Box, Button, Heading, Text, Tag, HStack } from "@chakra-ui/react";
 import { useHistory } from "react-router-dom";
+import { Address } from "../index";
+import { blockExplorer } from "../../App";
 
-function ElectionCard({ id, name, owner, voted, active, createdAt, amount }) {
+function ElectionCard({ id, name, owner, voted, active, createdAt, amount, mainnetProvider }) {
   const routeHistory = useHistory();
 
   function openElection() {
@@ -10,14 +12,18 @@ function ElectionCard({ id, name, owner, voted, active, createdAt, amount }) {
   }
 
   return (
-    <Box borderColor="purple.500" borderWidth="1px" borderRadius="8px" py="2.5rem" px="2.5rem">
+    <Box borderColor="purple.500" borderWidth="1px" borderRadius="8px" py="1.5rem" px="2.5rem">
       <Heading fontSize="1.5rem" color="violet.50">
         {name}
       </Heading>
-      <Text pt="1rem" pb="2rem">
-        <Avatar mr="0.5rem" boxSize="1.5em" src="https://siasky.net/AAB-yQ5MuGLqpb5fT9w0gd54RbDfRS9sZDb2aMx9NeJ8QA" />
-        {owner}
-      </Text>
+      <HStack spacing={4}>
+        {["sm", "md", "lg"].map(size => (
+          <Tag size={size} key={size} variant="solid" colorScheme="teal">
+            Teal
+          </Tag>
+        ))}
+      </HStack>
+      <Address address={owner} fontSize="14pt" ensProvider={mainnetProvider} blockExplorer={blockExplorer} />
       <Text pb="2rem" fontSize="1rem">
         This is an election description that is maximum 2 lines long
       </Text>

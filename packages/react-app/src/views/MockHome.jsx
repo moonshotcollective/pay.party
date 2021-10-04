@@ -78,6 +78,7 @@ function MockHome({ tx, readContracts, writeContracts, mainnetProvider, address 
             if (election && election.kind === "offChain") {
               try {
                 const votedResult = await axios.get(serverUrl + `distribution/state/${iterator}/${address}`);
+                console.log({ votedResult });
                 hasVoted = votedResult.data.hasVoted;
                 isActive = votedResult.data.isActive;
                 const offChainElectionResult = await axios.get(serverUrl + `distribution/${iterator}`);
@@ -123,7 +124,7 @@ function MockHome({ tx, readContracts, writeContracts, mainnetProvider, address 
       })();
     }
   }, [qdipHandler]);
-  console.log({ electionsMap });
+
   /***** Methods *****/
   const init = async () => {
     setQdipHandler(handlers[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
@@ -177,6 +178,7 @@ function MockHome({ tx, readContracts, writeContracts, mainnetProvider, address 
                             active={election.active}
                             amount={election.amount}
                             createdAt={election.created_date}
+                            mainnetProvider={mainnetProvider}
                           />
                         ),
                     )}

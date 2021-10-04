@@ -72,7 +72,7 @@ export default function Home({ tx, readContracts, writeContracts, mainnetProvide
 
   /***** Methods *****/
   const init = async () => {
-    setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
+    setQdipHandler(handlers[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
   };
 
   /***** Render *****/
