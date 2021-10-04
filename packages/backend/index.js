@@ -105,7 +105,17 @@ const db = admin.firestore();
 
 app.use(
   cors({
-    origin: process.env.REACT_APP_URL,
+    origin: function (origin, callback) {
+      const validPatternRegexes = [
+        /^(.*)qd-web-staging.herokuapp.com(\/(.*)|)$/,
+        /^(www.|)qd-web-staging.herokuapp.com(\/(.*)|)$/,
+      ];
+      if (validPatternRegexes.some((rx) => rx.test(origin)) || !origin) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
   })
 );
 
