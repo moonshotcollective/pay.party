@@ -5,7 +5,7 @@
   "license": "MIT",
   "scripts": {
     "start": "node ./index.js",
-    "build": "yarn",
+    "build": "npm install",
     "dev": "nodemon ./index.js"
   },
   "dependencies": {
