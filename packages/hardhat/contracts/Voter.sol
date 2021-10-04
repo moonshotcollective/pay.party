@@ -1,7 +1,8 @@
 pragma solidity >=0.6.7 <0.9.0;
 //SPDX-License-Identifier: MIT
+import "./ElectionFactory.sol";
 
-contract Voter {
+contract Voter is ElectionFactory {
     
     // electionId => ...
     mapping(uint256 => mapping(address => bool)) public addressVoted;
@@ -9,7 +10,10 @@ contract Voter {
     mapping(uint256 => uint256) public electionScoreTotal;
 
     // On Chain voting
-    function _vote(uint256 electionId, address[] memory _adrs, uint256[] memory _scores) internal {
+    function _vote(uint256 electionId, address[] memory _adrs, uint256[] memory _scores) 
+        internal 
+        onlyElectionCandidate(electionId)
+    {
         uint256 scoreTotal = 0;
         for (uint256 i = 0; i < _adrs.length; i++) {
             electionScore[electionId][_adrs[i]] += _scores[i];
