@@ -9,7 +9,6 @@ packages/hardhat/*.txt
 
 packages/hardhat/artifacts*
 packages/hardhat/deployments
-packages/react-app/src/contracts/*
 !packages/react-app/src/contracts/external_contracts.js
 packages/hardhat/cache*
 packages/**/data
@@ -64,3 +63,4 @@ yarn-error.log*
 .netlify
 *.tsbuildinfo
 *.stackdump
+.next

@@ -16,6 +16,7 @@ export default function Vote({
   mainnetProvider,
   blockExplorer,
   localProvider,
+  userSigner,
   tx,
   readContracts,
   writeContracts,
@@ -47,11 +48,12 @@ export default function Vote({
   const [token, setToken] = useState("ETH");
   const [spender, setSpender] = useState("");
   const [availableTokens, setAvailableTokens] = useState([]);
+  const [isPaying, setIsPaying] = useState(false);
 
   /***** Effects *****/
   useEffect(() => {
     if (readContracts) {
-      if (readContracts.Diplomacy) {
+      if (readContracts.Diplomat) {
         init();
       }
     }
@@ -70,10 +72,11 @@ export default function Vote({
   //   }, [candidateMap]);
 
   useEffect(() => {
-    if (electionState.name) {
+    if (electionState && electionState.name) {
       updateTableSrc();
+      console.log({ electionState });
       setVotesLeft(electionState.votes);
-      if (electionState.isActive) {
+      if (electionState.active) {
         updateCandidateScore();
       } else {
         updateFinalPayout();
@@ -84,9 +87,17 @@ export default function Vote({
   /***** Methods *****/
 
   const init = async () => {
-    setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
-    setSpender(readContracts?.Diplomacy?.address);
-    loadERC20List();
+    const election = await readContracts.Diplomat.getElection(id);
+    console.log({ election });
+    if (election.token == "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984") {
+      setToken("UNI");
+    }
+    // setSelectedQdip();
+    setQdipHandler(
+      dips[election.kind].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner),
+    );
+    setSpender(readContracts?.Diplomat?.address);
+    // loadERC20List();
   };
 
   const loadERC20List = async () => {
@@ -97,7 +108,6 @@ export default function Vote({
       }
       return acc;
     }, []);
-    console.log({ erc20List });
   };
 
   const loadElectionState = async () => {
@@ -159,13 +169,13 @@ export default function Vote({
     const candidates = Array.from(candidateMap.keys());
     const scores = [];
     candidateMap.forEach(d => {
-      scores.push(Math.floor(d.score * 10));
+      scores.push(Math.floor(d.score * 100));
     });
     console.log(candidates, scores);
     qdipHandler
-      .castBallot(id, candidates, scores)
-      .then(success => {
-        console.log(success);
+      .castBallot(id, candidates, scores, userSigner)
+      .then(totalScores => {
+        setCandidateScores(totalScores);
         loadElectionState();
       })
       .catch(err => {
@@ -191,12 +201,12 @@ export default function Vote({
         setIsElectionEnding(false);
       })
       .catch(err => {
+        console.log("err endElection", err);
         setIsElectionEnding(false);
       });
   };
 
   const ethPayHandler = () => {
-    // setIsElectionPaying(true);
     const adrs = Array.from(candidateMap.keys());
     const totalValueInWei = toWei(electionState.fundingAmount);
     //convert payout to wei
@@ -218,14 +228,13 @@ export default function Vote({
   };
 
   const tokenPayHandler = async opts => {
-    setIsElectionPaying(true);
-    console.log(opts);
-    console.log({ payoutInfo });
-    const election = await readContracts.Diplomacy.getElectionById(id);
+    const adrs = Array.from(candidateMap.keys());
+    //convert payout to wei
+    let payoutInWei = finalPayout.payout.map(p => toWei(p));
+    const election = await readContracts.Diplomat.getElection(id);
     console.log({ election });
-
     tx(
-      writeContracts.Diplomacy.payoutElection(id, payoutInfo.candidates, payoutInfo.payout, {
+      writeContracts.Diplomat.payElection(id, adrs, payoutInWei, {
         gasLimit: 12450000,
       }),
     );
@@ -265,7 +274,7 @@ export default function Vote({
   };
 
   const scoreCol = () => {
-    if (electionState.isActive) {
+    if (electionState.active && candidateScores) {
       return {
         title: "Quadratic Score",
         key: "score",
@@ -275,9 +284,7 @@ export default function Vote({
       return {
         title: "Quadratic Score",
         key: "score",
-        render: (text, record, index) => (
-          <>{Math.floor(candidateMap.get(text.address).score * 10 ** electionScoreFactor)}</>
-        ),
+        render: (text, record, index) => <>{Math.floor(candidateMap.get(text.address).score * 10)}</>,
       };
     }
   };
@@ -313,7 +320,7 @@ export default function Vote({
   };
 
   const makeTableCols = () => {
-    if (electionState.isActive) {
+    if (electionState && electionState.active) {
       if (electionState.canVote) {
         return [addressCol(), actionCol()];
       } else {
@@ -337,7 +344,7 @@ export default function Vote({
           onBack={() => routeHistory.push("/")}
           title={electionState ? electionState.name : "Loading Election..."}
           extra={[
-            electionState.isActive && electionState.isAdmin && (
+            electionState && electionState.active && electionState.isAdmin && (
               <Button
                 icon={<CloseCircleOutlined />}
                 type="danger"
@@ -350,7 +357,7 @@ export default function Vote({
                 End Election
               </Button>
             ),
-            !electionState.isActive && electionState.isAdmin && !electionState.isPaid && (
+            electionState && !electionState.active && electionState.isAdmin && !electionState.isPaid && (
               <PayButton
                 token={token}
                 appName="Quadratic Diplomacy"
@@ -389,8 +396,8 @@ export default function Vote({
           />
           <Divider />
           <div>
-            {electionState.canVote && electionState.isActive && (
-              <Button icon={<SendOutlined />} size="large" shape="round" type="primary" onClick={() => castBallot()}>
+            {electionState.canVote && electionState.active && (
+              <Button icon={<SendOutlined />} size="large" shape="round" type="primary" onClick={castBallot}>
                 Cast Ballot
               </Button>
             )}
