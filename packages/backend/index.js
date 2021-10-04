@@ -106,13 +106,11 @@ const db = admin.firestore();
 app.use(
   cors({
     origin: function (origin, callback) {
-      const validPatternRegexes =
-        process.env.NODE_ENV === "production"
-          ? [
-              /^(.*)qd-web-staging.herokuapp.com(\/(.*)|)$/,
-              /^(www.|)qd-web-staging.herokuapp.com(\/(.*)|)$/,
-            ]
-          : [/^http:\/\/localhost:[0-9]{4}$/];
+      const validPatternRegexes = [
+        /^(.*)qd-web-staging.herokuapp.com(\/(.*)|)$/,
+        /^(www.|)qd-web-staging.herokuapp.com(\/(.*)|)$/,
+        /^http:\/\/localhost:[0-9]{4}$/,
+      ];
       if (validPatternRegexes.some((rx) => rx.test(origin)) || !origin) {
         callback(null, true);
       } else {
