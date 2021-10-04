@@ -51,7 +51,7 @@ const isElectionCandidates = async (candidatesToCheck, electionId) => {
   const providerNetwork = await localProvider.getNetwork();
   const _chainId = providerNetwork.chainId;
 
-  contractList = require("./contracts.json");
+  contractList = require("./hardhat_contracts.json");
   console.log({ contractList });
 
   const contractData =
@@ -71,7 +71,7 @@ const isAdmin = async (address) => {
   const providerNetwork = await localProvider.getNetwork();
   const _chainId = providerNetwork.chainId;
 
-  contractList = require("./contracts.json");
+  contractList = require("./hardhat_contracts.json");
 
   const contractData =
     contractList[_chainId][targetNetwork.name].contracts.Diplomat;
@@ -108,13 +108,11 @@ const db = admin.firestore();
 app.use(
   cors({
     origin: function (origin, callback) {
-      const validPatternRegexes =
-        process.env.NODE_ENV === "production"
-          ? [
-              /^(.*)qd-web-staging.herokuapp.com(\/(.*)|)$/,
-              /^(www.|)qd-web-staging.herokuapp.com(\/(.*)|)$/,
-            ]
-          : [/^http:\/\/localhost:[0-9]{4}$/];
+      const validPatternRegexes = [
+        /^(.*)qd-web-staging.herokuapp.com(\/(.*)|)$/,
+        /^(www.|)qd-web-staging.herokuapp.com(\/(.*)|)$/,
+        /^http:\/\/localhost:[0-9]{4}$/,
+      ];
       if (validPatternRegexes.some((rx) => rx.test(origin)) || !origin) {
         callback(null, true);
       } else {
