@@ -5,102 +5,59 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract ElectionFactory is Distributor {
 
-    event NewElection(uint256 electionId, address sender); 
-    event EndedElection(uint256 electionId, address sender);
-    event PaidElection(uint256 electionId, address sender);
+    event NewElection(string electionId, address sender); 
+    event EndedElection(string electionId, address sender);
+    event PaidElection(string electionId, address sender);
+    
+    string[] public elections;
 
-    struct Election {
-        address creator;
-        string name; 
-        uint32 date;
-        address[] candidates;
-        uint256 amount;
-        address token;
-        int16 votes;
-        string kind; 
-        bool active; 
-        bool paid;
-    }
-
-    mapping(uint256 => Election) public elections;
-
-    modifier onlyElectionAdmin(uint256 electionId) {
-        require(msg.sender == elections[electionId].creator, "Sender not Election Admin!" );
+    modifier onlyElectionAdmin(string memory electionId) {
         _;
     }
 
-    modifier onlyElectionCandidate(uint256 electionId) {
-        bool isCandidate = false;
-        for (uint256 i = 0; i < elections[electionId].candidates.length; i++) {
-            if (elections[electionId].candidates[i] == msg.sender) {
-                isCandidate = true; 
-                break; 
-            }
-        }
-        require(isCandidate, "Sender not Election Candidate!");
+    modifier onlyElectionCandidate(string memory electionId) {
         _;
     }
 
-    function _emitNewElection(uint256 electionId) internal {
+    function _emitNewElection(string memory electionId) internal {
         emit NewElection(electionId, msg.sender);
     }
 
-    function _emitEndedElection(uint256 electionId) internal {
+    function _emitEndedElection(string memory electionId) internal {
         emit EndedElection(electionId, msg.sender);
     }
 
-    function _emitPaidElection(uint256 electionId) internal {
+    function _emitPaidElection(string memory electionId) internal {
         emit PaidElection(electionId, msg.sender);
     }
 
     function _createElection(
-        uint256 electionId,
-        string memory _name, 
-        address[] memory _candidates,
-        uint256 _amount,
-        address _token, 
-        int16 _votes, 
-        string memory _kind
+        string memory electionId
     ) internal {
-        elections[electionId] = Election({
-            creator: msg.sender, 
-            name: _name, 
-            date: uint32(block.timestamp), 
-            candidates: _candidates, 
-            amount: _amount, 
-            token: _token,
-            votes: _votes, 
-            kind: _kind, 
-            active: true, 
-            paid: false
-        });
+        elections.push(electionId); 
         _emitNewElection(electionId);
     }
 
-    function _endElection(uint256 electionId) 
+    function _endElection(string memory electionId) 
         internal 
         onlyElectionAdmin(electionId)
     {
-        elections[electionId].active = false;
         _emitEndedElection(electionId);
     }
 
-    function _payElection(uint256 electionId, address[] memory candidates, uint256[] memory shares) 
+    // TODO: Implement Chainlink to check pay validity
+    function _payElection(string memory electionId, address[] memory candidates, uint256[] memory shares, address token) 
         internal 
         onlyElectionAdmin(electionId) 
     {
         // NOTE: Not Escrow Version
-        if (elections[electionId].token == address(0)) {
+        if (token == address(0)) {
             _sharePayedETH(candidates, shares); 
         } else { 
-            _sharePayedToken(candidates, shares, IERC20(elections[electionId].token), msg.sender); // Token needs to IERC20
+            _sharePayedToken(candidates, shares, IERC20(token), msg.sender); // Token needs to IERC20
         }
-        elections[electionId].paid = true;
         _emitPaidElection(electionId);
     }
 
-    function _getElection(uint256 electionId) internal view returns (Election memory) {
-        return elections[electionId];
-    }
 
 }

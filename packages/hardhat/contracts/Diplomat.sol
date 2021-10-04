@@ -37,9 +37,8 @@ pragma experimental ABIEncoderV2;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./ElectionFactory.sol";
-import "./Voter.sol";
 
-contract Diplomat is AccessControl, ElectionFactory, Voter {
+contract Diplomat is AccessControl, ElectionFactory {
 
     bytes32 public constant VOTER_ROLE = 
         keccak256("VOTER_ROLE");
@@ -65,54 +64,19 @@ contract Diplomat is AccessControl, ElectionFactory, Voter {
     }
 
     function createElection(
-        string memory _name, 
-        address[] memory _candidates,
-        uint256 _amount,
-        address _token, 
-        int16 _votes, 
-        string memory _kind
-    ) public returns (uint256 electionId) {
+        string memory electionId
+    ) public {
         // NOTE: Using electionCount as ID
-        _createElection(electionCount, _name, _candidates, _amount, _token, _votes, _kind);
-        electionCount++;
-		return electionCount;
+        _createElection(electionId);
+
     }
 
-    // On Chain voting
-    function vote(uint256 electionId, address[] memory _adrs, uint256[] memory _scores) public {
-        _vote(electionId, _adrs, _scores);
-    }
-
-    function endElection(uint256 electionId) public {
+    function endElection(string memory electionId) public {
         _endElection(electionId);
     }
 
-    function payElection(uint256 electionId, address[] memory _adrs, uint256[] memory _shares) public payable {
-        _payElection(electionId, _adrs, _shares);
-    }
-
-    function getElection(uint256 electionId) public view returns(Election memory) {
-        return _getElection(electionId);
-    }
-
-    function getElectionNumVoted(uint256 electionId) public view returns(uint256 voted) {
-        for (uint256 i = 0; i < elections[electionId].candidates.length; i++) {
-            if (_getAddressVoted(electionId, elections[electionId].candidates[i])) {
-                voted++;
-            } 
-        }
-    }
-
-    function getAddressVoted(uint256 electionId, address _adr) public view returns(bool) {
-        return _getAddressVoted(electionId, _adr);
-    }
-
-    function getElectionAddressScore(uint256 electionId, address _adr) public view returns(uint256 score) {
-        return _getScore(electionId, _adr);
-    }
-
-    function getElectionScoreTotal(uint256 electionId) public view returns (uint256)  {
-        return _getElectionScoreTotal(electionId);
+    function payElection(string memory electionId, address[] memory _adrs, uint256[] memory _shares, address _token) public payable {
+        _payElection(electionId, _adrs, _shares, _token);
     }
 
     function deposit() public payable {}
