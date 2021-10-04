@@ -174,21 +174,8 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
   };
 
   const getElectionStateById = async id => {
-    // let election = {};
     let election = await readContracts.Diplomat.getElection(id);
-    // election = { ...loadedElection };
-    // election.isPaid = loadedElection.paid;
-    // election.fundingAmount = fromWei(loadedElection.amount.toString(), "ether");
-    // election.isCandidate = loadedElection.candidates.includes(address);
-    // election.isAdmin = loadedElection.creator === address;
-
-    // const votedResult = await axios.get(serverUrl + `distribution/state/${id}/${address}`);
-    // const { hasVoted, isActive } = votedResult.data;
-    // election.canVote = !hasVoted && election.isCandidate;
-    // console.log({ isActive });
-    // election.active = isActive;
-    // const electionTest = await contract.getElection(id);
-    // console.log({ election });
+    console.log({ election });
     let electionEntry = {
       n_voted: { outOf: election.candidates.length },
     };
@@ -236,6 +223,7 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
       isPaid: election.paid,
       isCandidate,
       isAdmin: election.creator === address,
+      tokenSymbol: election.token === "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984" ? "UNI" : "ETH",
       name: election.name,
       voteAllocation: election.votes,
       canVote: !hasVoted && isCandidate,

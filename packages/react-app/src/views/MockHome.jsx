@@ -15,6 +15,7 @@ import { handlers } from "../dips";
 import { serverUrl } from "../dips/offChain";
 import { fromWei, toBN } from "web3-utils";
 import CenteredFrame from "../components/layout/CenteredFrame";
+import { useTokenList } from "eth-hooks/dapps/dex";
 
 function MockHome({ tx, readContracts, writeContracts, mainnetProvider, address }) {
   /***** Routes *****/
@@ -28,11 +29,11 @@ function MockHome({ tx, readContracts, writeContracts, mainnetProvider, address 
 
   const viewElection = record => {
     // console.log({ record });
-    routeHistory.push("/vote/" + record.id);
+    routeHistory.push("/mockelection/" + record.id);
   };
 
   const createElection = () => {
-    routeHistory.push("/create");
+    routeHistory.push("/mockcreate");
   };
   /***** Effects *****/
   useEffect(() => {
@@ -56,6 +57,7 @@ function MockHome({ tx, readContracts, writeContracts, mainnetProvider, address 
         for await (const iterator of [...Array(numElections.toNumber()).keys()]) {
           const election = await contract.getElection(iterator);
           if (election) {
+            console.log({ election });
             let electionEntry = {
               n_voted: { outOf: election.candidates.length },
             };
@@ -71,7 +73,6 @@ function MockHome({ tx, readContracts, writeContracts, mainnetProvider, address 
                 ...electionEntry.n_voted,
                 n_voted: electionVoted.toNumber(),
               };
-              console.log("end onChain", iterator, electionVoted);
             }
             if (election && election.kind === "offChain") {
               try {
@@ -106,8 +107,8 @@ function MockHome({ tx, readContracts, writeContracts, mainnetProvider, address 
               id: iterator,
               created_date: created,
               amount: fromWei(election.amount.toString(), "ether"),
-              // TODO: use token symbol
-              token: "",
+              token: election.token,
+              tokenSymbol: election.token === "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984" ? "UNI" : "ETH",
               name: election.name,
               creator: election.creator,
               active: isActive,
@@ -115,10 +116,10 @@ function MockHome({ tx, readContracts, writeContracts, mainnetProvider, address 
             };
             newElectionsMap.set(iterator, electionEntry);
             console.log(newElectionsMap);
+            setElectionsMap(newElectionsMap);
           }
         }
         setIsLoading(false);
-        setElectionsMap(newElectionsMap);
       })();
     }
   }, [qdipHandler]);
@@ -175,6 +176,7 @@ function MockHome({ tx, readContracts, writeContracts, mainnetProvider, address 
                             voted={`${election.n_voted.n_voted} / ${election.n_voted.outOf}`}
                             active={election.active}
                             amount={election.amount}
+                            tokenSymbol={election.tokenSymbol}
                             createdAt={election.created_date}
                             mainnetProvider={mainnetProvider}
                           />
@@ -194,6 +196,7 @@ function MockHome({ tx, readContracts, writeContracts, mainnetProvider, address 
                               id={election.id}
                               name={election.name}
                               owner={election.creator}
+                              tokenSymbol={election.tokenSymbol}
                               voted={`${election.n_voted.n_voted} / ${election.n_voted.outOf}`}
                               active={election.active}
                               amount={election.amount}

@@ -12,14 +12,14 @@ const INFURA_ID = "460f40a260564ac4a4f4b3fffb032dad";
 const PORT = process.env.PORT || 45622;
 /// 📡 What chain are your contracts deployed to?
 
-// const targetNetwork = {
-//   name: "rinkeby",
-//   color: "#e0d068",
-//   chainId: 4,
-//   rpcUrl: `https://rinkeby.infura.io/v3/${INFURA_ID}`,
-//   faucet: "https://faucet.rinkeby.io/",
-//   blockExplorer: "https://rinkeby.etherscan.io/",
-// };
+const targetNetwork = {
+  name: "rinkeby",
+  color: "#e0d068",
+  chainId: 4,
+  rpcUrl: `https://rinkeby.infura.io/v3/${INFURA_ID}`,
+  faucet: "https://faucet.rinkeby.io/",
+  blockExplorer: "https://rinkeby.etherscan.io/",
+};
 
 // const targetNetwork = {
 //   name: "localhost",

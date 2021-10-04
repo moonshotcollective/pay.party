@@ -2,7 +2,7 @@ import { ChevronLeftIcon } from "@chakra-ui/icons";
 import { Avatar, Box, Button, Heading, Text } from "@chakra-ui/react";
 import { useHistory } from "react-router-dom";
 
-function ElectionCard({ name, creator, voted, active, amount, createdAt }) {
+function ElectionCard({ name, creator, voted, active, amount, tokenSymbol, createdAt }) {
   const routeHistory = useHistory();
   function goBack() {
     routeHistory.push("/create");
@@ -29,7 +29,7 @@ function ElectionCard({ name, creator, voted, active, amount, createdAt }) {
 
       <Text fontSize="1rem">Funding</Text>
       <Text pt="1rem" pb="2rem">
-        {amount} ETH
+        {amount} {tokenSymbol}
       </Text>
       <Text fontSize="1rem">Voters</Text>
       <Text pt="1rem" pb="2rem">

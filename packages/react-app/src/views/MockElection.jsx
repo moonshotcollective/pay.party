@@ -247,6 +247,7 @@ function MockElectionPage({
             id={electionState.id}
             name={electionState.name}
             creator={electionState.creator}
+            tokenSymbol={electionState.tokenSymbol}
             voted={`${electionState.n_voted.n_voted} / ${electionState.n_voted.outOf}`}
             active={electionState.active}
             amount={electionState.amount}
