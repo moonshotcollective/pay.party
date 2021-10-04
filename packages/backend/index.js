@@ -49,7 +49,7 @@ const isElectionCandidates = async (candidatesToCheck, electionId) => {
   const providerNetwork = await localProvider.getNetwork();
   const _chainId = providerNetwork.chainId;
 
-  contractList = require("./contracts.json");
+  contractList = require("./hardhat_contracts.json");
   console.log({ contractList });
 
   const contractData =
@@ -69,7 +69,7 @@ const isAdmin = async (address) => {
   const providerNetwork = await localProvider.getNetwork();
   const _chainId = providerNetwork.chainId;
 
-  contractList = require("./contracts.json");
+  contractList = require("./hardhat_contracts.json");
 
   const contractData =
     contractList[_chainId][targetNetwork.name].contracts.Diplomat;
