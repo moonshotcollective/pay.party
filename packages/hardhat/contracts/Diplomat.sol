@@ -1,3 +1,4 @@
+//SPDX-License-Identifier: MIT
 /**                                                                              
                                             ..                                  
                                           ,*.                                   
@@ -30,10 +31,8 @@
         / /___/ /_/ / /___/ /___/ /___/ /___  / / _/ /  | |/ / /___   
         \____/\____/_____/_____/_____/\____/ /_/ /___/  |___/_____/                                                           
 */
+pragma solidity ^0.8.9;
 
-pragma solidity >=0.6.7 <0.9.0;
-pragma experimental ABIEncoderV2;
-//SPDX-License-Identifier: MIT
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./ElectionFactory.sol";
