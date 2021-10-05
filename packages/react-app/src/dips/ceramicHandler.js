@@ -15,7 +15,10 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
     const connection = await web3Modal.connect();
     const provider = new ethers.providers.Web3Provider(connection);
     const signer = provider.getSigner();
-    const network = await provider.getNetwork();
+    let network = await provider.getNetwork();
+    if (network.chainId === 31337 || network.chainId === 1337 ) { 
+      network = {name: "localhost", chainId: 31337}
+    }
     /* CREATE CERAMIC ELECTION */
     const { ceramic, idx, schemasCommitId } = await makeCeramicClient(address);
     // current users' existing elections
@@ -50,7 +53,7 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
       await electionDoc.makeReadOnly();
       Object.freeze(electionDoc);
 
-      const electionId = electionDoc.commitId.toString();
+      const electionId = electionDoc.commitId.toUrl();
 
       /* CREATE ELECTION ON-CHAIN (push the ceramic commitId to elections array) */
       let contract = new ethers.Contract(
@@ -60,8 +63,8 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
       );
       let transaction = await contract.createElection(electionId);
       const receipt = await transaction.wait();
-      const onChainElectionId = receipt.events[0].args.electionId;
-      return onChainElectionId;
+      const id = receipt.events[0].args.electionId;
+      return id;
     }
   };
 
@@ -116,7 +119,13 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
 
   const getElections = async () => {
     const contract = readContracts.Diplomat;
-    const elections = await contract.getElections();
+    const allElections = await contract.getElections();
+    const elections = allElections.filter(d => {
+      return d.startsWith("ceramic://")
+    }); 
+    if ( !elections ) {
+      return [];
+    }
     console.log({ elections });
     const newElectionsMap = new Map();
     const { idx, ceramic } = await makeCeramicClient();

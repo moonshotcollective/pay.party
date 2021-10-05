@@ -13,21 +13,14 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
     const connection = await web3Modal.connect();
     const provider = new ethers.providers.Web3Provider(connection);
     const signer = provider.getSigner();
-    const network = await provider.getNetwork();
-    let contract = new ethers.Contract(
-      Diplomat[network.chainId][network.name].contracts.Diplomat.address,
-      Diplomat[network.chainId][network.name].contracts.Diplomat.abi,
-      signer,
-    );
-    let transaction = await contract.createElection(name, candidates, fundAmount, tokenAdr, votes, kind);
-    const receipt = await transaction.wait();
-    console.log(address);
-    const onChainElectionId = receipt.events[0].args.electionId.toNumber();
+    let network = await provider.getNetwork();
+    if (network.chainId === 31337 || network.chainId === 1337 ) { 
+      network = {name: "localhost", chainId: 31337}
+    }
+    
     const message = "qdip-create-" + address;
     const signature = await provider.send("personal_sign", [message, address]);
-    console.log("new election created", onChainElectionId);
     const result = await axios.post(serverUrl + "distributions", {
-      onChainElectionId,
       name,
       candidates,
       fundAmount,
@@ -37,49 +30,24 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
       address,
       signature,
     });
+
+    const electionId = result.data.electionId; 
+
+    let contract = new ethers.Contract(
+      Diplomat[network.chainId][network.name].contracts.Diplomat.address,
+      Diplomat[network.chainId][network.name].contracts.Diplomat.abi,
+      signer,
+    );
+
+
+    let transaction = await contract.createElection(electionId);
+    const receipt = await transaction.wait();
+    console.log(address);
+    const id = receipt.events[0].args.electionId;
     console.log(result.data);
-    return result.data.success;
-    // // const result = await
-    // return new Promise((resolve, reject) => {
-    //   tx(
-    //     writeContracts.Diplomat.createElection(name, candidates, fundAmount, tokenAdr, votes, kind, {
-    //       gasLimit: 12450000,
-    //     }),
-    //     async update => {
-    //       console.log("📡 Transaction Update:", update);
-    //       if (update && (update.status === "confirmed" || update.status === 1)) {
-    //         if (typeof result.wait === "function") {
-    //           const receipt = await update.wait();
-    //           console.log(address);
-    //           const onChainElectionId = receipt.events[0].args.electionId.toNumber();
-    //           const message = "qdip-create-" + address;
-    //           const signature = await userSigner.provider.send("personal_sign", [message, address]);
-    //           console.log("new election created", onChainElectionId);
-    //           return axios
-    //             .post(serverUrl + "distributions", {
-    //               onChainElectionId,
-    //               name,
-    //               candidates,
-    //               fundAmount,
-    //               tokenAdr,
-    //               votes,
-    //               kind,
-    //               address,
-    //               signature,
-    //             })
-    //             .then(res => {
-    //               console.log(res.data, res.data.success);
-    //               resolve(res.data.success);
-    //             })
-    //             .catch(reject);
-    //         }
-    //         resolve(update);
-    //       } else {
-    //         reject(update);
-    //       }
-    //     },
-    //   );
-    // });
+
+    return electionId;//result.data.success;
+
   };
 
   const endElection = async id => {
