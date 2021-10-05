@@ -1,21 +1,20 @@
 // import handler for specific QDip project
 import { default as OnChain } from "./onChain";
+import BaseHandler from "./baseHandler";
 import { default as OffChain } from "./offChain";
 import CeramicHandler from "./ceramicHandler";
 
 // create DQip type and add details for the UI
 export default {
-  offChain: {
+  base: {
     id: 0,
+    handler: BaseHandler
+  },
+  offChain: {
+    id: 1,
     name: "Off-chain",
     description: "Election data is stored on backend.",
     handler: OffChain,
-  },
-  onChain: {
-    id: 1,
-    name: "On-chain (votes & election)",
-    description: "",
-    handler: OnChain,
   },
   ceramic: {
     id: 2,
@@ -23,14 +22,4 @@ export default {
     description: "",
     handler: CeramicHandler,
   },
-  //   ipfs: {
-  //     name: "IPFS (votes only)",
-  //     description: "",
-  //     handler: null,
-  //   },
-  //   offChain: {
-  //     name: "Off-chain (votes only)",
-  //     description: "",
-  //     handler: null,
-  //   },
 };
