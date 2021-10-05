@@ -161,10 +161,10 @@ export default function Create({
     setIsConfirmingElection(true);
     // Create a new election
 
-    qdipHandler
+    return qdipHandler
       .createElection(newElection, selectedQdip)
-      .then(success => {
-        console.log({ success });
+      .then(data => {
+        console.log({ data });
         setIsConfirmingElection(false);
         setIsCreatedElection(true);
       })

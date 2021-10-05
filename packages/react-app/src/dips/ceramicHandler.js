@@ -16,13 +16,15 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
     const provider = new ethers.providers.Web3Provider(connection);
     const signer = provider.getSigner();
     const network = await provider.getNetwork();
-    const { ceramic, idx, schemasCommitId } = await makeCeramicClient(address);
-
     /* CREATE CERAMIC ELECTION */
+    const { ceramic, idx, schemasCommitId } = await makeCeramicClient(address);
+    // current users' existing elections
     const existingElections = await idx.get("elections");
     const previousElections = existingElections ? Object.values(existingElections) : null;
 
+    // make sure the user is Authenticated
     if (ceramic?.did?.id) {
+      // create the election document on Ceramic
       const electionDoc = await TileDocument.create(
         ceramic,
         {
@@ -35,25 +37,22 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
           isPaid: false,
         },
         {
+          // owner of the document
           controllers: [ceramic.did.id],
           family: "election",
+          // schemaId to be used to validate the submitted data
           schema: schemasCommitId.election,
         },
       );
       // https://developers.ceramic.network/learn/glossary/#anchor-commit
       // https://developers.ceramic.network/learn/glossary/#anchor-service
       const anchorStatus = await electionDoc.requestAnchor();
-      electionDoc.makeReadOnly();
+      await electionDoc.makeReadOnly();
       Object.freeze(electionDoc);
 
-      await idx.set("elections", [
-        { id: electionDoc.id.toUrl(), name: electionDoc.content.name, candidates: electionDoc.content.candidates },
-        ...Object.values(previousElections || {}),
-      ]);
-
       const electionId = electionDoc.commitId.toString();
-      console.log({ anchorStatus, electionId });
 
+      /* CREATE ELECTION ON-CHAIN (push the ceramic commitId to elections array) */
       let contract = new ethers.Contract(
         Diplomat[network.chainId][network.name].contracts.Diplomat.address,
         Diplomat[network.chainId][network.name].contracts.Diplomat.abi,
@@ -61,20 +60,8 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
       );
       let transaction = await contract.createElection(electionId);
       const receipt = await transaction.wait();
-      console.log(address);
       const onChainElectionId = receipt.events[0].args.electionId;
-      console.log({ onChainElectionId });
-      // TODO: get all elections
-      // 1. store all admins on chain
-      // const allElections = [];
-      // // { "0x" : ["", "", ""], "0x5" : ["", "", ""] }
-      // const adminElec = Object.entries().forEach(([key, value]) => {
-      //   const userElections = await idx.get("elections", key);
-      //   allElections.push(...value);
-      // });
-
-      // get all my elections as an admin
-      // const elections = await idx.get("elections")
+      return onChainElectionId;
     }
   };
 
@@ -129,44 +116,48 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
 
   const getElections = async () => {
     const contract = readContracts.Diplomat;
-    const numElections = await contract.electionCount();
-    console.log({ numElections });
+    const elections = await contract.getElections();
+    console.log({ elections });
     const newElectionsMap = new Map();
-    for (let i = 0; i < numElections; i++) {
-      const election = await contract.getElection(i);
+    const { idx, ceramic } = await makeCeramicClient();
 
-      const votedResult = await axios.get(serverUrl + `distribution/${id}/${address}`);
-      const { hasVoted } = votedResult.data;
+    for (let i = 0; i < elections.length; i++) {
+      const electionDoc = await ceramic.loadStream(elections[i]);
+      const creatorDid = electionDoc.controllers[0];
 
-      const offChainElectionResult = await axios.get(serverUrl + `distribution/${id}`);
-      const { election: offChainElection } = offChainElectionResult.data;
-      console.log({ offChainElection });
-      const nVoted = Object.keys(offChainElection.votes).length + 1;
-
+      let creatorMainAddress = creatorDid;
+      const creatorAccounts = await idx.get("cryptoAccounts", creatorDid);
       const tags = [];
-      if (election.creator === address) {
-        tags.push("admin");
+
+      if (creatorAccounts) {
+        console.log({ creatorAccounts });
+        const accounts = Object.keys(creatorAccounts);
+        const [mainAddress, networkAndChainId] = Object.keys(creatorAccounts)[0].split("@");
+        creatorMainAddress = mainAddress;
+        if (
+          Object.keys(creatorAccounts).some(creatorAddress =>
+            electionDoc.content.candidates.includes(creatorAddress.split("@")[0]),
+          )
+        ) {
+          tags.push("candidate");
+        }
+        if (Object.keys(creatorAccounts).some(creatorAddress => address === creatorAddress.split("@")[0])) {
+          tags.push("admin");
+        }
       }
-      if (election.candidates.includes(address)) {
-        tags.push("candidate");
-      }
-      if (hasVoted) {
-        tags.push("voted");
-      }
-      let status = election.active;
-      let created = new Date(election.date * 1000).toISOString().substring(0, 10);
-      let electionEntry = {
-        id: i,
-        created_date: created,
-        name: election.name,
-        creator: election.creator,
-        n_voted: { n_voted: nVoted, outOf: election.candidates.length },
-        status: status,
-        tags: tags,
+      const formattedElection = {
+        name: electionDoc.content.name,
+        description: electionDoc.content.description,
+        created_date: new Date(electionDoc.content.createdAt).toLocaleDateString(),
+        creatorDid,
+        creator: creatorMainAddress || creatorDid,
+        status: electionDoc.content.isActive,
+        paid: electionDoc.content.isPaid,
+        n_voted: { n_voted: 888, outOf: electionDoc.content.candidates.length },
+        tags,
       };
-      newElectionsMap.set(i, electionEntry);
+      newElectionsMap.set(elections[i], formattedElection);
     }
-    console.log({ newElectionsMap });
     return newElectionsMap;
   };
 

@@ -70,6 +70,10 @@ contract Diplomat is AccessControl, ElectionFactory {
        return _createElection(electionId);
     }
 
+    function getElections() public view returns (string[] memory){
+       return elections;
+    }
+
     function endElection(string memory electionId) public {
         _endElection(electionId);
     }

@@ -8,15 +8,17 @@ export { default as Transactor } from "./Transactor";
 
 export const makeCeramicClient = async address => {
   const ceramic = new Ceramic(process.env.CERAMIC_NODE_URL || "https://ceramic-clay.3boxlabs.com");
-  const threeIdConnect = new ThreeIdConnect();
-  const authProvider = new EthereumAuthProvider(window.ethereum, address);
-  await threeIdConnect.connect(authProvider);
-  const did = new DID({
-    provider: threeIdConnect.getDidProvider(),
-    resolver: ThreeIdResolver.getResolver(ceramic),
-  });
-  await did.authenticate();
-  await ceramic.setDID(did);
+  if (address) {
+    const threeIdConnect = new ThreeIdConnect();
+    const authProvider = new EthereumAuthProvider(window.ethereum, address);
+    await threeIdConnect.connect(authProvider);
+    const did = new DID({
+      provider: threeIdConnect.getDidProvider(),
+      resolver: ThreeIdResolver.getResolver(ceramic),
+    });
+    await did.authenticate();
+    await ceramic.setDID(did);
+  }
   const idx = new IDX({ ceramic, aliases: ceramicConfig.definitions });
-  return { ceramic, idx, schemasCommitId: ceramicConfig.schemas };
+  return { ceramic, idx, schemasCommitId: ceramicConfig.schemas, definitions: ceramicConfig.definitions };
 };

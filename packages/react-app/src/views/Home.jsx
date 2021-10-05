@@ -40,7 +40,7 @@ export default function Home({ tx, readContracts, writeContracts, mainnetProvide
 
   /***** States *****/
 
-  const [selectedQdip, setSelectedQdip] = useState("onChain");
+  const [selectedQdip, setSelectedQdip] = useState("ceramic");
   const [qdipHandler, setQdipHandler] = useState();
   const [electionsMap, setElectionsMap] = useState();
   const [tableDataLoading, setTableDataLoading] = useState(false);
