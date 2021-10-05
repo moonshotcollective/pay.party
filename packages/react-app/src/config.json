@@ -1,0 +1,14 @@
+{
+  "definitions": {
+    "votes": "kjzl6cwe1jw145vpuux23ixrom87shqtgdug2hsn0ovib2hvimauatfev6rmm5c",
+    "vote": "kjzl6cwe1jw149ix0t2tf24drmsvsccleq9ice2v71yv216qv3esydjzb0vsumd",
+    "elections": "kjzl6cwe1jw14bg5xthadztf4ym2lrse1pog2yykk5c2jlety4uo9ekt2aspmn5",
+    "election": "kjzl6cwe1jw145cz7m62g9amdvwjdyvxe50ti3lq2j4m11t3tx7t7gggl2ub95i"
+  },
+  "schemas": {
+    "votes": "ceramic://k3y52l7qbv1fryfsvq3d4ti86njs3ixc2cbtgef2bnf1x5skjlm7eoiv8g96ym8e8",
+    "vote": "ceramic://k3y52l7qbv1frxi7xmsu70la34ooa2eb0i182kq93u6608614hwu4o3qqik7e2neo",
+    "elections": "ceramic://k3y52l7qbv1fry2zi56ysw13g1sv27usjn46a409f17oovayvzjcqaw4nja8ww0lc",
+    "election": "ceramic://k3y52l7qbv1frxxrmu50234g5xiyl8jznhpj5i5qer8sygk4be5dsdd1i5ry54veo"
+  }
+}

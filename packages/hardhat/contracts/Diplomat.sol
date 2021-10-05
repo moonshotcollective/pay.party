@@ -65,10 +65,9 @@ contract Diplomat is AccessControl, ElectionFactory {
 
     function createElection(
         string memory electionId
-    ) public {
+    ) public returns (string memory){
         // NOTE: Using electionCount as ID
-        _createElection(electionId);
-
+       return _createElection(electionId);
     }
 
     function endElection(string memory electionId) public {

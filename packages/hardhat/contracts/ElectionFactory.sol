@@ -33,9 +33,10 @@ contract ElectionFactory is Distributor {
 
     function _createElection(
         string memory electionId
-    ) internal {
+    ) internal returns (string memory) {
         elections.push(electionId); 
         _emitNewElection(electionId);
+        return electionId;
     }
 
     function _endElection(string memory electionId) 
