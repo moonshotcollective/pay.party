@@ -38,9 +38,11 @@ export default function Home({ tx, readContracts, writeContracts, mainnetProvide
     routeHistory.push("/create");
   };
 
+  console.log({dips})
+
   /***** States *****/
 
-  const [selectedQdip, setSelectedQdip] = useState("ceramic");
+  const [selectedQdip, setSelectedQdip] = useState("base");
   const [qdipHandler, setQdipHandler] = useState();
   const [electionsMap, setElectionsMap] = useState();
   const [tableDataLoading, setTableDataLoading] = useState(false);
@@ -69,6 +71,7 @@ export default function Home({ tx, readContracts, writeContracts, mainnetProvide
   /***** Methods *****/
   const init = async () => {
     setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
+    console.log(qdipHandler)
   };
 
   /***** Render *****/

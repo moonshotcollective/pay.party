@@ -64,7 +64,7 @@ export default function Create({
   };
 
   /***** States *****/
-  const [selectedQdip, setSelectedQdip] = useState("onChain");
+  const [selectedQdip, setSelectedQdip] = useState("offChain");
   const [qdipHandler, setQdipHandler] = useState();
   const [current, setCurrent] = useState(0);
   const [errorMsg, setErrorMsg] = useState();
@@ -77,7 +77,7 @@ export default function Create({
     votes: 5,
     tokenAdr: "0x0000000000000000000000000000000000000000",
     tokenName: "",
-    kind: "onChain",
+    kind: "offChain",
     candidates: [],
   });
   const [steps, setSteps] = useState([]);
