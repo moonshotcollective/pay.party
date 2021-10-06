@@ -38,7 +38,7 @@ export default function Home({ tx, readContracts, writeContracts, mainnetProvide
     routeHistory.push("/create");
   };
 
-  console.log({dips})
+  console.log({ dips });
 
   /***** States *****/
 
@@ -71,7 +71,7 @@ export default function Home({ tx, readContracts, writeContracts, mainnetProvide
   /***** Methods *****/
   const init = async () => {
     setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
-    console.log(qdipHandler)
+    console.log(qdipHandler);
   };
 
   /***** Render *****/
