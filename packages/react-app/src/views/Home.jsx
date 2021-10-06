@@ -31,13 +31,9 @@ export default function Home({ tx, readContracts, writeContracts, mainnetProvide
   /***** Routes *****/
   const routeHistory = useHistory();
   const viewElection = record => {
-    // console.log({ record });
-    console.log(record);
     const isCeramicRecord = record.id.startsWith(CERAMIC_PREFIX);
     const electionId = isCeramicRecord ? record.id.split(CERAMIC_PREFIX)[1] : record.id;
-    routeHistory.push("/vote/" + electionId, {
-      kind: isCeramicRecord ? "ceramic" : "offChain",
-    });
+    routeHistory.push("/vote/" + electionId + `?kind=${isCeramicRecord ? "ceramic" : "offChain"}`);
   };
 
   const createElection = () => {

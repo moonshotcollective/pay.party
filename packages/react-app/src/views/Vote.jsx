@@ -5,6 +5,7 @@ import { Button, Divider, Table, Space, Typography, Input } from "antd";
 import { fromWei, toWei, toBN, numberToHex } from "web3-utils";
 import { Address, PayButton } from "../components";
 import { ethers } from "ethers";
+import qs from "query-string";
 import { PlusSquareOutlined, MinusSquareOutlined, SendOutlined, CloseCircleOutlined } from "@ant-design/icons";
 import dips from "../dips";
 import { makeCeramicClient } from "../helpers";
@@ -91,17 +92,10 @@ export default function Vote({
   /***** Methods *****/
 
   const init = async () => {
-    const { ceramic } = await makeCeramicClient();
-    console.log(id);
-    const election = await ceramic.loadStream(id.split(CERAMIC_PREFIX)[0]);
-    console.log({ election });
-    // TODO: find a better way of doing this
-    const { kind } = location.state ? location.state : { kind: "ceramic" };
-    console.log(kind);
-    // setSelectedQdip();
-    setQdipHandler(
-      dips[kind || "ceramic"].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner),
-    );
+    // TODO: handle invalid urls in the UI -> 404 ?
+    console.log(location);
+    const { kind } = qs.parse(location.search);
+    setQdipHandler(dips[kind].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner));
     setSpender(readContracts?.Diplomat?.address);
     // loadERC20List();
   };

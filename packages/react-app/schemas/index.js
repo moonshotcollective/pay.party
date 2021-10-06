@@ -64,6 +64,11 @@ const ElectionSchema = {
       title: "description",
       maxLength: 450,
     },
+    kind: {
+      type: "string",
+      title: "kind",
+      maxLength: 150,
+    },
     voteAllocation: {
       type: "integer",
       title: "voteAllocation",

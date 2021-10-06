@@ -37,6 +37,7 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
           name,
           description,
           candidates,
+          kind: "ceramic",
           voteAllocation: votes,
           createdAt: new Date().toISOString(),
           isActive: true,
@@ -177,32 +178,39 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
     const candidatesSealedBallots = [];
     for (const candidateDid of candidateDids) {
       const candidateVotes = await idx.get("votes", candidateDid);
-      const foundElectionBallots = Object.values(candidateVotes).find(vote => vote.name === election.name);
-      console.log({ foundElectionBallots });
-      // load the stream
-      const candidateBallotDoc = await TileDocument.load(ceramic, foundElectionBallots.id);
-      // get the first commitId which immutable
-      const { allCommitIds } = candidateBallotDoc;
+      console.log(candidateVotes);
+      if (candidateVotes) {
+        const foundElectionBallots = Object.values(candidateVotes).find(vote => vote.name === election.name);
+        console.log({ foundElectionBallots });
+        // load the stream
+        const candidateBallotDoc = await TileDocument.load(ceramic, foundElectionBallots.id);
+        // get the first commitId which immutable
+        const { allCommitIds } = candidateBallotDoc;
 
-      const sealedVote = allCommitIds[0];
-      // load the first commit
-      const sealedVoteDoc = await TileDocument.load(ceramic, sealedVote);
-      console.log("sealed", sealedVoteDoc.content);
-      candidatesSealedBallots.push(...sealedVoteDoc.content);
+        const sealedVote = allCommitIds[0];
+        // load the first commit
+        const sealedVoteDoc = await TileDocument.load(ceramic, sealedVote);
+        console.log("sealed", sealedVoteDoc.content);
+        candidatesSealedBallots.push(...sealedVoteDoc.content);
+      }
     }
     const defaultValues = election.candidates.reduce((candidatesAddress, addr) => {
       candidatesAddress[addr] = "0";
       return candidatesAddress;
     }, {});
-    const totalScoresPerCandidates = candidatesSealedBallots.reduce((candidateScores, ballot) => {
-      console.log(ballot);
-      console.log(ballot.voteAttribution);
-      candidateScores[ballot.address] = candidateScores[ballot.address]
-        ? (parseFloat(candidateScores[ballot.address]) + parseFloat(ballot.voteAttribution)).toString()
-        : "0";
-      return candidateScores;
-    }, defaultValues);
-    return Object.values(totalScoresPerCandidates);
+    if (candidatesSealedBallots.length > 0) {
+      const totalScoresPerCandidates = candidatesSealedBallots.reduce((candidateScores, ballot) => {
+        console.log(ballot);
+        console.log(ballot.voteAttribution);
+        candidateScores[ballot.address] = candidateScores[ballot.address]
+          ? (parseFloat(candidateScores[ballot.address]) + parseFloat(ballot.voteAttribution)).toString()
+          : "0";
+        return candidateScores;
+      }, defaultValues);
+      console.log(Object.values(totalScoresPerCandidates));
+      return Object.values(totalScoresPerCandidates);
+    }
+    return [];
   };
 
   const getFinalPayout = async id => {

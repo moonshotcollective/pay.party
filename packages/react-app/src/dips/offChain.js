@@ -142,6 +142,7 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
   };
 
   const getElectionStateById = async id => {
+    // TODO: make get request to backend and return election formatted
     let election = {};
     let loadedElection = await readContracts.Diplomat.getElection(id);
     election = { ...loadedElection };
@@ -159,6 +160,7 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
   };
 
   const getCandidatesScores = async id => {
+    // TODO: get candidate scores from backend
     let onChainElection = await readContracts.Diplomat.getElection(id);
     const offChainElectionResult = await axios.get(serverUrl + `distribution/${id}`);
     const { election: offChainElection } = offChainElectionResult.data;
