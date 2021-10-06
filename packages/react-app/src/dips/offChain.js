@@ -14,14 +14,15 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
     const provider = new ethers.providers.Web3Provider(connection);
     const signer = provider.getSigner();
     let network = await provider.getNetwork();
-    if (network.chainId === 31337 || network.chainId === 1337 ) { 
-      network = {name: "localhost", chainId: 31337}
+    if (network.chainId === 31337 || network.chainId === 1337) {
+      network = { name: "localhost", chainId: 31337 };
     }
-    
+
     const message = "qdip-create-" + address;
     const signature = await provider.send("personal_sign", [message, address]);
     const result = await axios.post(serverUrl + "distributions", {
       name,
+      creator: address,
       candidates,
       fundAmount,
       tokenAdr,
@@ -31,7 +32,7 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
       signature,
     });
 
-    const electionId = result.data.electionId; 
+    const electionId = result.data.electionId;
 
     let contract = new ethers.Contract(
       Diplomat[network.chainId][network.name].contracts.Diplomat.address,
@@ -39,15 +40,13 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
       signer,
     );
 
-
     let transaction = await contract.createElection(electionId);
     const receipt = await transaction.wait();
     console.log(address);
     const id = receipt.events[0].args.electionId;
     console.log(result.data);
 
-    return electionId;//result.data.success;
-
+    return electionId; //result.data.success;
   };
 
   const endElection = async id => {
@@ -113,7 +112,7 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
       const offChainElectionResult = await axios.get(serverUrl + `distribution/${id}`);
       const { election: offChainElection } = offChainElectionResult.data;
       console.log({ offChainElection });
-      const nVoted = Object.keys(offChainElection.votes).length + 1;
+      const nVoted = Object.keys(offChainElection.votes).length;
 
       const tags = [];
       if (election.creator === address) {

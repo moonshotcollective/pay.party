@@ -8,7 +8,7 @@ import CeramicHandler from "./ceramicHandler";
 export default {
   base: {
     id: 0,
-    handler: BaseHandler
+    handler: BaseHandler,
   },
   offChain: {
     id: 1,
