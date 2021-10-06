@@ -93,7 +93,6 @@ export default function Vote({
 
   const init = async () => {
     // TODO: handle invalid urls in the UI -> 404 ?
-    console.log(location);
     const { kind } = qs.parse(location.search);
     setQdipHandler(dips[kind].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner));
     setSpender(readContracts?.Diplomat?.address);
@@ -148,6 +147,7 @@ export default function Vote({
 
   const addVote = addr => {
     const candidate = candidateMap.get(addr);
+    console.log({ candidate });
     if (candidate.votes < electionState.votes && votesLeft > 0) {
       candidate.votes = candidate.votes + 1;
       candidate.score = (candidate.votes ** 0.5).toFixed(2);

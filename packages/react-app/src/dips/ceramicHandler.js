@@ -98,18 +98,19 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
 
   const castBallot = async (id, candidates, quad_scores) => {
     const { idx, ceramic, schemasCommitId } = await makeCeramicClient(address);
+    const election = await serializeCeramicElection(id, address);
 
     const existingVotes = await idx.get("votes");
-    // TODO: check if already voted for this election through another address
+    // TODO: check if already voted for this election through another address linked to this did
     console.log({ existingVotes });
     const previousVotes = existingVotes ? Object.values(existingVotes) : null;
-    const hasAlreadyVotedForElec = previousVotes && previousVotes.find(vote => vote.name === election.name);
+    const hasAlreadyVotedForElec = previousVotes && previousVotes.find(vote => vote.electionId === id);
     if (hasAlreadyVotedForElec) {
       console.error("Already voted for this election");
       return;
     }
 
-    const voteAttribution = votes.map((voteAttributionCount, i) => ({
+    const voteAttribution = quad_scores.map((voteAttributionCount, i) => ({
       address: election.candidates[i],
       voteAttribution: voteAttributionCount,
     }));
@@ -148,7 +149,7 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
   };
 
   const getElectionStateById = async id => {
-    const { idx, ceramic } = await makeCeramicClient(address);
+    const { idx, ceramic } = await makeCeramicClient();
     const election = await serializeCeramicElection(id, address);
     const caip10 = await Caip10Link.fromAccount(ceramic, `${address}@eip155:1`);
     const existingVotes = await idx.get("votes", caip10.did);
@@ -167,7 +168,7 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
   };
 
   const getCandidatesScores = async id => {
-    const { idx, ceramic } = await makeCeramicClient(address);
+    const { idx, ceramic } = await makeCeramicClient();
     const election = await serializeCeramicElection(id, address);
     const candidateDids = await Promise.all(
       election.candidates.map(async candidateAddress => {
@@ -180,7 +181,7 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
       const candidateVotes = await idx.get("votes", candidateDid);
       console.log(candidateVotes);
       if (candidateVotes) {
-        const foundElectionBallots = Object.values(candidateVotes).find(vote => vote.name === election.name);
+        const foundElectionBallots = Object.values(candidateVotes).find(vote => vote.electionId === election.id);
         console.log({ foundElectionBallots });
         // load the stream
         const candidateBallotDoc = await TileDocument.load(ceramic, foundElectionBallots.id);

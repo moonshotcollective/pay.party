@@ -49,7 +49,9 @@ export const serializeCeramicElection = async (ceramicElectionId, address) => {
     creator: creatorMainAddress || creatorDid,
     status: electionDoc.content.isActive,
     paid: electionDoc.content.isPaid,
-    n_voted: { n_voted: 888, outOf: electionDoc.content.candidates.length },
+    votes: electionDoc.content.voteAllocation,
+    // TODO: get nVoted
+    n_voted: { n_voted: 0, outOf: electionDoc.content.candidates.length },
     tags,
   };
   return serializedElection;
