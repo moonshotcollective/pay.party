@@ -1,12 +1,46 @@
-pragma solidity >=0.6.7 <0.9.0;
 //SPDX-License-Identifier: MIT
+/**
+                                            ..
+                                          ,*.
+                                        .**,
+                                       ,***.
+                                 .,.   ,***,
+                               .**,    *****.
+                             .****.    ,*****,
+                           .******,     ,******,
+                         .*******.       .********,              .
+                       ,******.            .*************,,*****.
+                     ,*****.        ,,.        ,************,.
+                  .,****.         ,*****,
+                 ,***,          ,*******,.              ..
+               ,**,          .*******,.       ,********.
+                           .******,.       .********,
+                         .*****,         .*******,
+                       ,****,          .******,
+                     ,***,.          .*****,
+                   ,**,.           ./***,
+                  ,,             .***,
+                               .**,
+            __  _______  ____  _   _______ __  ______  ______
+           /  |/  / __ \/ __ \/ | / / ___// / / / __ \/_  __/
+          / /|_/ / / / / / / /  |/ /\__ \/ /_/ / / / / / /
+         / /  / / /_/ / /_/ / /|  /___/ / __  / /_/ / / /
+        /_/  /_/\____/\____/_/_|_//____/_/_/_/\____/_/_/__    ________
+          / ____/ __ \/ /   / /   / ____/ ____/_  __/  _/ |  / / ____/
+         / /   / / / / /   / /   / __/ / /     / /  / / | | / / __/
+        / /___/ /_/ / /___/ /___/ /___/ /___  / / _/ /  | |/ / /___
+        \____/\____/_____/_____/_____/\____/ /_/ /___/  |___/_____/
+*/
+pragma solidity ^0.8.9;
 
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract Distributor {
     // utilize safemath for solidity <0.8.0
     using SafeMath for uint256;
+    using SafeERC20 for IERC20;
 
     // validate 1-1 relationship between users and shares
     modifier accurateUserSharesRatio(
@@ -100,10 +134,10 @@ contract Distributor {
                     // send ERC20 token
                     if (spenderIsContract) {
                         // from contract if spender is contract
-                        IERC20(token).transfer(users[i], shares[i]);
+                        IERC20(token).safeTransfer(users[i], shares[i]);
                     } else {
                         // from spender if spender is not contract
-                        IERC20(token).transferFrom(
+                        IERC20(token).safeTransferFrom(
                             spender,
                             users[i],
                             shares[i]

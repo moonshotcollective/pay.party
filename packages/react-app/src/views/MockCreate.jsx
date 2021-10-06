@@ -30,7 +30,7 @@ import { useHistory } from "react-router-dom";
 import QRCodeIcon from "../components/Icons/QRCodeIcon";
 import { ControllerPlus } from "../components/Inputs/ControllerPlus";
 import CenteredFrame from "../components/layout/CenteredFrame";
-import { handlers } from "../dips";
+import dips from "../dips";
 
 const CreateElectionPage = ({
   address,
@@ -91,9 +91,7 @@ const CreateElectionPage = ({
 
   useEffect(() => {
     console.log(selectedQdip);
-    setQdipHandler(
-      handlers[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner),
-    );
+    setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner));
   }, [selectedQdip]);
 
   useEffect(() => {

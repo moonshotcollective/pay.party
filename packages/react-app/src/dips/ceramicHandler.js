@@ -2,13 +2,15 @@ import React, { useState, useEffect, useRef } from "react";
 import { fromWei, toWei, toBN, numberToHex } from "web3-utils";
 import { ethers } from "ethers";
 import Web3Modal from "web3modal";
+import { TileDocument } from "@ceramicnetwork/stream-tile";
 import axios from "axios";
 import Diplomat from "../contracts/hardhat_contracts.json";
+import { makeCeramicClient } from "../helpers";
 
 export const serverUrl = process.env.REACT_APP_API_URL || "http://localhost:45622/";
 
-export default function OffChain(tx, readContracts, writeContracts, mainnetProvider, address, userSigner) {
-  const createElection = async ({ name, candidates, fundAmount, tokenAdr, votes, kind }) => {
+export default function CeramicHandler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner) {
+  const createElection = async ({ name, description, candidates, votes }) => {
     const web3Modal = new Web3Modal();
     const connection = await web3Modal.connect();
     const provider = new ethers.providers.Web3Provider(connection);
@@ -17,37 +19,53 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
     if (network.chainId === 31337 || network.chainId === 1337 ) { 
       network = {name: "localhost", chainId: 31337}
     }
-    
-    const message = "qdip-create-" + address;
-    const signature = await provider.send("personal_sign", [message, address]);
-    const result = await axios.post(serverUrl + "distributions", {
-      name,
-      candidates,
-      fundAmount,
-      tokenAdr,
-      votes,
-      kind,
-      address,
-      signature,
-    });
+    /* CREATE CERAMIC ELECTION */
+    const { ceramic, idx, schemasCommitId } = await makeCeramicClient(address);
+    // current users' existing elections
+    const existingElections = await idx.get("elections");
+    const previousElections = existingElections ? Object.values(existingElections) : null;
 
-    const electionId = result.data.electionId; 
+    // make sure the user is Authenticated
+    if (ceramic?.did?.id) {
+      // create the election document on Ceramic
+      const electionDoc = await TileDocument.create(
+        ceramic,
+        {
+          name,
+          description,
+          candidates,
+          voteAllocation: votes,
+          createdAt: new Date().toISOString(),
+          isActive: true,
+          isPaid: false,
+        },
+        {
+          // owner of the document
+          controllers: [ceramic.did.id],
+          family: "election",
+          // schemaId to be used to validate the submitted data
+          schema: schemasCommitId.election,
+        },
+      );
+      // https://developers.ceramic.network/learn/glossary/#anchor-commit
+      // https://developers.ceramic.network/learn/glossary/#anchor-service
+      const anchorStatus = await electionDoc.requestAnchor();
+      await electionDoc.makeReadOnly();
+      Object.freeze(electionDoc);
 
-    let contract = new ethers.Contract(
-      Diplomat[network.chainId][network.name].contracts.Diplomat.address,
-      Diplomat[network.chainId][network.name].contracts.Diplomat.abi,
-      signer,
-    );
+      const electionId = electionDoc.commitId.toUrl();
 
-
-    let transaction = await contract.createElection(electionId);
-    const receipt = await transaction.wait();
-    console.log(address);
-    const id = receipt.events[0].args.electionId;
-    console.log(result.data);
-
-    return electionId;//result.data.success;
-
+      /* CREATE ELECTION ON-CHAIN (push the ceramic commitId to elections array) */
+      let contract = new ethers.Contract(
+        Diplomat[network.chainId][network.name].contracts.Diplomat.address,
+        Diplomat[network.chainId][network.name].contracts.Diplomat.abi,
+        signer,
+      );
+      let transaction = await contract.createElection(electionId);
+      const receipt = await transaction.wait();
+      const id = receipt.events[0].args.electionId;
+      return id;
+    }
   };
 
   const endElection = async id => {
@@ -101,107 +119,72 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
 
   const getElections = async () => {
     const contract = readContracts.Diplomat;
-    const numElections = await contract.electionCount();
-    console.log({ numElections });
-    const newElectionsMap = new Map();
-    for (let i = 0; i < numElections; i++) {
-      const election = await contract.getElection(i);
-
-      const votedResult = await axios.get(serverUrl + `distribution/${i}/${address}`);
-      const { hasVoted } = votedResult.data;
-
-      const offChainElectionResult = await axios.get(serverUrl + `distribution/${i}`);
-      const { election: offChainElection } = offChainElectionResult.data;
-      console.log({ offChainElection });
-      const nVoted = Object.keys(offChainElection.votes).length + 1;
-
-      const tags = [];
-      if (election.creator === address) {
-        tags.push("admin");
-      }
-      if (election.candidates.includes(address)) {
-        tags.push("candidate");
-      }
-      if (hasVoted) {
-        tags.push("voted");
-      }
-      let created = new Date(election.date * 1000).toISOString().substring(0, 10);
-      let electionEntry = {
-        id: i,
-        created_date: created,
-        name: election.name,
-        creator: election.creator,
-        n_voted: { n_voted: nVoted, outOf: election.candidates.length },
-        active: election.active,
-        tags: tags,
-      };
-      newElectionsMap.set(i, electionEntry);
+    const allElections = await contract.getElections();
+    const elections = allElections.filter(d => {
+      return d.startsWith("ceramic://")
+    }); 
+    if ( !elections ) {
+      return [];
     }
-    console.log({ newElectionsMap });
+    console.log({ elections });
+    const newElectionsMap = new Map();
+    const { idx, ceramic } = await makeCeramicClient();
+
+    for (let i = 0; i < elections.length; i++) {
+      const electionDoc = await ceramic.loadStream(elections[i]);
+      const creatorDid = electionDoc.controllers[0];
+
+      let creatorMainAddress = creatorDid;
+      const creatorAccounts = await idx.get("cryptoAccounts", creatorDid);
+      const tags = [];
+
+      if (creatorAccounts) {
+        console.log({ creatorAccounts });
+        const accounts = Object.keys(creatorAccounts);
+        const [mainAddress, networkAndChainId] = Object.keys(creatorAccounts)[0].split("@");
+        creatorMainAddress = mainAddress;
+        if (
+          Object.keys(creatorAccounts).some(creatorAddress =>
+            electionDoc.content.candidates.includes(creatorAddress.split("@")[0]),
+          )
+        ) {
+          tags.push("candidate");
+        }
+        if (Object.keys(creatorAccounts).some(creatorAddress => address === creatorAddress.split("@")[0])) {
+          tags.push("admin");
+        }
+      }
+      const formattedElection = {
+        name: electionDoc.content.name,
+        description: electionDoc.content.description,
+        created_date: new Date(electionDoc.content.createdAt).toLocaleDateString(),
+        creatorDid,
+        creator: creatorMainAddress || creatorDid,
+        status: electionDoc.content.isActive,
+        paid: electionDoc.content.isPaid,
+        n_voted: { n_voted: 888, outOf: electionDoc.content.candidates.length },
+        tags,
+      };
+      newElectionsMap.set(elections[i], formattedElection);
+    }
     return newElectionsMap;
   };
 
   const getElectionStateById = async id => {
-    let election = await readContracts.Diplomat.getElection(id);
-    console.log({ election });
-    let electionEntry = {
-      n_voted: { outOf: election.candidates.length },
-    };
-    let hasVoted = false;
-    let isActive = false;
-    if (election.kind === "onChain") {
-      hasVoted = await contract.getAddressVoted(id, address);
-      isActive = election.active;
-      console.log({ hasVoted });
-      const electionVoted = await contract.getElectionNumVoted(id);
-      electionEntry.n_voted = {
-        ...electionEntry.n_voted,
-        n_voted: electionVoted.toNumber(),
-      };
-    }
-    if (election.kind === "offChain") {
-      const votedResult = await axios.get(serverUrl + `distribution/state/${id}/${address}`);
-      hasVoted = votedResult.data.hasVoted;
-      isActive = votedResult.data.isActive;
-      const offChainElectionResult = await axios.get(serverUrl + `distribution/${id}`);
-      const { election: offChainElection } = offChainElectionResult.data;
-      const nVoted = Object.keys(offChainElection.votes).length;
-      electionEntry.n_voted = {
-        ...electionEntry.n_voted,
-        n_voted: nVoted,
-      };
-    }
+    let election = {};
+    let loadedElection = await readContracts.Diplomat.getElection(id);
+    election = { ...loadedElection };
+    election.isPaid = loadedElection.paid;
+    election.fundingAmount = fromWei(loadedElection.amount.toString(), "ether");
+    election.isCandidate = loadedElection.candidates.includes(address);
+    election.isAdmin = loadedElection.creator === address;
 
-    const tags = [];
-    if (election.creator === address) {
-      tags.push("admin");
-    }
-    if (election.candidates.includes(address)) {
-      tags.push("candidate");
-    }
-    if (hasVoted) {
-      tags.push("voted");
-    }
-    const created = new Date(election.date * 1000).toISOString().substring(0, 10);
-    const isCandidate = election.candidates.includes(address);
-    const formattedElection = {
-      ...electionEntry,
-      id: id,
-      created_date: created,
-      isPaid: election.paid,
-      isCandidate,
-      isAdmin: election.creator === address,
-      tokenSymbol: election.token === "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984" ? "UNI" : "ETH",
-      name: election.name,
-      voteAllocation: election.votes,
-      canVote: !hasVoted && isCandidate,
-      amount: fromWei(election.amount.toString(), "ether"),
-      creator: election.creator,
-      active: isActive,
-      tags: tags,
-      candidates: election.candidates,
-    };
-    return formattedElection;
+    const votedResult = await axios.get(serverUrl + `distribution/state/${id}/${address}`);
+    const { hasVoted, isActive } = votedResult.data;
+    election.canVote = !hasVoted && election.isCandidate;
+    console.log({ isActive });
+    election.active = isActive;
+    return election;
   };
 
   const getCandidatesScores = async id => {

@@ -6,7 +6,7 @@ import DistributionCard from "../components/Cards/DistributionCard";
 import Container from "../components/layout/Container";
 import SideCard from "../components/Cards/SideCard";
 import VoteCard from "../components/Cards/VoterCards/VoteCard";
-import { handlers } from "../dips";
+import dips from "../dips";
 import CenteredFrame from "../components/layout/CenteredFrame";
 
 function MockElectionPage({
@@ -103,7 +103,7 @@ function MockElectionPage({
     }
     // setSelectedQdip();
     setQdipHandler(
-      handlers[election.kind].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner),
+      dips[election.kind].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner),
     );
     setSpender(readContracts?.Diplomat?.address);
     // loadERC20List();

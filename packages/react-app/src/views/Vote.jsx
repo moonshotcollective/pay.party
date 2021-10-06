@@ -4,10 +4,9 @@ import React, { useState, useEffect } from "react";
 import { Button, Divider, Table, Space, Typography, Input } from "antd";
 import { fromWei, toWei, toBN, numberToHex } from "web3-utils";
 import { Address, PayButton } from "../components";
+import { ethers } from "ethers";
 import { PlusSquareOutlined, MinusSquareOutlined, SendOutlined, CloseCircleOutlined } from "@ant-design/icons";
-
-import { CenteredFrame } from "../components/layout";
-import { handlers } from "../dips";
+import dips from "../dips";
 
 const { Text } = Typography;
 
@@ -96,7 +95,7 @@ export default function Vote({
     }
     // setSelectedQdip();
     setQdipHandler(
-      handlers[election.kind].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner),
+      dips[election.kind].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner),
     );
     setSpender(readContracts?.Diplomat?.address);
     // loadERC20List();
@@ -233,12 +232,17 @@ export default function Vote({
     const adrs = Array.from(candidateMap.keys());
     //convert payout to wei
     let payoutInWei = finalPayout.payout.map(p => toWei(p));
-    const election = await readContracts.Diplomat.getElection(id);
-    console.log({ election });
     tx(
       writeContracts.Diplomat.payElection(id, adrs, payoutInWei, {
         gasLimit: 12450000,
       }),
+      async update => {
+        if (update) {
+          if (update.status === "confirmed" || update.status === 1) {
+            loadElectionState();
+          }
+        }
+      },
     );
   };
 
@@ -332,17 +336,54 @@ export default function Vote({
       return [addressCol(), percentageCol(), payoutCol()];
     }
   };
+
+  const approveuni = async () => {
+    const token = "UNI";
+    const decimals = await readContracts[token].decimals();
+    console.log(decimals);
+    const maxApproval = "100000000";
+    const newAllowance = ethers.utils.parseUnits(maxApproval, decimals);
+    const res = await writeContracts[token].approve(spender, newAllowance);
+    await res.wait(1);
+    console.log("approved");
+  };
+
+  const testUni = async () => {
+    console.log("testUni");
+    const adrs = ["0x76c48E1F02774C40372a3497620D946136136172"];
+    //convert payout to wei
+    let payoutInWei = ["0.01"].map(p => toWei(p));
+    tx(
+      writeContracts.Diplomat.payElection(id, adrs, payoutInWei, {
+        gasLimit: 12450000,
+      }),
+      async update => {
+        console.log(update);
+        if (update) {
+          if (update.status === "confirmed" || update.status === 1) {
+            loadElectionState();
+          }
+        }
+      },
+    );
+  };
+
   //TODO: table votes are hard to update if we use useState, so has to be outside
   const tableCols = makeTableCols();
 
   return (
     <>
-      <CenteredFrame>
+      <div
+        className="voting-view"
+        style={{ border: "1px solid #cccccc", padding: 16, width: 900, margin: "auto", marginTop: 64 }}
+      >
+        {/* <Button onClick={() => testUni()}>Test UNI Send</Button>
+        <Button onClick={() => approveuni()}>Approve UNI Send</Button> */}
+
         <PageHeader
           ghost={false}
           onBack={() => routeHistory.push("/")}
           title={electionState ? electionState.name : "Loading Election..."}
-          style={{ width: 1000 }}
           extra={[
             electionState && electionState.active && electionState.isAdmin && (
               <Button
@@ -350,7 +391,6 @@ export default function Vote({
                 type="danger"
                 size="large"
                 shape="round"
-                key="unique2"
                 style={{ margin: 4 }}
                 onClick={() => endElection()}
                 loading={isElectionEnding}
@@ -384,7 +424,6 @@ export default function Vote({
           <Table
             dataSource={tableSrc}
             columns={tableCols}
-            rowKey="address"
             pagination={false}
             onRow={(record, rowIndex) => {
               return {
@@ -407,7 +446,7 @@ export default function Vote({
           <div>{errorMsg && <Text type="danger">{errorMsg}</Text>}</div>
           <div>{electionState.paid && <Text type="success">Election Payout Complete!</Text>}</div>
         </PageHeader>
-      </CenteredFrame>
+      </div>
     </>
   );
 }

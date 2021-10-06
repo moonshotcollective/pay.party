@@ -22,12 +22,8 @@ import {
   LinkOutlined,
   CopyTwoTone,
 } from "@ant-design/icons";
-// import { HStack, Button } from "@chakra-ui/react";
-
-import { CenteredFrame } from "../components/layout";
 import { Address, AddressInput } from "../components";
-import { handlers } from "../dips";
-
+import dips from "../dips";
 import { mainnetProvider, blockExplorer } from "../App";
 
 export default function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
@@ -42,9 +38,11 @@ export default function Home({ tx, readContracts, writeContracts, mainnetProvide
     routeHistory.push("/create");
   };
 
+  console.log({dips})
+
   /***** States *****/
 
-  const [selectedQdip, setSelectedQdip] = useState("onChain");
+  const [selectedQdip, setSelectedQdip] = useState("base");
   const [qdipHandler, setQdipHandler] = useState();
   const [electionsMap, setElectionsMap] = useState();
   const [tableDataLoading, setTableDataLoading] = useState(false);
@@ -72,7 +70,8 @@ export default function Home({ tx, readContracts, writeContracts, mainnetProvide
 
   /***** Methods *****/
   const init = async () => {
-    setQdipHandler(handlers[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
+    setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
+    console.log(qdipHandler)
   };
 
   /***** Render *****/
@@ -179,36 +178,39 @@ export default function Home({ tx, readContracts, writeContracts, mainnetProvide
     loading: tableDataLoading,
   };
   return (
-    <CenteredFrame>
-      <PageHeader
-        ghost={false}
-        title="Elections"
-        extra={[
-          <Button
-            icon={<PlusOutlined />}
-            type="primary"
-            size="large"
-            shape="round"
-            style={{ margin: 4 }}
-            key="unique"
-            onClick={createElection}
-          >
-            Create Election
-          </Button>,
-        ]}
-      />
-      {electionsMap && (
-        <Table
-          {...table_state}
-          size="middle"
-          dataSource={Array.from(electionsMap.values()).reverse()}
-          columns={columns}
-          rowKey="name"
-          pagination={false}
-          scroll={{ y: 600 }}
-          style={{ padding: 10, width: 1000 }}
+    <>
+      <div
+        className="elections-view"
+        style={{ border: "1px solid #cccccc", padding: 16, width: 1000, margin: "auto", marginTop: 64 }}
+      >
+        <PageHeader
+          ghost={false}
+          title="Elections"
+          extra={[
+            <Button
+              icon={<PlusOutlined />}
+              type="primary"
+              size="large"
+              shape="round"
+              style={{ margin: 4 }}
+              onClick={createElection}
+            >
+              Create Election
+            </Button>,
+          ]}
         />
-      )}
-    </CenteredFrame>
+        {electionsMap && (
+          <Table
+            {...table_state}
+            size="middle"
+            dataSource={Array.from(electionsMap.values()).reverse()}
+            columns={columns}
+            pagination={false}
+            scroll={{ y: 600 }}
+            style={{ padding: 10 }}
+          />
+        )}
+      </div>
+    </>
   );
 }

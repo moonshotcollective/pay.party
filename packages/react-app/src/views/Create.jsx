@@ -38,13 +38,13 @@ import {
   ExportOutlined,
   DoubleRightOutlined,
 } from "@ant-design/icons";
-import { handlers } from "../dips";
+import dips from "../dips";
 import { serverUrl } from "../dips/offChain";
 import { ethers } from "ethers";
 
 const CURRENCY = "ETH";
 const TOKEN = "UNI";
-const DIP_TYPES = Object.keys(handlers);
+const DIP_TYPES = Object.keys(dips);
 
 export default function Create({
   address,
@@ -67,7 +67,7 @@ export default function Create({
   };
 
   /***** States *****/
-  const [selectedQdip, setSelectedQdip] = useState("onChain");
+  const [selectedQdip, setSelectedQdip] = useState("base");
   const [qdipHandler, setQdipHandler] = useState();
   const [current, setCurrent] = useState(0);
   const [errorMsg, setErrorMsg] = useState();
@@ -80,7 +80,7 @@ export default function Create({
     votes: 5,
     tokenAdr: "0x0000000000000000000000000000000000000000",
     tokenName: "",
-    kind: "onChain",
+    kind: "offChain",
     candidates: [],
   });
   const [steps, setSteps] = useState([]);
@@ -161,10 +161,10 @@ export default function Create({
     setIsConfirmingElection(true);
     // Create a new election
 
-    qdipHandler
+    return qdipHandler
       .createElection(newElection, selectedQdip)
-      .then(success => {
-        console.log({ success });
+      .then(data => {
+        console.log({ data });
         setIsConfirmingElection(false);
         setIsCreatedElection(true);
       })

@@ -8,37 +8,33 @@ const bodyParser = require("body-parser");
 const app = express();
 
 // MY INFURA_ID, SWAP IN YOURS FROM https://infura.io/dashboard/ethereum
-const INFURA_ID = "460f40a260564ac4a4f4b3fffb032dad";
+const INFURA_ID = process.env.INFURA_ID;//"460f40a260564ac4a4f4b3fffb032dad";
 const PORT = process.env.PORT || 45622;
 /// 📡 What chain are your contracts deployed to?
 
-const targetNetwork = {
-  name: "rinkeby",
-  color: "#e0d068",
-  chainId: 4,
-  rpcUrl: `https://rinkeby.infura.io/v3/${INFURA_ID}`,
-  faucet: "https://faucet.rinkeby.io/",
-  blockExplorer: "https://rinkeby.etherscan.io/",
+// const targetNetwork = {
+//   name: "rinkeby",
+//   color: "#e0d068",
+//   chainId: 4,
+//   rpcUrl: `https://rinkeby.infura.io/v3/${INFURA_ID}`,
+//   faucet: "https://faucet.rinkeby.io/",
+//   blockExplorer: "https://rinkeby.etherscan.io/",
+// };
+// const targetNetwork = {
+//     name: "mainnet",
+//     color: "#ff8b9e",
+//     chainId: 1,
+//     rpcUrl: `https://mainnet.infura.io/v3/${INFURA_ID}`,
+//     blockExplorer: "https://etherscan.io/",
+//   };
+ const targetNetwork = {
+   name: "localhost",
+   color: "#666666",
+   chainId: 31337,
+   blockExplorer: "",
+   rpcUrl: "http://localhost:8545",
 };
 
-// const targetNetwork = {
-//   name: "localhost",
-//   color: "#666666",
-//   chainId: 31337,
-//   blockExplorer: "",
-//   rpcUrl: "http://localhost:8545",
-// };
-
-/*
-const targetNetwork = {
-    name: "mainnet",
-    color: "#ff8b9e",
-    chainId: 1,
-    rpcUrl: `https://mainnet.infura.io/v3/${INFURA_ID}`,
-    blockExplorer: "https://etherscan.io/",
-  };
- 
-*/
 
 // 🏠 Your local provider is usually pointed at your local blockchain
 const localProviderUrl = targetNetwork.rpcUrl;
@@ -144,7 +140,6 @@ app.post("/distributions", async function (request, response) {
 
   try {
     const resAdd = await db.collection("distributions").add({
-      onChainElectionId: request.body.onChainElectionId,
       name: request.body.name,
       candidates: request.body.candidates,
       fundAmount: request.body.fundAmount,
@@ -161,7 +156,7 @@ app.post("/distributions", async function (request, response) {
 
     console.log({ resAdd });
     console.log(resAdd.id);
-    return response.status(201).send(resAdd);
+    return response.status(201).send({electionId: resAdd.id});
   } catch (exception) {
     console.log(exception);
     return response.status(500).send("Error creating distribution");
@@ -191,7 +186,7 @@ app.get("/distributions", async function (request, response) {
 app.get("/currentDistribution", async function (request, response) {
   try {
     db.collection("distributions")
-      .where("active", "==", true)
+      .where("status", "==", "started")
       .get()
       .then((snapshot) => {
         if (!snapshot.empty) {
@@ -306,7 +301,7 @@ app.post(
     const electionSnapshot = await db
       .collection("distributions")
       .where(
-        "onChainElectionId",
+        "id",
         "==",
         parseInt(request.params.distributionId, 10)
       )
@@ -382,7 +377,7 @@ app.post(
     const electionSnapshot = await db
       .collection("distributions")
       .where(
-        "onChainElectionId",
+        "id",
         "==",
         parseInt(request.params.distributionId, 10)
       )
@@ -400,13 +395,59 @@ app.post(
     }
   }
 );
+// const myCollectionDispose = await Promise.all(
+//   acceptableIds.map(id => {
+//     return db
+//       .collection('myCollection')
+//       .doc(id)
+//       .onSnapshot(doSomething)
+//   })
+// )
+app.post(
+  "/distributions/ids",
+  async (req, res, next) => {
+    console.log(req.body.firebaseElectionIds)
+    const electionSnapshotRefs = await Promise.all(
+      req.body.firebaseElectionIds.map(id => {
+        return db
+          .collection('distributions')
+          .doc(id)
+      })
+    ); 
+    console.log({electionSnapshotRefs})
+    const elections = await Promise.all(electionSnapshotRefs.map(ref => {
+      return ref.get();
+    }))
+    console.log({elections})
+    // await db
+    //   .collection("distributions")
+    //   .where("id", "array-contains", req.body.firebaseElectionIds)
+    //   .get();
+    if (elections.length === 0) {
+      console.log("In if")
+      return res.status(404);
+    }
+    
+    let data = [];
+    
+    elections.forEach((doc) => {
+      data.push({
+        id: doc.id,
+        data: doc.data(),
+      });
+    });
+
+    console.log({data})
+    return res.send(data);
+  }
+);
 
 app.get(
   "/distribution/state/:distributionId/:address",
   async (req, res, next) => {
     const electionSnapshot = await db
       .collection("distributions")
-      .where("onChainElectionId", "==", parseInt(req.params.distributionId, 10))
+      .where("id", "==", parseInt(req.params.distributionId, 10))
       .get();
     if (!electionSnapshot || !electionSnapshot.docs[0]) {
       return res.status(404);
@@ -424,7 +465,7 @@ app.get(
 app.get("/distribution/:distributionId", async (req, res, next) => {
   const electionSnapshot = await db
     .collection("distributions")
-    .where("onChainElectionId", "==", parseInt(req.params.distributionId, 10))
+    .where("id", "==", parseInt(req.params.distributionId, 10))
     .get();
 
   if (!electionSnapshot || !electionSnapshot.docs[0]) {

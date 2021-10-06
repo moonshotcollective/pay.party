@@ -11,7 +11,7 @@ import Container from "../components/layout/Container";
 import TabListItem from "../components/Tabs/TabListItem";
 import ElectionCard from "../components/Cards/ElectionCard";
 
-import { handlers } from "../dips";
+import dips from "../dips";
 import { serverUrl } from "../dips/offChain";
 import { fromWei, toBN } from "web3-utils";
 import CenteredFrame from "../components/layout/CenteredFrame";
@@ -22,7 +22,7 @@ function MockHome({ tx, readContracts, writeContracts, mainnetProvider, address 
   const routeHistory = useHistory();
 
   /***** States *****/
-  const [selectedQdip, setSelectedQdip] = useState("onChain");
+  const [selectedQdip, setSelectedQdip] = useState("base");
   const [qdipHandler, setQdipHandler] = useState();
   const [electionsMap, setElectionsMap] = useState();
   const [isLoading, setIsLoading] = useState(false);
@@ -116,9 +116,9 @@ function MockHome({ tx, readContracts, writeContracts, mainnetProvider, address 
             };
             newElectionsMap.set(iterator, electionEntry);
             console.log(newElectionsMap);
-            setElectionsMap(newElectionsMap);
           }
         }
+        setElectionsMap(newElectionsMap);
         setIsLoading(false);
       })();
     }
@@ -126,7 +126,8 @@ function MockHome({ tx, readContracts, writeContracts, mainnetProvider, address 
 
   /***** Methods *****/
   const init = async () => {
-    setQdipHandler(handlers[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
+    console.log(dips);
+    setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
   };
   const headingColor = useColorModeValue("yellow.600", "yellow.500");
   // const createElection = () => {
