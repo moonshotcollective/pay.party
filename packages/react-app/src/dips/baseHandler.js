@@ -1,6 +1,7 @@
 import axios from "axios";
 import { makeCeramicClient } from "../helpers";
 import qs from "query-string";
+import { CERAMIC_PREFIX, serializeCeramicElection } from "./helpers";
 export default function BaseHandler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner) {
   const getElections = async () => {
     const contract = readContracts.Diplomat;
@@ -11,11 +12,11 @@ export default function BaseHandler(tx, readContracts, writeContracts, mainnetPr
     }
 
     const ceramicElections = allElections.filter(d => {
-      return d.startsWith("ceramic://");
+      return d.startsWith(CERAMIC_PREFIX);
     });
 
     const firebaseElectionIds = allElections.filter(d => {
-      return !d.startsWith("ceramic://");
+      return !d.startsWith(CERAMIC_PREFIX);
     });
 
     const serverUrl = process.env.REACT_APP_API_URL || "http://localhost:45622/";
@@ -43,6 +44,7 @@ export default function BaseHandler(tx, readContracts, writeContracts, mainnetPr
           tags.push("voted");
         }
         const formattedElection = {
+          id: firebaseElec.id,
           name: firebaseElec.data.name,
           description: firebaseElec.data.description,
           created_date: new Date(firebaseElec.createdAt).toLocaleDateString(),
@@ -60,44 +62,9 @@ export default function BaseHandler(tx, readContracts, writeContracts, mainnetPr
       newElectionsMap.set(id, election);
     });
 
-    const { idx, ceramic } = await makeCeramicClient();
-
     for (let i = 0; i < ceramicElections.length; i++) {
-      const electionDoc = await ceramic.loadStream(ceramicElections[i]);
-      const creatorDid = electionDoc.controllers[0];
-
-      let creatorMainAddress = creatorDid;
-      const creatorAccounts = await idx.get("cryptoAccounts", creatorDid);
-      const tags = [];
-
-      if (creatorAccounts) {
-        console.log({ creatorAccounts });
-        const accounts = Object.keys(creatorAccounts);
-        const [mainAddress, networkAndChainId] = Object.keys(creatorAccounts)[0].split("@");
-        creatorMainAddress = mainAddress;
-        if (
-          Object.keys(creatorAccounts).some(creatorAddress =>
-            electionDoc.content.candidates.includes(creatorAddress.split("@")[0]),
-          )
-        ) {
-          tags.push("candidate");
-        }
-        if (Object.keys(creatorAccounts).some(creatorAddress => address === creatorAddress.split("@")[0])) {
-          tags.push("admin");
-        }
-      }
-      const formattedElection = {
-        name: electionDoc.content.name,
-        description: electionDoc.content.description,
-        created_date: new Date(electionDoc.content.createdAt).toLocaleDateString(),
-        creatorDid,
-        creator: creatorMainAddress || creatorDid,
-        status: electionDoc.content.isActive,
-        paid: electionDoc.content.isPaid,
-        n_voted: { n_voted: 888, outOf: electionDoc.content.candidates.length },
-        tags,
-      };
-      newElectionsMap.set(`ceramic://${ceramicElections[i]}`, formattedElection);
+      const serializedElection = await serializeCeramicElection(ceramicElections[i], address);
+      newElectionsMap.set(ceramicElections[i], serializedElection);
     }
     return newElectionsMap;
   };

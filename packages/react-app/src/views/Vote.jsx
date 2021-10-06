@@ -1,5 +1,5 @@
 import { PageHeader } from "antd";
-import { useParams, useHistory } from "react-router-dom";
+import { useParams, useHistory, useLocation } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import { Button, Divider, Table, Space, Typography, Input } from "antd";
 import { fromWei, toWei, toBN, numberToHex } from "web3-utils";
@@ -7,6 +7,8 @@ import { Address, PayButton } from "../components";
 import { ethers } from "ethers";
 import { PlusSquareOutlined, MinusSquareOutlined, SendOutlined, CloseCircleOutlined } from "@ant-design/icons";
 import dips from "../dips";
+import { makeCeramicClient } from "../helpers";
+import { CERAMIC_PREFIX } from "../dips/helpers";
 
 const { Text } = Typography;
 
@@ -26,9 +28,10 @@ export default function Vote({
   /***** Routes *****/
   const routeHistory = useHistory();
   let { id } = useParams();
+  const location = useLocation();
 
   /***** States *****/
-  const [selectedQdip, setSelectedQdip] = useState("onChain");
+  const [selectedQdip, setSelectedQdip] = useState("ceramic");
   const [qdipHandler, setQdipHandler] = useState();
 
   const [electionState, setElectionState] = useState({});
@@ -88,14 +91,16 @@ export default function Vote({
   /***** Methods *****/
 
   const init = async () => {
-    const election = await readContracts.Diplomat.getElection(id);
+    const { ceramic } = await makeCeramicClient();
+    console.log(id);
+    const election = await ceramic.loadStream(id.split(CERAMIC_PREFIX)[0]);
     console.log({ election });
-    if (election.token == "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984") {
-      setToken("UNI");
-    }
+    // TODO: find a better way of doing this
+    const { kind } = location.state ? location.state : { kind: "ceramic" };
+    console.log(kind);
     // setSelectedQdip();
     setQdipHandler(
-      dips[election.kind].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner),
+      dips[kind || "ceramic"].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner),
     );
     setSpender(readContracts?.Diplomat?.address);
     // loadERC20List();

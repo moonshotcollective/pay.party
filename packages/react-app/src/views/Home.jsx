@@ -25,13 +25,19 @@ import {
 import { Address, AddressInput } from "../components";
 import dips from "../dips";
 import { mainnetProvider, blockExplorer } from "../App";
+import { CERAMIC_PREFIX } from "../dips/helpers";
 
 export default function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
   /***** Routes *****/
   const routeHistory = useHistory();
   const viewElection = record => {
     // console.log({ record });
-    routeHistory.push("/vote/" + record.id);
+    console.log(record);
+    const isCeramicRecord = record.id.startsWith(CERAMIC_PREFIX);
+    const electionId = isCeramicRecord ? record.id.split(CERAMIC_PREFIX)[1] : record.id;
+    routeHistory.push("/vote/" + electionId, {
+      kind: isCeramicRecord ? "ceramic" : "offChain",
+    });
   };
 
   const createElection = () => {
