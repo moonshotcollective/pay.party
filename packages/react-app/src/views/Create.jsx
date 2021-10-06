@@ -289,6 +289,26 @@ export default function Create({
 
   const Step2 = () => {
     const [toAddress, setToAddress] = useState("");
+
+    const handleAddVoters = async () => {
+      const text = await navigator.clipboard.readText();
+      const addresses = text.split(",");
+
+      const candidates = newElection.candidates.slice();
+
+      addresses.forEach(voteAddress => {
+        try {
+          const voteAddressWithChecksum = ethers.utils.getAddress(voteAddress);
+          if (!candidates.includes(voteAddressWithChecksum)) {
+            candidates.push(voteAddressWithChecksum);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      });
+      newElection.candidates = candidates;
+    };
+
     return (
       <>
         <Form
@@ -309,6 +329,10 @@ export default function Create({
               },
             ]}
           >
+            <Button type="primary" block onClick={() => handleAddVoters()}>
+              Add Candidates from Clipboard
+            </Button>
+
             <Space style={{ margin: "1em 0em" }}>
               <AddAddress
                 ensProvider={mainnetProvider}
