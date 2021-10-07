@@ -28,3 +28,6 @@ jobs:
           heroku_email: ${{secrets.HEROKU_EMAIL}}
         env:
           HD_APP_BASE: "packages/react-app"
+          REACT_APP_NETWORK_NAME: rinkeby
+          REACT_APP_API_URL: http://qd-api-staging.herokuapp.com/
+          REACT_APP_CERAMIC_SEED: ${{secrets.CERAMIC_SEED}}
