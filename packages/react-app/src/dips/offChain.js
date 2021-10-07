@@ -205,26 +205,30 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
   };
 
   const getFinalPayout = async id => {
-    const election = await readContracts.Diplomat.getElection(id);
-    const electionFunding = election.amount;
-    const offChainElectionResult = await axios.get(serverUrl + `distribution/${id}`);
-    const { election: offChainElection } = offChainElectionResult.data;
+    // const election = await readContracts.Diplomat.getElection(id);
+    let election = await axios.get(serverUrl + `distributions/${id}`); //await readContracts.Diplomat.getElection(id);
+    console.log({ election });
+    const electionFunding = election.data.fundAmount;
+    // const offChainElectionResult = await axios.get(serverUrl + `distribution/${id}`);
+    // const { election: offChainElection } = offChainElectionResult.data;
 
     let totalScores = await getCandidatesScores(id);
     let payout = [];
     let totalScoresSum = totalScores.reduce((sum, curr) => sum + curr, 0);
     console.log({ totalScoresSum });
+    let scores = [];
 
-    // for (let i = 0; i < election.candidates.length; i++) {
-    //   const candidateScore = offChainElection.votes[election.candidates[i]];
-    //   console.log({ candidateScore });
-    //   if (!candidateScore) {
-    //     scores.push(candidateScore);
-    //     scoreSum += candidateScore;
-    //   } else {
-    //     scores.push(0);
-    //   }
-    // }
+    for (let i = 0; i < election.data.candidates.length; i++) {
+      const candidateScore = election.data.votes[election.data.candidates[i]];
+      console.log({ candidateScore });
+      let scoreSum = 0;
+      if (!candidateScore) {
+        scores.push(candidateScore);
+        scoreSum += candidateScore;
+      } else {
+        scores.push(0);
+      }
+    }
 
     for (let i = 0; i < totalScores.length; i++) {
       const candidatePay = Math.floor((totalScores[i] / totalScoresSum) * electionFunding);

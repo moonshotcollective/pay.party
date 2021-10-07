@@ -51,6 +51,7 @@ export default function BaseHandler(tx, readContracts, writeContracts, mainnetPr
           id: fb.id,
           created_date: new Date().toLocaleDateString(), // TODO: Update date
           n_voted: { n_voted: nVoted, outOf: fb.data.candidates.length },
+          status: fb.data.active,
           tags: tags,
         };
 
