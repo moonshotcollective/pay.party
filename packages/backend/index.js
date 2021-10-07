@@ -257,11 +257,11 @@ app.get("/distributions/:distributionId", async function (request, response) {
     .collection("distributions")
     .doc(request.params.distributionId);
   const distribution = await distributionRef.get();
-
-  if (!distribution.exists) {
-    response.status(404).send("Distribution not found");
+  console.log(distribution.data());
+  if (!distribution) {
+    return response.status(404).send("Distribution not found");
   } else {
-    response.send(distribution);
+    return response.send(distribution.data());
   }
 });
 
