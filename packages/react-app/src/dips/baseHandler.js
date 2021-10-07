@@ -50,13 +50,9 @@ export default function BaseHandler(tx, readContracts, writeContracts, mainnetPr
         }
 
         const formattedElection = {
+          ...fb.data, 
           id: fb.id,
-          name: fb.data.name,
-          description: fb.data.description,
           created_date: new Date().toLocaleDateString(), // TODO: Update date
-          creator: fb.data.creator,
-          status: fb.data.active,
-          paid: fb.data.paid,
           n_voted: { n_voted: nVoted, outOf: fb.data.candidates.length },
           tags: tags,
         };
@@ -67,7 +63,7 @@ export default function BaseHandler(tx, readContracts, writeContracts, mainnetPr
     );
     // console.log({ formattedFirebaseElections });
     formattedFirebaseElections.forEach(({ id, ...election }) => {
-      newElectionsMap.set(id, election);
+      newElectionsMap.set(id, {id, ...election});
     });
 
     for (let i = 0; i < ceramicElections.length; i++) {
@@ -75,7 +71,7 @@ export default function BaseHandler(tx, readContracts, writeContracts, mainnetPr
       newElectionsMap.set(ceramicElections[i], serializedElection);
     }
     
-    // console.log({ newElectionsMap });
+    console.log({ newElectionsMap });
     return newElectionsMap;
   };
 
