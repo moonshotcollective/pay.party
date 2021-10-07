@@ -9,7 +9,7 @@ const app = express();
 
 // MY INFURA_ID, SWAP IN YOURS FROM https://infura.io/dashboard/ethereum
 const INFURA_ID = process.env.INFURA_ID; //"460f40a260564ac4a4f4b3fffb032dad";
-const PORT = process.env.PORT || 45622;
+const PORT = process.env.PORT || 8080;
 /// 📡 What chain are your contracts deployed to?
 
 // const targetNetwork = {
@@ -41,6 +41,34 @@ console.log("🏠 Connecting to provider:", localProviderUrl);
 const localProvider = new ethers.providers.StaticJsonRpcProvider(
   localProviderUrl
 );
+
+const admin = require("firebase-admin");
+
+admin.initializeApp({
+  credential: admin.credential.applicationDefault(),
+});
+
+const db = admin.firestore();
+
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      const validPatternRegexes = [
+        /^(.*)qd-web-staging.herokuapp.com(\/(.*)|)$/,
+        /^(www.|)qd-web-staging.herokuapp.com(\/(.*)|)$/,
+        /^http:\/\/localhost:[0-9]{4}$/,
+      ];
+      if (validPatternRegexes.some((rx) => rx.test(origin)) || !origin) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+  })
+);
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
 
 const isElectionCandidates = async (candidatesToCheck, electionId) => {
   const providerNetwork = await localProvider.getNetwork();
@@ -81,44 +109,6 @@ const isAdmin = async (address) => {
 
   return isAdmin;
 };
-
-const admin = require("firebase-admin");
-
-admin.initializeApp({
-  credential: admin.credential.applicationDefault(),
-});
-
-const db = admin.firestore();
-
-//Uncomment this if you want to create a wallet to send ETH or something...
-// const INFURA = JSON.parse(fs.readFileSync("./infura.txt").toString().trim())
-// const PK = fs.readFileSync("./pk.txt").toString().trim()
-// let wallet = new ethers.Wallet(PK,new ethers.providers.InfuraProvider("goerli",INFURA))
-// console.log(wallet.address)
-// const checkWalletBalance = async ()=>{
-//   console.log("BALANCE:",ethers.utils.formatEther(await wallet.provider.getBalance(wallet.address)))
-// }
-// checkWalletBalance();
-
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      const validPatternRegexes = [
-        /^(.*)qd-web-staging.herokuapp.com(\/(.*)|)$/,
-        /^(www.|)qd-web-staging.herokuapp.com(\/(.*)|)$/,
-        /^http:\/\/localhost:[0-9]{4}$/,
-      ];
-      if (validPatternRegexes.some((rx) => rx.test(origin)) || !origin) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-  })
-);
-
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 
 app.post("/distributions", async function (request, response) {
   console.log("IN DISTRIB", request.body.address, request.body.account);
@@ -466,20 +456,25 @@ app.get("/distribution/:distributionId", async (req, res, next) => {
   return res.send({ election });
 });
 
-if (fs.existsSync("server.key") && fs.existsSync("server.cert")) {
-  https
-    .createServer(
-      {
-        key: fs.readFileSync("server.key"),
-        cert: fs.readFileSync("server.cert"),
-      },
-      app
-    )
-    .listen(PORT, () => {
-      console.log(`HTTPS Listening: ${PORT}`);
+
+const run = async () => {
+  if (fs.existsSync("sslcert/server.key", "utf8") && fs.existsSync("sslcert/server.cert", "utf8")) {
+    await https
+      .createServer(
+        {
+          key: fs.readFileSync("sslcert/server.key"),
+          cert: fs.readFileSync("sslcert/server.cert"),
+        },
+        app
+      )
+      .listen(process.env.PORT || 8443, () => {
+        console.log(`HTTPS Listening on port: ${process.env.PORT || 8443}`);
+      });
+  } else {
+    await app.listen(process.env.PORT || 8080, function () {
+      console.log("HTTP Listening on port:", process.env.PORT || 8080);
     });
-} else {
-  var server = app.listen(PORT, function () {
-    console.log("HTTP Listening on port:", server.address().port);
-  });
+  }
 }
+
+run()
