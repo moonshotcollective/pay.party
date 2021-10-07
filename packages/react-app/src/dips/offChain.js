@@ -142,37 +142,67 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
 
   const getElectionStateById = async id => {
     // TODO: make get request to backend and return election formatted
-    let election = {};
-    let loadedElection = await readContracts.Diplomat.getElection(id);
-    election = { ...loadedElection };
-    election.isPaid = loadedElection.paid;
-    election.fundingAmount = fromWei(loadedElection.amount.toString(), "ether");
-    election.isCandidate = loadedElection.candidates.includes(address);
-    election.isAdmin = loadedElection.creator === address;
+    let fb = await axios.get(serverUrl + `distributions/${id}`); //await readContracts.Diplomat.getElection(id);
 
-    const votedResult = await axios.get(serverUrl + `distribution/state/${id}/${address}`);
-    const { hasVoted, isActive } = votedResult.data;
-    election.canVote = !hasVoted && election.isCandidate;
-    console.log({ isActive });
-    election.active = isActive;
-    return election;
+    const addressElectionState = await axios.get(serverUrl + `distribution/state/${id}/${address}`);
+    const hasVoted = addressElectionState.data.hasVoted;
+    const nVoted = addressElectionState.data.nVoted;
+    const isAdmin = address === fb.data.creator;
+    const isCandidate = fb.data.candidates.includes(address);
+
+    const tags = [];
+    if (hasVoted) {
+      tags.push("voted");
+    }
+    if (isAdmin) {
+      tags.push("admin");
+    }
+    if (isCandidate) {
+      tags.push("candidate");
+    }
+
+    const formattedElection = {
+      ...fb.data,
+      id: id,
+      created_date: new Date().toLocaleDateString(), // TODO: Update date
+      n_voted: { n_voted: nVoted, outOf: fb.data.candidates.length },
+      isCandidate: isCandidate,
+      isAdmin: isAdmin,
+      isPaid: fb.data.paid,
+      canVote: !hasVoted && isCandidate,
+      tags: tags,
+    };
+
+    console.log({ formattedElection });
+    return formattedElection;
   };
 
   const getCandidatesScores = async id => {
+    console.log("HERE!");
     // TODO: get candidate scores from backend
-    let onChainElection = await readContracts.Diplomat.getElection(id);
-    const offChainElectionResult = await axios.get(serverUrl + `distribution/${id}`);
-    const { election: offChainElection } = offChainElectionResult.data;
+    // let onChainElection = await readContracts.Diplomat.getElection(id);
+    const offChainElectionResult = await axios.get(serverUrl + `distributions/${id}`);
+    console.log(offChainElectionResult);
+    const election = offChainElectionResult.data;
+    console.log({ election });
+
     let totalScores = [];
-    for (const candidateVotes of Object.values(offChainElection.votes)) {
-      candidateVotes.forEach((voteScore, i) => {
-        if (totalScores[i] !== 0 && !totalScores[i]) {
-          return totalScores.push(voteScore);
-        }
-        totalScores[i] = totalScores[i] + voteScore;
-      });
+    if (Object.values(election.votes).length > 0) {
+      for (const candidateVotes of Object.values(election.votes)) {
+        candidateVotes.forEach((voteScore, i) => {
+          if (totalScores[i] !== 0 && !totalScores[i]) {
+            return totalScores.push(voteScore);
+          }
+          totalScores[i] = totalScores[i] + voteScore;
+        });
+      }
     }
 
+    // return totalScores;
+    // let fb = await axios.get(serverUrl + `distributions/${id}`); //await readContracts.Diplomat.getElection(id);
+    // console.log({ fb });
+    // const scores = Object.values(fb);
+    console.log({ totalScores });
     return totalScores;
   };
 
