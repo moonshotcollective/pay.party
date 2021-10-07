@@ -25,6 +25,7 @@ import {
   Steps,
   Col,
   Row,
+  Tooltip,
 } from "antd";
 import {
   LeftOutlined,
@@ -34,6 +35,9 @@ import {
   PlusCircleFilled,
   ExportOutlined,
   DoubleRightOutlined,
+  ImportOutlined,
+  SelectOutlined,
+  UploadOutlined,
 } from "@ant-design/icons";
 import dips from "../dips";
 import { serverUrl } from "../dips/offChain";
@@ -269,8 +273,12 @@ export default function Create({
               }}
             />
           </Form.Item>
-          <Form.Item name="type" label="Diplomacy Type">
-            <Select placeholder="Quadratic Diplomacy build..." defaultValue={["onChain"]} onSelect={updateSelectedQdip}>
+          <Form.Item name="type" label="Storage Location">
+            <Select
+              placeholder="Quadratic Diplomacy build..."
+              defaultValue={["Firebase (Centralized)"]}
+              onSelect={updateSelectedQdip}
+            >
               {DIP_TYPES.map(k => (
                 <Select.Option key={k} value={k}>
                   {dips[k].name}
@@ -287,6 +295,40 @@ export default function Create({
     const [toAddress, setToAddress] = useState("");
 
     const handleAddVoters = async () => {
+      const text = await navigator.clipboard.readText();
+      const addresses = text.split(",");
+
+      const candidates = newElection.candidates.slice();
+
+      addresses.forEach(voteAddress => {
+        try {
+          const voteAddressWithChecksum = ethers.utils.getAddress(voteAddress);
+          if (!candidates.includes(voteAddressWithChecksum)) {
+            candidates.push(voteAddressWithChecksum);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      });
+      newElection.candidates = candidates;
+    };
+    const handleAddVotersCSV = async () => {
+      // const text = await navigator.clipboard.readText();
+      // const addresses = text.split(",");
+      // const candidates = newElection.candidates.slice();
+      // addresses.forEach(voteAddress => {
+      //   try {
+      //     const voteAddressWithChecksum = ethers.utils.getAddress(voteAddress);
+      //     if (!candidates.includes(voteAddressWithChecksum)) {
+      //       candidates.push(voteAddressWithChecksum);
+      //     }
+      //   } catch (error) {
+      //     console.log(error);
+      //   }
+      // });
+      // newElection.candidates = candidates;
+    };
+    const handleAddVotersPaste = async () => {
       const text = await navigator.clipboard.readText();
       const addresses = text.split(",");
 
@@ -325,10 +367,6 @@ export default function Create({
               },
             ]}
           >
-            <Button type="primary" block onClick={() => handleAddVoters()}>
-              Add Candidates from Clipboard
-            </Button>
-
             <Space style={{ margin: "1em 0em" }}>
               <AddAddress
                 ensProvider={mainnetProvider}
@@ -350,6 +388,18 @@ export default function Create({
               >
                 Add
               </Button>
+              <Tooltip placement="top" title="Paste from clipboard">
+                {" "}
+                <Button
+                  icon={<ImportOutlined />}
+                  type="link"
+                  block
+                  onClick={() => handleAddVotersPaste()}
+                ></Button>{" "}
+              </Tooltip>
+              <Tooltip placement="top" title="Import CSV">
+                <Button icon={<UploadOutlined />} type="link" block onClick={() => handleAddVotersCSV()}></Button>
+              </Tooltip>
             </Space>
 
             <List

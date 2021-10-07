@@ -24,6 +24,7 @@ import {
 } from "@ant-design/icons";
 import { Address, AddressInput } from "../components";
 import dips from "../dips";
+import BaseHandler from "../dips/baseHandler";
 import { mainnetProvider, blockExplorer } from "../App";
 import { CERAMIC_PREFIX } from "../dips/helpers";
 
@@ -68,7 +69,8 @@ export default function Home({ tx, readContracts, writeContracts, mainnetProvide
 
   /***** Methods *****/
   const init = async () => {
-    setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
+    // TODO: Investigate if this ever needs to be anything other than the baseHandler
+    setQdipHandler(BaseHandler(tx, readContracts, writeContracts, mainnetProvider, address));
   };
 
   /***** Render *****/
@@ -111,11 +113,7 @@ export default function Home({ tx, readContracts, writeContracts, mainnetProvide
       key: "n_voted",
       align: "center",
       width: 100,
-      render: p => (
-        <Typography.Text>
-          {p.n_voted} / {p.outOf}
-        </Typography.Text>
-      ),
+      render: p => <Typography.Text>{/* {p.n_voted} / {p.outOf} */} Nah</Typography.Text>,
     };
   };
   const statusCol = () => {
@@ -134,7 +132,9 @@ export default function Home({ tx, readContracts, writeContracts, mainnetProvide
       dataIndex: "tags",
       key: "tags",
       align: "center",
-      render: tags =>
+      render: (
+        tags, //["yeah"],
+      ) =>
         tags.map(r => {
           let color = "orange";
           if (r == "candidate") {
