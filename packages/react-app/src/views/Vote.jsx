@@ -77,16 +77,18 @@ export default function Vote({
   //   }, [candidateMap]);
 
   useEffect(() => {
-    if (electionState && electionState.name) {
-      updateTableSrc();
-      console.log({ electionState });
-      setVotesLeft(electionState.votes);
-      if (electionState.active) {
-        updateCandidateScore();
-      } else {
-        updateFinalPayout();
+    (async () => {
+      if (electionState && electionState.name) {
+        updateTableSrc();
+        console.log({ electionState });
+        setVotesLeft(electionState.voteAllocation);
+        if (electionState.active) {
+          await updateCandidateScore();
+        } else {
+          updateFinalPayout();
+        }
       }
-    }
+    })();
   }, [electionState, address]);
 
   /***** Methods *****/
@@ -129,6 +131,7 @@ export default function Vote({
       for (let i = 0; i < electionState.candidates.length; i++) {
         mapping.set(electionState.candidates[i], { votes: 0, score: 0 });
       }
+      console.log({ mapping });
       setCandidateMap(mapping);
     }
   };
@@ -417,7 +420,7 @@ export default function Vote({
         >
           {electionState.canVote && (
             <Typography.Title level={5}>
-              Funding: {electionState.fundingAmount} {<Divider type="vertical" />} Remaining Votes: {votesLeft}{" "}
+              Funding: {electionState.fundAmount} {<Divider type="vertical" />} Remaining Votes: {votesLeft}{" "}
             </Typography.Title>
           )}
           <Table
