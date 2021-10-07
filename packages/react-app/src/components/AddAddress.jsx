@@ -125,7 +125,7 @@ export default function AddAddress(props) {
         placeholder={props.placeholder ? props.placeholder : "address"}
         prefix={<Blockie address={currentValue} size={8} scale={3} />}
         value={currentValue}
-        style={{ width: "34em" }}
+        style={{ width: "30em" }}
         onChange={e => {
           updateAddress(e.target.value);
         }}
