@@ -32,7 +32,9 @@ export default function BaseHandler(tx, readContracts, writeContracts, mainnetPr
       firebaseDbElections.map(async fb => {
         console.log({fb})
 
-        const hasVoted = (await axios.get(serverUrl + `distribution/state/${fb.id}/${address}`)).data.hasVoted;
+        const addressElectionState = await axios.get(serverUrl + `distribution/state/${fb.id}/${address}`);
+        const hasVoted = addressElectionState.data.hasVoted;
+        const nVoted = addressElectionState.data.nVoted; 
         const isAdmin = address === fb.data.creator;
         const isCandidate = fb.data.candidates.includes(address);
 
@@ -51,11 +53,11 @@ export default function BaseHandler(tx, readContracts, writeContracts, mainnetPr
           id: fb.id,
           name: fb.data.name,
           description: fb.data.description,
-          created_date: new Date().toLocaleDateString(),
+          created_date: new Date().toLocaleDateString(), // TODO: Update date
           creator: fb.data.creator,
           status: fb.data.active,
           paid: fb.data.paid,
-          n_voted: { n_voted: 1, outOf: fb.data.candidates.length },
+          n_voted: { n_voted: nVoted, outOf: fb.data.candidates.length },
           tags: tags,
         };
 
