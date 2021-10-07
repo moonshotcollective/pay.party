@@ -4,8 +4,7 @@ import { ethers } from "ethers";
 import Web3Modal from "web3modal";
 import axios from "axios";
 import Diplomat from "../contracts/hardhat_contracts.json";
-
-export const serverUrl = process.env.REACT_APP_API_URL || "http://localhost:45622/";
+import { serverUrl } from "./baseHandler";
 
 export default function OffChain(tx, readContracts, writeContracts, mainnetProvider, address, userSigner) {
   const createElection = async ({ name, candidates, fundAmount, tokenAdr, votes, kind }) => {

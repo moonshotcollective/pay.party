@@ -1,7 +1,7 @@
 import axios from "axios";
 import React, { useState, useEffect, useRef } from "react";
 import { fromWei, toWei, toBN, numberToHex } from "web3-utils";
-import { serverUrl } from "./offChain";
+import { serverUrl } from "./baseHandler";
 
 export default function OnChain(tx, readContracts, writeContracts, mainnetProvider, address, userSigner) {
   const createElection = async data => {
