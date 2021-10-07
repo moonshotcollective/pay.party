@@ -40,8 +40,6 @@ export default function Home({ tx, readContracts, writeContracts, mainnetProvide
     routeHistory.push("/create");
   };
 
-  console.log({ dips });
-
   /***** States *****/
 
   const [selectedQdip, setSelectedQdip] = useState("base");
@@ -62,9 +60,7 @@ export default function Home({ tx, readContracts, writeContracts, mainnetProvide
   useEffect(() => {
     (async () => {
       if (qdipHandler) {
-        console.log("get elections");
         let electionsMap = await qdipHandler.getElections();
-        console.log(electionsMap);
         setElectionsMap(electionsMap);
       }
     })();
@@ -73,7 +69,6 @@ export default function Home({ tx, readContracts, writeContracts, mainnetProvide
   /***** Methods *****/
   const init = async () => {
     setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
-    console.log(qdipHandler);
   };
 
   /***** Render *****/

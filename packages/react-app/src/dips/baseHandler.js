@@ -23,23 +23,20 @@ export default function BaseHandler(tx, readContracts, writeContracts, mainnetPr
       return !d.startsWith(CERAMIC_PREFIX);
     });
 
-
     const firebaseDbElections = (await axios.get(serverUrl + `distributions/`)).data;
     // console.log(await firebaseDbElections);
 
     const newElectionsMap = new Map();
     const formattedFirebaseElections = await Promise.all(
       firebaseDbElections.map(async fb => {
-        console.log({fb})
-
         const addressElectionState = await axios.get(serverUrl + `distribution/state/${fb.id}/${address}`);
         const hasVoted = addressElectionState.data.hasVoted;
-        const nVoted = addressElectionState.data.nVoted; 
+        const nVoted = addressElectionState.data.nVoted;
         const isAdmin = address === fb.data.creator;
         const isCandidate = fb.data.candidates.includes(address);
 
-        const tags = []; 
-        if (hasVoted) { 
+        const tags = [];
+        if (hasVoted) {
           tags.push("voted");
         }
         if (isAdmin) {
@@ -50,28 +47,25 @@ export default function BaseHandler(tx, readContracts, writeContracts, mainnetPr
         }
 
         const formattedElection = {
-          ...fb.data, 
+          ...fb.data,
           id: fb.id,
           created_date: new Date().toLocaleDateString(), // TODO: Update date
           n_voted: { n_voted: nVoted, outOf: fb.data.candidates.length },
           tags: tags,
         };
 
-        // console.log({ formattedElection });
         return formattedElection;
       }),
     );
-    // console.log({ formattedFirebaseElections });
     formattedFirebaseElections.forEach(({ id, ...election }) => {
-      newElectionsMap.set(id, {id, ...election});
+      newElectionsMap.set(id, { id, ...election });
     });
 
     for (let i = 0; i < ceramicElections.length; i++) {
       const serializedElection = await serializeCeramicElection(ceramicElections[i], address);
       newElectionsMap.set(ceramicElections[i], serializedElection);
     }
-    
-    console.log({ newElectionsMap });
+
     return newElectionsMap;
   };
 

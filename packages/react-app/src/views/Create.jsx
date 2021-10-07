@@ -125,14 +125,12 @@ export default function Create({
   }, [qdipHandler]);
 
   useEffect(() => {
-    console.log(selectedQdip);
     setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
   }, [selectedQdip]);
 
   /***** Methods *****/
 
   const init = async () => {
-    console.log("init");
     setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner));
     // readContracts.Diplomat.on("NewElection", args => {
     //   let sender = args[1];
@@ -164,7 +162,6 @@ export default function Create({
     return qdipHandler
       .createElection(newElection, selectedQdip)
       .then(data => {
-        console.log({ data });
         setIsConfirmingElection(false);
         setIsCreatedElection(true);
       })
@@ -193,7 +190,6 @@ export default function Create({
     );
 
     const updateSelectedQdip = qdip => {
-      console.log("update qdip", qdip);
       newElection.kind = qdip;
       setQdipHandler(dips[qdip].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner));
     };
@@ -388,7 +384,6 @@ export default function Create({
   };
 
   const Step3 = () => {
-    console.log({ newElection });
     return (
       <>
         <Descriptions bordered style={{ margin: "2em 5em" }} column={1} size="small">

@@ -76,13 +76,11 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
     const message = "qdip-finish-" + id + address;
     console.log("Message:" + message);
     let signature = await userSigner.provider.send("personal_sign", [message, address]);
-    // console.log(signature);
     return axios
       .post(serverUrl + "distributions/" + id + "/finish", {
         address: address,
       })
       .then(response => {
-        // console.log(response);
         if (response.status == 200) {
           return response.statusText;
         } else {
@@ -101,7 +99,6 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
 
     const existingVotes = await idx.get("votes");
     // TODO: check if already voted for this election through another address linked to this did
-    console.log({ existingVotes });
     const previousVotes = existingVotes ? Object.values(existingVotes) : null;
     const hasAlreadyVotedForElec = previousVotes && previousVotes.find(vote => vote.electionId === id);
     if (hasAlreadyVotedForElec) {
@@ -130,7 +127,6 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
       await idx.set("votes", [{ id: ballotDoc.id.toUrl(), electionId: id }, ...Object.values(previousVotes)]);
 
       const sealedBallot = ballotDoc.commitId.toUrl();
-      console.log({ anchorStatus, ballotDoc: ballotDoc });
     }
   };
 
@@ -178,10 +174,8 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
     const candidatesSealedBallots = [];
     for (const candidateDid of candidateDids) {
       const candidateVotes = await idx.get("votes", candidateDid);
-      console.log(candidateVotes);
       if (candidateVotes) {
         const foundElectionBallots = Object.values(candidateVotes).find(vote => vote.electionId === election.id);
-        console.log({ foundElectionBallots });
         // load the stream
         const candidateBallotDoc = await TileDocument.load(ceramic, foundElectionBallots.id);
         // get the first commitId which immutable
@@ -200,8 +194,6 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
     }, {});
     if (candidatesSealedBallots.length > 0) {
       const totalScoresPerCandidates = candidatesSealedBallots.reduce((candidateScores, ballot) => {
-        console.log(ballot);
-        console.log(ballot.voteAttribution);
         candidateScores[ballot.address] = candidateScores[ballot.address]
           ? (parseFloat(candidateScores[ballot.address]) + parseFloat(ballot.voteAttribution)).toString()
           : "0";

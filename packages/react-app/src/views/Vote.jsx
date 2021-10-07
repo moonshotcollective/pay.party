@@ -80,7 +80,6 @@ export default function Vote({
     (async () => {
       if (electionState && electionState.name) {
         updateTableSrc();
-        console.log({ electionState });
         setVotesLeft(electionState.voteAllocation);
         if (electionState.active) {
           await updateCandidateScore();
@@ -113,7 +112,6 @@ export default function Vote({
 
   const loadElectionState = async () => {
     let electionState = await qdipHandler.getElectionStateById(id);
-    console.log({ electionState });
     setElectionState(electionState);
   };
 
@@ -131,7 +129,6 @@ export default function Vote({
       for (let i = 0; i < electionState.candidates.length; i++) {
         mapping.set(electionState.candidates[i], { votes: 0, score: 0 });
       }
-      console.log({ mapping });
       setCandidateMap(mapping);
     }
   };
@@ -145,24 +142,20 @@ export default function Vote({
       setVotesLeft(votesLeft + 1);
       setErrorMsg(null);
     }
-    // console.log(candidate);
   };
 
   const addVote = addr => {
     const candidate = candidateMap.get(addr);
-    console.log({ candidate });
-    if (candidate.votes < electionState.votes && votesLeft > 0) {
+    if (candidate.votes < electionState.voteAllocation && votesLeft > 0) {
       candidate.votes = candidate.votes + 1;
       candidate.score = (candidate.votes ** 0.5).toFixed(2);
       candidateMap.set(addr, candidate);
       setVotesLeft(votesLeft - 1);
       setErrorMsg(null);
     }
-    // console.log(candidate);
   };
 
   const castBallot = async () => {
-    console.log("casting ballot ", votesLeft);
     if (votesLeft > 0) {
       setErrorMsg("All remaining votes need to be distributed");
       return;
@@ -195,7 +188,6 @@ export default function Vote({
   };
 
   const endElection = async () => {
-    console.log("endElection");
     setIsElectionEnding(true);
     qdipHandler
       .endElection(id)
@@ -342,16 +334,13 @@ export default function Vote({
   const approveuni = async () => {
     const token = "UNI";
     const decimals = await readContracts[token].decimals();
-    console.log(decimals);
     const maxApproval = "100000000";
     const newAllowance = ethers.utils.parseUnits(maxApproval, decimals);
     const res = await writeContracts[token].approve(spender, newAllowance);
     await res.wait(1);
-    console.log("approved");
   };
 
   const testUni = async () => {
-    console.log("testUni");
     const adrs = ["0x76c48E1F02774C40372a3497620D946136136172"];
     //convert payout to wei
     let payoutInWei = ["0.01"].map(p => toWei(p));
@@ -360,7 +349,6 @@ export default function Vote({
         gasLimit: 12450000,
       }),
       async update => {
-        console.log(update);
         if (update) {
           if (update.status === "confirmed" || update.status === 1) {
             loadElectionState();

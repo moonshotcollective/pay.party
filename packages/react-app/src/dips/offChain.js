@@ -41,9 +41,7 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
 
     let transaction = await contract.createElection(electionId);
     const receipt = await transaction.wait();
-    console.log(address);
     const id = receipt.events[0].args.electionId;
-    console.log(result.data);
 
     return electionId; //result.data.success;
   };
