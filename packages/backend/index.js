@@ -424,7 +424,7 @@ app.get("/distributions/ids/:ids", async (req, res, next) => {
   elections.forEach((doc) => {
     data.push({
       id: doc.id,
-      createdAt: doc.createTime.toDate(),
+      createdAt: doc.createTime.toString(),
       data: doc.data(),
     });
   });

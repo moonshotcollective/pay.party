@@ -2,63 +2,55 @@ import axios from "axios";
 import { makeCeramicClient } from "../helpers";
 import qs from "query-string";
 import { CERAMIC_PREFIX, serializeCeramicElection } from "./helpers";
+var Map = require("collections/map");
+
 export default function BaseHandler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner) {
+  console.log("BaseHandler()");
   const getElections = async () => {
     const contract = readContracts.Diplomat;
-    const allElections = await contract.getElections();
+    const allContractElections = await contract.getElections();
 
-    if (allElections.length == 0) {
+    if (allContractElections.length == 0) {
       return [];
     }
 
-    const ceramicElections = allElections.filter(d => {
+    const ceramicElections = allContractElections.filter(d => {
       return d.startsWith(CERAMIC_PREFIX);
     });
 
-    const firebaseElectionIds = allElections.filter(d => {
+    const firebaseElectionIds = allContractElections.filter(d => {
       return !d.startsWith(CERAMIC_PREFIX);
     });
 
     const serverUrl = process.env.REACT_APP_API_URL || "http://localhost:45622/";
 
-    console.log({ firebaseElectionIds });
-    const firebaseElections = await axios.get(serverUrl + `distributions/ids/${firebaseElectionIds.join(",")}`, {
-      firebaseElectionIds,
-    });
+    const firebaseDbElections = (await axios.get(serverUrl + `distributions/`)).data;
+    // console.log(await firebaseDbElections);
 
-    console.log({ firebaseElections });
     const newElectionsMap = new Map();
-    const firebaseFormattedElections = await Promise.all(
-      firebaseElections.data.map(async firebaseElec => {
-        const votedResult = await axios.get(serverUrl + `distribution/state/${firebaseElec.id}/${address}`);
-        const { hasVoted } = votedResult.data;
-        const nVoted = Object.keys(firebaseElec.data.votes).length;
-        const tags = [];
-        if (firebaseElec.data.creator === address) {
-          tags.push("admin");
-        }
-        if (firebaseElec.data.candidates.includes(address)) {
-          tags.push("candidate");
-        }
-        if (hasVoted) {
-          tags.push("voted");
-        }
+    const formattedFirebaseElections = await Promise.all(
+      firebaseDbElections.map(async fb => {
+
+        const hasVoted = await axios.get(serverUrl + `distribution/state/${fb.id}/${address}`);
+
         const formattedElection = {
-          id: firebaseElec.id,
-          name: firebaseElec.data.name,
-          description: firebaseElec.data.description,
-          created_date: new Date(firebaseElec.createdAt).toLocaleDateString(),
-          creator: firebaseElec.data.creator,
-          status: firebaseElec.data.active,
-          paid: firebaseElec.data.paid,
-          n_voted: { n_voted: nVoted, outOf: firebaseElec.data.candidates.length },
-          tags,
+          id: fb.id,
+          name: fb.data.name,
+          description: fb.data.description,
+          created_date: new Date().toLocaleDateString(),
+          creator: fb.data.creator,
+          status: fb.data.active,
+          paid: fb.data.paid,
+          n_voted: { n_voted: 1, outOf: fb.data.candidates.length },
+          tags: ["admin"],
         };
-        return { id: firebaseElec.id, ...formattedElection };
+
+        // console.log({ formattedElection });
+        return formattedElection;
       }),
     );
-    console.log({ firebaseFormattedElections });
-    firebaseFormattedElections.forEach(({ id, ...election }) => {
+    // console.log({ formattedFirebaseElections });
+    formattedFirebaseElections.forEach(({ id, ...election }) => {
       newElectionsMap.set(id, election);
     });
 
@@ -66,6 +58,8 @@ export default function BaseHandler(tx, readContracts, writeContracts, mainnetPr
       const serializedElection = await serializeCeramicElection(ceramicElections[i], address);
       newElectionsMap.set(ceramicElections[i], serializedElection);
     }
+    
+    // console.log({ newElectionsMap });
     return newElectionsMap;
   };
 
