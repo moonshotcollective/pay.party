@@ -4,6 +4,7 @@ import qs from "query-string";
 import { CERAMIC_PREFIX, serializeCeramicElection } from "./helpers";
 var Map = require("collections/map");
 
+export const serverUrl = process.env.REACT_APP_API_URL || "http://localhost:45622/";
 export default function BaseHandler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner) {
   console.log("BaseHandler()");
   const getElections = async () => {
@@ -22,7 +23,6 @@ export default function BaseHandler(tx, readContracts, writeContracts, mainnetPr
       return !d.startsWith(CERAMIC_PREFIX);
     });
 
-    const serverUrl = process.env.REACT_APP_API_URL || "http://localhost:45622/";
 
     const firebaseDbElections = (await axios.get(serverUrl + `distributions/`)).data;
     // console.log(await firebaseDbElections);
