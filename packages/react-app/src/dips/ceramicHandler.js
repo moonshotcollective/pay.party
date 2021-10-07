@@ -9,8 +9,7 @@ import axios from "axios";
 import Diplomat from "../contracts/hardhat_contracts.json";
 import { makeCeramicClient } from "../helpers";
 import { getCeramicElectionIds, serializeCeramicElection } from "./helpers";
-
-export const serverUrl = process.env.REACT_APP_API_URL || "http://localhost:45622/";
+import { serverUrl } from "./baseHandler";
 
 export default function CeramicHandler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner) {
   const createElection = async ({ name, description, candidates, votes }) => {
