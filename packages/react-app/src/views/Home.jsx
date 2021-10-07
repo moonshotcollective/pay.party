@@ -113,7 +113,7 @@ export default function Home({ tx, readContracts, writeContracts, mainnetProvide
       key: "n_voted",
       align: "center",
       width: 100,
-      render: p => <Typography.Text>{/* {p.n_voted} / {p.outOf} */} Nah</Typography.Text>,
+      render: p => <Typography.Text>{`${p.n_voted} / ${p.outOf}`}</Typography.Text>,
     };
   };
   const statusCol = () => {
