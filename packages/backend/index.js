@@ -71,7 +71,7 @@ const isElectionCandidates = async (candidatesToCheck, electionId) => {
   const providerNetwork = await localProvider.getNetwork();
   const _chainId = providerNetwork.chainId;
 
-  contractList = require("./hardhat_contracts.json");
+  const contractList = require("./hardhat_contracts.json");
   console.log({ contractList });
 
   const contractData =
@@ -87,25 +87,27 @@ const isElectionCandidates = async (candidatesToCheck, electionId) => {
   );
 };
 
-const isAdmin = async (address) => {
-  const providerNetwork = await localProvider.getNetwork();
-  const _chainId = providerNetwork.chainId;
 
-  contractList = require("./hardhat_contracts.json");
+// Function is not used!
+// const isAdmin = async (address) => {
+//   const providerNetwork = await localProvider.getNetwork();
+//   const _chainId = providerNetwork.chainId;
 
-  const contractData =
-    contractList[_chainId][targetNetwork.name].contracts.Diplomat;
-  const contract = new ethers.Contract(
-    contractData.address,
-    contractData.abi,
-    localProvider
-  );
+//   const contractList = require("./hardhat_contracts.json");
 
-  const adminRole = await contract.DEFAULT_ADMIN_ROLE();
-  const isAdmin = await contract.hasRole(adminRole, address);
+//   const contractData =
+//     contractList[_chainId][targetNetwork.name].contracts.Diplomat;
+//   const contract = new ethers.Contract(
+//     contractData.address,
+//     contractData.abi,
+//     localProvider
+//   );
 
-  return isAdmin;
-};
+//   const adminRole = await contract.DEFAULT_ADMIN_ROLE();
+//   const isAdmin = await contract.hasRole(adminRole, address);
+
+//   return isAdmin;
+// };
 
 app.post("/distributions", async function (request, response) {
   console.log("IN DISTRIB", request.body.address, request.body.account);
@@ -177,7 +179,7 @@ app.get("/currentDistribution", async function (request, response) {
       .get()
       .then((snapshot) => {
         if (!snapshot.empty) {
-          data = {
+          const data = {
             id: snapshot.docs[0].id,
             data: snapshot.docs[0].data(),
           };
@@ -320,7 +322,7 @@ app.post(
     votes[recovered] = request.body.scores;
     votesSignatures[recovered] = request.body.signature;
 
-    const res = await distributionRef.update({
+    await distributionRef.update({
       votes: votes,
       votesSignatures: votesSignatures,
     });
@@ -382,7 +384,7 @@ app.post(
 //       .onSnapshot(doSomething)
 //   })
 // )
-app.get("/distributions/ids/:ids", async (req, res, next) => {
+app.get("/distributions/ids/:ids", async (req, res) => {
   console.log(req.body.firebaseElectionIds);
   const ids = req.params.ids.split(",");
   const electionSnapshotRefs = await Promise.all(
@@ -422,7 +424,7 @@ app.get("/distributions/ids/:ids", async (req, res, next) => {
 
 app.get(
   "/distribution/state/:distributionId/:address",
-  async (req, res, next) => {
+  async (req, res) => {
     const electionSnapshot = await db
       .collection("distributions")
       .doc(req.params.distributionId)
@@ -440,7 +442,7 @@ app.get(
   }
 );
 
-app.get("/distribution/:distributionId", async (req, res, next) => {
+app.get("/distribution/:distributionId", async (req, res) => {
   const electionSnapshot = await db
     .collection("distributions")
     .where("id", "==", parseInt(req.params.distributionId, 10))
