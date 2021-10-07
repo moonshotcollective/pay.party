@@ -61,8 +61,10 @@ export default function Home({ tx, readContracts, writeContracts, mainnetProvide
   useEffect(() => {
     (async () => {
       if (qdipHandler) {
+        setTableDataLoading(true);
         let electionsMap = await qdipHandler.getElections();
         setElectionsMap(electionsMap);
+        setTableDataLoading(false);
       }
     })();
   }, [qdipHandler]);

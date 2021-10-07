@@ -374,13 +374,14 @@ app.post(
     //   return response.status(401).send("No admin in contract");
     // }
 
-    const electionSnapshot = await db
+    const electionSnapshotRef = await db
       .collection("distributions")
-      .where("id", "==", parseInt(request.params.distributionId, 10))
-      .get();
-    const distribution = electionSnapshot.docs[0];
+      .doc(request.params.distributionId);
 
-    if (!distribution.exists) {
+    const distribution = await electionSnapshotRef.get();
+    console.log(distribution.data());
+
+    if (!distribution || !distribution.exists) {
       return response.status(400).send("Distribution not found");
     } else {
       console.log(distribution.data());

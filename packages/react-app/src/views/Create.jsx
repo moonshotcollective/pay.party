@@ -42,6 +42,7 @@ import {
 import dips from "../dips";
 import { serverUrl } from "../dips/offChain";
 import { ethers } from "ethers";
+import { CERAMIC_PREFIX } from "../dips/helpers";
 
 const CURRENCY = "ETH";
 const TOKEN = "UNI";
@@ -62,18 +63,15 @@ export default function Create({
   /***** Routes *****/
   const routeHistory = useHistory();
 
-  const viewElection = async () => {
-    let index = await readContracts.Diplomat.electionCount();
-    routeHistory.push("/vote/" + (index.toNumber() - 1));
-  };
-
   /***** States *****/
   const [selectedQdip, setSelectedQdip] = useState("offChain");
   const [qdipHandler, setQdipHandler] = useState();
   const [current, setCurrent] = useState(0);
   const [errorMsg, setErrorMsg] = useState();
+  const [electionId, setElectionId] = useState();
   const [isConfirmingElection, setIsConfirmingElection] = useState(false);
   const [isCreatedElection, setIsCreatedElection] = useState(false);
+
   const [newElection, setNewElection] = useState({
     name: "test",
     funds: "ETH",
@@ -163,16 +161,29 @@ export default function Create({
     setIsConfirmingElection(true);
     // Create a new election
 
-    return qdipHandler
-      .createElection(newElection, selectedQdip)
-      .then(data => {
-        setIsConfirmingElection(false);
-        setIsCreatedElection(true);
-      })
-      .catch(err => {
-        console.log(err);
-        setIsConfirmingElection(false);
-      });
+    let id = await qdipHandler.createElection(newElection, selectedQdip);
+    console.log(id);
+    if (id) {
+      setIsConfirmingElection(false);
+      setIsCreatedElection(true);
+      setElectionId(id);
+    }
+    //   .then(data => {
+    //     setIsConfirmingElection(false);
+    //     setIsCreatedElection(true);
+    //   })
+    //   .catch(err => {
+    //     console.log(err);
+    //     setIsConfirmingElection(false);
+    //   });
+  };
+
+  const viewElection = () => {
+    if (electionId) {
+      const isCeramicRecord = electionId.startsWith(CERAMIC_PREFIX);
+      const id = isCeramicRecord ? electionId.split(CERAMIC_PREFIX)[1] : electionId;
+      routeHistory.push("/vote/" + id + `?kind=${isCeramicRecord ? "ceramic" : "offChain"}`);
+    }
   };
 
   const Step1 = () => {

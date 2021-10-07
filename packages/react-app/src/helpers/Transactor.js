@@ -115,7 +115,9 @@ export default function Transactor(providerOrSigner, gasPrice, etherscan) {
 
         if (typeof result.wait === "function") {
           const receipt = await result.wait();
-          callback(receipt);
+          if (callback) {
+            callback(receipt);
+          }
         }
 
         return result;
