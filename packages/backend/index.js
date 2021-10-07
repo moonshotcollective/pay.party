@@ -447,8 +447,9 @@ app.get(
     const hasVoted = Object.keys(election.votes).some(
       (voterAddress) => voterAddress === req.params.address
     );
+    const nVoted = Object.keys(election.votes).length;
     const isActive = election.active;
-    return res.send({ hasVoted, isActive });
+    return res.send({ hasVoted, isActive, nVoted });
   }
 );
 
