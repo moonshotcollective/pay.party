@@ -36,6 +36,7 @@ export default function Vote({
   const [qdipHandler, setQdipHandler] = useState();
 
   const [electionState, setElectionState] = useState({});
+  console.log({ electionState });
   const [votesLeft, setVotesLeft] = useState(0);
   const [tableSrc, setTableSrc] = useState([]);
   //   const [tableCols, setTableCols] = useState([]);
@@ -391,11 +392,12 @@ export default function Vote({
             electionState && !electionState.active && electionState.isAdmin && !electionState.isPaid && (
               <PayButton
                 token={token}
+                tokenAddr={electionState.tokenAdr}
                 appName="Quadratic Diplomacy"
                 tokenListHandler={tokens => setAvailableTokens(tokens)}
                 callerAddress={address}
-                maxApproval={electionState.fundingAmount}
-                amount={electionState.fundingAmount}
+                maxApproval={electionState.fundAmount}
+                amount={electionState.fundAmount}
                 spender={spender}
                 yourLocalBalance={yourLocalBalance}
                 readContracts={readContracts}

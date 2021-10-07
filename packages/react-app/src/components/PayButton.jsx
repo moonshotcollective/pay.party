@@ -21,11 +21,30 @@ export default function PayButton({
   ethPayHandler,
   tokenPayHandler,
 }) {
+  console.log({
+    token,
+    tokenAddr,
+    amount,
+    appName,
+    spender,
+    style,
+    callerAddress,
+    maxApproval,
+    readContracts,
+    writeContracts,
+    yourLocalBalance,
+    tokenListHandler,
+    ethPayHandler,
+    tokenPayHandler,
+  });
   const [tokenInfo, setTokenInfo] = useState({});
   const [status, setStatus] = useState(0); // loading | lowAllowance | approving | ready | distributing | noBalance
 
   const refreshETH = () => {
-    setStatus(yourLocalBalance.gte(ethers.utils.parseEther(amount || "0")) ? 3 : 5);
+    console.log(yourLocalBalance.toString(), ethers.utils.parseEther(amount).toString());
+    let ylb = yourLocalBalance.gte(ethers.utils.parseEther(amount || "0")) ? 3 : 5;
+
+    setStatus(ylb);
   };
 
   const refreshTokenDetails = async () => {
@@ -151,6 +170,7 @@ export default function PayButton({
   const renderButtonText = () => {
     let text = "Loading...";
 
+    console.log({ status });
     switch (status) {
       case 1:
         text = `Approve ${appName} to transfer ${token}`;
