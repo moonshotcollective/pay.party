@@ -257,7 +257,7 @@ app.get("/distributions/:distributionId", async function (request, response) {
     .collection("distributions")
     .doc(request.params.distributionId);
   const distribution = await distributionRef.get();
-  console.log(distribution.data());
+  // console.log(distribution.data());
   if (!distribution) {
     return response.status(404).send("Distribution not found");
   } else {
@@ -282,7 +282,7 @@ app.post(
       request.body.signature
     );
 
-    console.log(recovered, request.body.address);
+    // console.log(recovered, request.body.address);
 
     if (recovered !== request.body.address) {
       console.log("Wrong signature");
@@ -298,29 +298,33 @@ app.post(
     }
 
     // save vote to db
-    const electionSnapshot = await db
+    console.log(request.params);
+    const electionSnapshotRef = await db
       .collection("distributions")
-      .where("id", "==", parseInt(request.params.distributionId, 10))
-      .get();
-    const distribution = electionSnapshot.docs[0];
+      .doc(request.params.distributionId);
+
+    const distribution = await electionSnapshotRef.get();
     console.log(distribution.data());
-    const distributionRef = distribution.ref;
+    if (!distribution) {
+      return response.status(404).send("Distribution not found");
+    }
 
     const { scores } = request.body;
+    console.log({ scores });
 
     let votes = distribution.data().votes;
 
     let votesSignatures = distribution.data().votesSignatures;
 
-    // Check if all votes are to members
-    const isValidBallot = await isElectionCandidates(
-      request.body.candidates,
-      request.params.distributionId
-    );
-    console.log(isValidBallot);
-    if (!isValidBallot) {
-      return response.status(401).send("Invalid ballot");
-    }
+    // TODO: Check if all votes are to members
+    // const isValidBallot = await isElectionCandidates(
+    //   request.body.candidates,
+    //   request.params.distributionId
+    // );
+    // console.log(isValidBallot);
+    // if (!isValidBallot) {
+    //   return response.status(401).send("Invalid ballot");
+    // }
 
     // TODO: Check if the total votes are equal or less than the vote allocation
     // const reducer = (previousValue, currentValue) =>
@@ -333,7 +337,7 @@ app.post(
     votes[recovered] = request.body.scores;
     votesSignatures[recovered] = request.body.signature;
 
-    const res = await distributionRef.update({
+    const res = await electionSnapshotRef.update({
       votes: votes,
       votesSignatures: votesSignatures,
     });
@@ -387,14 +391,7 @@ app.post(
     }
   }
 );
-// const myCollectionDispose = await Promise.all(
-//   acceptableIds.map(id => {
-//     return db
-//       .collection('myCollection')
-//       .doc(id)
-//       .onSnapshot(doSomething)
-//   })
-// )
+
 app.get("/distributions/ids/:ids", async (req, res, next) => {
   console.log(req.body.firebaseElectionIds);
   const ids = req.params.ids.split(",");

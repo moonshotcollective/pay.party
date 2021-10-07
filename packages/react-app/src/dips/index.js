@@ -6,19 +6,19 @@ import CeramicHandler from "./ceramicHandler";
 
 // create DQip type and add details for the UI
 export default {
-  base: {
-    id: 0,
-    handler: BaseHandler,
-  },
+  // base: {
+  //   id: 0,
+  //   handler: BaseHandler,
+  // },
   offChain: {
-    id: 1,
-    name: "Off-chain",
+    id: 0,
+    name: "Firebase (Centralized)",
     description: "Election data is stored on backend.",
     handler: OffChain,
   },
   ceramic: {
-    id: 2,
-    name: "Ceramic (votes & election)",
+    id: 1,
+    name: "Ceramic (Decentralized)",
     description: "",
     handler: CeramicHandler,
   },
