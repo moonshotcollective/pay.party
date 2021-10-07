@@ -30,8 +30,22 @@ export default function BaseHandler(tx, readContracts, writeContracts, mainnetPr
     const newElectionsMap = new Map();
     const formattedFirebaseElections = await Promise.all(
       firebaseDbElections.map(async fb => {
+        console.log({fb})
 
-        const hasVoted = await axios.get(serverUrl + `distribution/state/${fb.id}/${address}`);
+        const hasVoted = (await axios.get(serverUrl + `distribution/state/${fb.id}/${address}`)).data.hasVoted;
+        const isAdmin = address === fb.data.creator;
+        const isCandidate = fb.data.candidates.includes(address);
+
+        const tags = []; 
+        if (hasVoted) { 
+          tags.push("voted");
+        }
+        if (isAdmin) {
+          tags.push("admin");
+        }
+        if (isCandidate) {
+          tags.push("candidate");
+        }
 
         const formattedElection = {
           id: fb.id,
@@ -42,7 +56,7 @@ export default function BaseHandler(tx, readContracts, writeContracts, mainnetPr
           status: fb.data.active,
           paid: fb.data.paid,
           n_voted: { n_voted: 1, outOf: fb.data.candidates.length },
-          tags: ["admin"],
+          tags: tags,
         };
 
         // console.log({ formattedElection });
