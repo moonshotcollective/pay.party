@@ -155,6 +155,7 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
       console.error("Already voted for this election");
       return;
     }
+    console.log("election tags" + election.tags);
     election.isCandidate = election.tags.includes("candidate");
     election.isAdmin = election.tags.includes("admin");
     election.canVote = !hasAlreadyVotedForElec && election.isCandidate;
