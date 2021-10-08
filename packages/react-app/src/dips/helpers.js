@@ -39,15 +39,22 @@ export const serializeCeramicElection = async (ceramicElectionId, address) => {
   const { idx, ceramic } = await makeCeramicClient();
   const electionDoc = await ceramic.loadStream(id);
   const creatorDid = electionDoc.controllers[0];
-
   let creatorMainAddress = creatorDid;
   const creatorAccounts = await idx.get("cryptoAccounts", creatorDid);
   const tags = [];
-
+  const network = await getNetwork();
+  const caip10 = await Caip10Link.fromAccount(ceramic, `${address}@eip155:${network.chainId}`);
+  const existingVotes = await idx.get("votes", caip10.did);
+  // TODO: check if already voted for this election through another address
+  const previousVotes = existingVotes ? Object.values(existingVotes) : null;
+  const hasVoted = previousVotes && previousVotes.find(vote => toCeramicId(vote.electionId) === id);
   if (creatorAccounts) {
     const accounts = Object.keys(creatorAccounts);
     const [mainAddress, networkAndChainId] = Object.keys(creatorAccounts)[0].split("@");
     creatorMainAddress = mainAddress;
+    if (hasVoted) {
+      tags.push("voted");
+    }
     if (Object.keys(creatorAccounts).some(creatorAddress => address === creatorAddress.split("@")[0])) {
       tags.push("admin");
     }
@@ -60,7 +67,6 @@ export const serializeCeramicElection = async (ceramicElectionId, address) => {
     }
   }
 
-  const network = await getNetwork();
   const candidateDids = await Promise.all(
     electionDoc.content.candidates.map(async candidateAddress => {
       const caip10 = await Caip10Link.fromAccount(ceramic, `${address}@eip155:${network.chainId}`);
@@ -85,7 +91,7 @@ export const serializeCeramicElection = async (ceramicElectionId, address) => {
         // load the first commit
         const sealedVoteDoc = await TileDocument.load(ceramic, sealedVote);
         if (electionDoc.content.candidates[i] === address) {
-          candidatesSealedBallots[electionDoc.content.candidates[i]] = candidateBallotDoc.content.map(
+          candidatesSealedBallots[electionDoc.content.candidates[i]] = sealedVoteDoc.content.map(
             vote => vote.voteAttribution,
           );
         }
@@ -95,27 +101,32 @@ export const serializeCeramicElection = async (ceramicElectionId, address) => {
 
   const nVoted = Object.keys(candidatesSealedBallots) ? Object.keys(candidatesSealedBallots).length : 0;
 
-  // TODO: payout & total scores
+  //  TODO: payout & total scores
   const defaultValues = electionDoc.content.candidates.reduce((candidatesAddress, addr) => {
     candidatesAddress[addr] = 0;
     return candidatesAddress;
   }, {});
-  if (candidatesSealedBallots.length > 0) {
-    const totalScoresPerCandidates = candidatesSealedBallots.reduce((candidateScores, ballot) => {
-      candidateScores[ballot.address] = candidateScores[ballot.address]
-        ? parseFloat(candidateScores[ballot.address]) + parseFloat(ballot.voteAttribution)
-        : 0;
-      return candidateScores;
-    }, defaultValues);
-    return Object.values(totalScoresPerCandidates);
+
+  const ballots = Object.values(candidatesSealedBallots);
+  let totalScores = [];
+  if (ballots.length > 0) {
+    for (const candidateVotes of ballots) {
+      candidateVotes.forEach((voteScore, i) => {
+        if (totalScores[i] !== 0 && !totalScores[i]) {
+          return totalScores.push(voteScore);
+        }
+        totalScores[i] = totalScores[i] + voteScore;
+      });
+    }
   }
 
-  console.log(electionDoc.content);
   const serializedElection = {
     id,
     name: electionDoc.content.name,
     candidates: electionDoc.content.candidates,
+    canVote: !hasVoted && tags.includes("candidate"),
     description: electionDoc.content.description,
+    hasVoted,
     created_date: new Date(electionDoc.content.createdAt).toLocaleDateString(),
     creatorDid,
     creator: creatorMainAddress || creatorDid,
@@ -124,7 +135,11 @@ export const serializeCeramicElection = async (ceramicElectionId, address) => {
     voteAllocation: electionDoc.content.voteAllocation,
     n_voted: { n_voted: nVoted, outOf: electionDoc.content.candidates.length },
     votes: candidatesSealedBallots,
+    totalScores,
     tags: tags,
+    isCandidate: tags.includes("candidate"),
+    isAdmin: tags.includes("admin"),
+    active: electionDoc.content.isActive,
   };
   return serializedElection;
 };

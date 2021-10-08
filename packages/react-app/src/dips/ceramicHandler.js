@@ -8,7 +8,7 @@ import { TileDocument } from "@ceramicnetwork/stream-tile";
 import axios from "axios";
 import Diplomat from "../contracts/hardhat_contracts.json";
 import { makeCeramicClient } from "../helpers";
-import { getCeramicElectionIds, serializeCeramicElection } from "./helpers";
+import { getCeramicElectionIds, getNetwork, serializeCeramicElection, toCeramicId } from "./helpers";
 import { serverUrl } from "./baseHandler";
 
 export default function CeramicHandler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner) {
@@ -52,11 +52,8 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
       );
       // https://developers.ceramic.network/learn/glossary/#anchor-commit
       // https://developers.ceramic.network/learn/glossary/#anchor-service
-      const anchorStatus = await electionDoc.requestAnchor();
-      await electionDoc.makeReadOnly();
-      Object.freeze(electionDoc);
 
-      const electionId = electionDoc.commitId.toUrl();
+      const electionId = electionDoc.id.toUrl();
 
       /* CREATE ELECTION ON-CHAIN (push the ceramic commitId to elections array) */
       let contract = new ethers.Contract(
@@ -72,25 +69,16 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
   };
 
   const endElection = async id => {
-    console.log(`Ending election`, id);
-    const message = "qdip-finish-" + id + address;
-    console.log("Message:" + message);
-    let signature = await userSigner.provider.send("personal_sign", [message, address]);
-    return axios
-      .post(serverUrl + "distributions/" + id + "/finish", {
-        address: address,
-      })
-      .then(response => {
-        if (response.status == 200) {
-          return response.statusText;
-        } else {
-          throw response;
-        }
-      })
-      .catch(e => {
-        console.log("Error on 'endElection' distributions post");
-        throw e;
-      });
+    const { idx, ceramic } = await makeCeramicClient(address);
+    const electionDoc = await TileDocument.load(ceramic, id);
+    console.log(electionDoc.controllers[0], ceramic.did.id.toString());
+    if (electionDoc.controllers[0] === ceramic.did.id.toString()) {
+      console.log("ending...", { ...electionDoc.content });
+      const updated = await electionDoc.update({ ...electionDoc.content, isActive: false });
+      const ended = await TileDocument.load(ceramic, id);
+      console.log("ended", ended.content);
+      return updated;
+    }
   };
 
   const castBallot = async (id, candidates, quad_scores) => {
@@ -103,7 +91,7 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
     const hasAlreadyVotedForElec = previousVotes && previousVotes.find(vote => vote.electionId === id);
     if (hasAlreadyVotedForElec) {
       console.error("Already voted for this election");
-      return;
+      return election.totalScores;
     }
 
     const voteAttribution = quad_scores.map((voteAttributionCount, i) => ({
@@ -128,6 +116,9 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
 
       const sealedBallot = ballotDoc.commitId.toUrl();
     }
+
+    const electionResults = await serializeCeramicElection(id, address);
+    return electionResults.totalScores;
   };
 
   const getElections = async () => {
@@ -146,106 +137,53 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
   const getElectionStateById = async id => {
     const { idx, ceramic } = await makeCeramicClient();
     const election = await serializeCeramicElection(id, address);
-    const caip10 = await Caip10Link.fromAccount(ceramic, `${address}@eip155:1`);
-    const existingVotes = await idx.get("votes", caip10.did);
-    // TODO: check if already voted for this election through another address
-    const previousVotes = existingVotes ? Object.values(existingVotes) : null;
-    const hasAlreadyVotedForElec = previousVotes && previousVotes.find(vote => vote.electionId === id);
-    if (hasAlreadyVotedForElec) {
-      console.error("Already voted for this election");
-      return;
-    }
-    console.log("election tags" + election.tags);
-    election.isCandidate = election.tags.includes("candidate");
-    election.isAdmin = election.tags.includes("admin");
-    election.canVote = !hasAlreadyVotedForElec && election.isCandidate;
-    election.active = election.status;
     return election;
   };
 
   const getCandidatesScores = async id => {
     const { idx, ceramic } = await makeCeramicClient();
     const election = await serializeCeramicElection(id, address);
-    const candidateDids = await Promise.all(
-      election.candidates.map(async candidateAddress => {
-        const caip10 = await Caip10Link.fromAccount(ceramic, `${address}@eip155:1`);
-        return caip10.did;
-      }),
-    );
-    const candidatesSealedBallots = [];
-    for (const candidateDid of candidateDids) {
-      const candidateVotes = await idx.get("votes", candidateDid);
-      if (candidateVotes) {
-        const foundElectionBallots = Object.values(candidateVotes).find(vote => vote.electionId === election.id);
-        // load the stream
-        const candidateBallotDoc = await TileDocument.load(ceramic, foundElectionBallots.id);
-        // get the first commitId which immutable
-        const { allCommitIds } = candidateBallotDoc;
-
-        const sealedVote = allCommitIds[0];
-        // load the first commit
-        const sealedVoteDoc = await TileDocument.load(ceramic, sealedVote);
-        console.log("sealed", sealedVoteDoc.content);
-        candidatesSealedBallots.push(...sealedVoteDoc.content);
-      }
-    }
-    const defaultValues = election.candidates.reduce((candidatesAddress, addr) => {
-      candidatesAddress[addr] = "0";
-      return candidatesAddress;
-    }, {});
-    if (candidatesSealedBallots.length > 0) {
-      const totalScoresPerCandidates = candidatesSealedBallots.reduce((candidateScores, ballot) => {
-        candidateScores[ballot.address] = candidateScores[ballot.address]
-          ? (parseFloat(candidateScores[ballot.address]) + parseFloat(ballot.voteAttribution)).toString()
-          : "0";
-        return candidateScores;
-      }, defaultValues);
-      console.log(Object.values(totalScoresPerCandidates));
-      return Object.values(totalScoresPerCandidates);
-    }
-    return [];
+    return election.totalScores;
   };
 
   const getFinalPayout = async id => {
-    return {
-      scores: [],
-      payout: [],
-      scoreSum: 0,
-    };
-    // const election = await readContracts.Diplomat.getElection(id);
-    // const electionFunding = election.amount;
+    let election = await axios.get(serverUrl + `distributions/${id}`); //await readContracts.Diplomat.getElection(id);
+    console.log({ election });
+    const electionFunding = election.data.fundAmount;
     // const offChainElectionResult = await axios.get(serverUrl + `distribution/${id}`);
     // const { election: offChainElection } = offChainElectionResult.data;
 
-    // let totalScores = await getCandidatesScores(id);
-    // let payout = [];
-    // let totalScoresSum = totalScores.reduce((sum, curr) => sum + curr, 0);
-    // console.log({ totalScoresSum });
+    let totalScores = await getCandidatesScores(id);
+    let payout = [];
+    let totalScoresSum = totalScores.reduce((sum, curr) => sum + curr, 0);
+    console.log({ totalScoresSum });
+    let scores = [];
 
-    // // for (let i = 0; i < election.candidates.length; i++) {
-    // //   const candidateScore = offChainElection.votes[election.candidates[i]];
-    // //   console.log({ candidateScore });
-    // //   if (!candidateScore) {
-    // //     scores.push(candidateScore);
-    // //     scoreSum += candidateScore;
-    // //   } else {
-    // //     scores.push(0);
-    // //   }
-    // // }
+    for (let i = 0; i < election.data.candidates.length; i++) {
+      const candidateScore = election.data.votes[election.data.candidates[i]];
+      console.log({ candidateScore });
+      let scoreSum = 0;
+      if (!candidateScore) {
+        scores.push(candidateScore);
+        scoreSum += candidateScore;
+      } else {
+        scores.push(0);
+      }
+    }
 
-    // for (let i = 0; i < totalScores.length; i++) {
-    //   const candidatePay = Math.floor((totalScores[i] / totalScoresSum) * electionFunding);
-    //   if (!isNaN(candidatePay)) {
-    //     payout.push(fromWei(candidatePay.toString()));
-    //   } else {
-    //     payout.push(0);
-    //   }
-    // }
-    // return {
-    //   scores: totalScores,
-    //   payout: payout,
-    //   scoreSum: totalScoresSum,
-    // };
+    for (let i = 0; i < totalScores.length; i++) {
+      const candidatePay = Math.floor((totalScores[i] / totalScoresSum) * electionFunding);
+      if (!isNaN(candidatePay)) {
+        payout.push(fromWei(candidatePay.toString()));
+      } else {
+        payout.push(0);
+      }
+    }
+    return {
+      scores: totalScores,
+      payout: payout,
+      scoreSum: totalScoresSum,
+    };
   };
 
   const distributeEth = async (id, adrs, weiDist, totalValueInWei) => {
