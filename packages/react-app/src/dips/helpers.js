@@ -29,7 +29,7 @@ export const getNetwork = async () => {
   if (network.chainId === 31337 || network.chainId === 1337) {
     network = { name: "localhost", chainId: 31337 };
   }
-  return network;
+  return { network, signer, provider };
 };
 
 export const toCeramicId = id => (id.startsWith(CERAMIC_PREFIX) ? id : CERAMIC_PREFIX + id);
@@ -42,11 +42,12 @@ export const serializeCeramicElection = async (ceramicElectionId, address) => {
   let creatorMainAddress = creatorDid;
   const creatorAccounts = await idx.get("cryptoAccounts", creatorDid);
   const tags = [];
-  const network = await getNetwork();
+  const { network } = await getNetwork();
   const caip10 = await Caip10Link.fromAccount(ceramic, `${address}@eip155:${network.chainId}`);
   const existingVotes = await idx.get("votes", caip10.did);
   // TODO: check if already voted for this election through another address
   const previousVotes = existingVotes ? Object.values(existingVotes) : null;
+  console.log({ previousVotes });
   const hasVoted = previousVotes && previousVotes.find(vote => toCeramicId(vote.electionId) === id);
   if (creatorAccounts) {
     const accounts = Object.keys(creatorAccounts);

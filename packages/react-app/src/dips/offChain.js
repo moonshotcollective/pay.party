@@ -5,18 +5,11 @@ import Web3Modal from "web3modal";
 import axios from "axios";
 import Diplomat from "../contracts/hardhat_contracts.json";
 import { serverUrl } from "./baseHandler";
+import { getNetwork } from "./helpers";
 
 export default function OffChain(tx, readContracts, writeContracts, mainnetProvider, address, userSigner) {
   const createElection = async ({ name, candidates, fundAmount, tokenAdr, votes, kind }) => {
-    const web3Modal = new Web3Modal();
-    const connection = await web3Modal.connect();
-    const provider = new ethers.providers.Web3Provider(connection);
-    const signer = provider.getSigner();
-    let network = await provider.getNetwork();
-    if (network.chainId === 31337 || network.chainId === 1337) {
-      network = { name: "localhost", chainId: 31337 };
-    }
-
+    const { network, provider, signer } = await getNetwork();
     const message = "qdip-create-" + address;
     const signature = await provider.send("personal_sign", [message, address]);
     const result = await axios.post(serverUrl + "distributions", {
@@ -245,22 +238,16 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
     };
   };
 
-  const distributeEth = async (id, adrs, weiDist, tokenAdr, totalValueInWei) => {
+  const distributeEth = async ({ id, candidates, payoutInWei, totalValueInWei, tokenAddress }) => {
     console.log("Distributing..." + totalValueInWei);
-    const web3Modal = new Web3Modal();
-    const connection = await web3Modal.connect();
-    const provider = new ethers.providers.Web3Provider(connection);
-    const signer = provider.getSigner();
-    let network = await provider.getNetwork();
-    let contract = new ethers.Contract(
+    const { provider, signer, network } = await getNetwork();
+    const contract = new ethers.Contract(
       Diplomat[network.chainId][network.name].contracts.Diplomat.address,
       Diplomat[network.chainId][network.name].contracts.Diplomat.abi,
       signer,
     );
 
-    console.log("Stuff", id, adrs, tokenAdr, totalValueInWei);
-
-    let transaction = await contract.payElection(id, adrs, weiDist, tokenAdr, {
+    const transaction = await contract.payElection(id, candidates, payoutInWei, tokenAddress, {
       value: totalValueInWei,
     });
     const receipt = await transaction.wait();

@@ -57,6 +57,15 @@ export default function Vote({
   const [availableTokens, setAvailableTokens] = useState([]);
   const [isPaying, setIsPaying] = useState(false);
 
+  const updateCandidateScore = async () => {
+    const scores = await qdipHandler.getCandidatesScores(id);
+    setCandidateScores(scores);
+  };
+
+  const updateFinalPayout = async () => {
+    const payout = await qdipHandler.getFinalPayout(id);
+    setFinalPayout(payout);
+  };
   /***** Effects *****/
   useEffect(() => {
     if (readContracts) {
@@ -68,7 +77,7 @@ export default function Vote({
 
   useEffect(async () => {
     if (qdipHandler) {
-      loadElectionState();
+      await loadElectionState();
     }
   }, [qdipHandler]);
 
@@ -86,7 +95,7 @@ export default function Vote({
         if (electionState.active) {
           await updateCandidateScore();
         } else {
-          updateFinalPayout();
+          await updateFinalPayout();
         }
       }
     })();
@@ -171,12 +180,12 @@ export default function Vote({
       scores.push(Math.floor(d.score * 100));
     });
     console.log(candidates, scores);
-    qdipHandler
+    return qdipHandler
       .castBallot(id, candidates, scores, userSigner)
-      .then(totalScores => {
+      .then(async totalScores => {
         console.log({ totalScores });
         setCandidateScores(totalScores);
-        loadElectionState();
+        await loadElectionState();
         setIsVoting(false);
       })
       .catch(err => {
@@ -185,20 +194,12 @@ export default function Vote({
       });
   };
 
-  const updateCandidateScore = async () => {
-    setCandidateScores(await qdipHandler.getCandidatesScores(id));
-  };
-
-  const updateFinalPayout = async () => {
-    setFinalPayout(await qdipHandler.getFinalPayout(id));
-  };
-
   const endElection = async () => {
     setIsElectionEnding(true);
-    qdipHandler
+    return qdipHandler
       .endElection(id)
-      .then(success => {
-        loadElectionState();
+      .then(async success => {
+        await loadElectionState();
         setIsElectionEnding(false);
       })
       .catch(err => {
@@ -208,25 +209,26 @@ export default function Vote({
   };
 
   const ethPayHandler = () => {
-    const adrs = electionState.candidates;
-    console.log({ electionState });
+    console.log({ electionState, finalPayout });
     const totalValueInWei = electionState.fundAmount;
     //convert payout to wei
-    let payoutInWei = [totalValueInWei]; //finalPayout.payout.map(p => toWei(p));
+    let payoutInWei = finalPayout.payout.map(p => toWei(p));
+    console.log({ payoutInWei });
 
-    console.log(adrs, payoutInWei, totalValueInWei);
-
-    return new Promise((resolve, reject) => {
-      qdipHandler
-        .distributeEth(id, adrs, payoutInWei, electionState.tokenAdr, totalValueInWei)
-        .then(success => {
-          loadElectionState();
-          resolve(success);
-        })
-        .catch(err => {
-          reject(err);
-        });
-    });
+    return qdipHandler
+      .distributeEth({
+        id,
+        candidates: electionState.candidates,
+        payoutInWei,
+        totalValueInWei,
+        tokenAddress: electionState.tokenAdr,
+      })
+      .then(async success => {
+        return loadElectionState();
+      })
+      .catch(err => {
+        console.log(err);
+      });
   };
 
   const tokenPayHandler = async opts => {

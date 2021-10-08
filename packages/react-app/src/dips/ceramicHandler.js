@@ -13,14 +13,7 @@ import { serverUrl } from "./baseHandler";
 
 export default function CeramicHandler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner) {
   const createElection = async ({ name, candidates, fundAmount, tokenAdr, votes, kind }) => {
-    const web3Modal = new Web3Modal();
-    const connection = await web3Modal.connect();
-    const provider = new ethers.providers.Web3Provider(connection);
-    const signer = provider.getSigner();
-    let network = await provider.getNetwork();
-    if (network.chainId === 31337 || network.chainId === 1337) {
-      network = { name: "localhost", chainId: 31337 };
-    }
+    const { network, signer } = await getNetwork();
     /* CREATE CERAMIC ELECTION */
     const { ceramic, idx, schemasCommitId } = await makeCeramicClient(address);
     // current users' existing elections
@@ -114,7 +107,10 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
       Object.freeze(ballotDoc);
 
       const previousVotes = (await idx.get("votes", ceramic.did.id)) || {};
-      await idx.set("votes", [{ id: ballotDoc.id.toUrl(), electionId: id }, ...Object.values(previousVotes)]);
+      await idx.set("votes", [
+        { id: ballotDoc.id.toUrl(), electionId: toCeramicId(id) },
+        ...Object.values(previousVotes),
+      ]);
 
       const sealedBallot = ballotDoc.commitId.toUrl();
     }
@@ -183,27 +179,24 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
     };
   };
 
-  const distributeEth = async (id, adrs, weiDist, totalValueInWei) => {
-    console.log("Distributing...");
-    return new Promise((resolve, reject) => {
-      tx(
-        writeContracts.Diplomat.payElection(id, adrs, weiDist, {
-          value: totalValueInWei,
-        }),
-        update => {
-          console.log("📡 Transaction Update:", update);
-          if (update) {
-            if (update.status === "confirmed" || update.status === 1) {
-              resolve(update);
-            } else if (!update.status) {
-              reject(update);
-            }
-          } else {
-            reject(update);
-          }
-        },
-      );
+  const distributeEth = async ({ id, candidates, payoutInWei, totalValueInWei, tokenAddress }) => {
+    const { network, signer } = await getNetwork();
+    console.log({ signer });
+    const contract = new ethers.Contract(
+      Diplomat[network.chainId][network.name].contracts.Diplomat.address,
+      Diplomat[network.chainId][network.name].contracts.Diplomat.abi,
+      signer,
+    );
+
+    console.log({ id, candidates, tokenAddress, totalValueInWei, payoutInWei });
+
+    const transaction = await contract.payElection(id, candidates, payoutInWei, tokenAddress, {
+      value: totalValueInWei,
     });
+    const receipt = await transaction.wait();
+    console.log({ receipt });
+    // TODO: set isPaid in Ceramic
+    return receipt;
   };
 
   const sendBackendOnCreate = async (newElection, address) => {};
