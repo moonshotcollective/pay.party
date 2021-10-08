@@ -43,7 +43,6 @@ export default function Home({ tx, readContracts, writeContracts, mainnetProvide
 
   /***** States *****/
 
-  const [selectedQdip, setSelectedQdip] = useState("base");
   const [qdipHandler, setQdipHandler] = useState();
   const [electionsMap, setElectionsMap] = useState();
   const [tableDataLoading, setTableDataLoading] = useState(false);

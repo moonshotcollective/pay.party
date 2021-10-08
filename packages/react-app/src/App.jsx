@@ -444,7 +444,7 @@ function App(props) {
       <BrowserRouter>
         <Switch>
           <Route exact path="/">
-            <Home
+            <MockHome
               address={address}
               tx={tx}
               readContracts={readContracts}
