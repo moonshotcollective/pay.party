@@ -1,7 +1,7 @@
 import { Button } from "@chakra-ui/button";
 import { AddIcon } from "@chakra-ui/icons";
 import { Box, Flex, Heading, HStack, SimpleGrid } from "@chakra-ui/layout";
-import { Tab, TabList, TabPanel, TabPanels, Spinner, Tabs, Text } from "@chakra-ui/react";
+import { Divider, Tab, TabList, TabPanel, TabPanels, Spinner, Tabs, Text } from "@chakra-ui/react";
 import { useColorModeValue } from "@chakra-ui/color-mode";
 import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
@@ -139,6 +139,7 @@ function MockHome({ tx, readContracts, writeContracts, mainnetProvider, address 
 
   return (
     <Container>
+      <Divider backgroundColor="purple.500" />
       <HStack w="full" justifyContent="space-between">
         <Heading fontSize="1.5rem" color={headingColor}>
           Elections
@@ -149,6 +150,7 @@ function MockHome({ tx, readContracts, writeContracts, mainnetProvider, address 
           </Button>
         </Box>
       </HStack>
+      <Divider backgroundColor="purple.500" />
 
       {isLoading || !electionsMap ? (
         <CenteredFrame>
@@ -161,7 +163,7 @@ function MockHome({ tx, readContracts, writeContracts, mainnetProvider, address 
         </CenteredFrame>
       ) : (
         <HStack w="full" justifyContent="space-between">
-          <Tabs py="2rem" variant="unstyled">
+          <Tabs py="1rem" variant="unstyled">
             <TabList>
               <TabListItem title="Elections I'm part of" />
               <TabListItem title="My Elections" />

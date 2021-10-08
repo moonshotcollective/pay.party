@@ -47,17 +47,16 @@ export default function AddressInputChakra(props) {
     async newValue => {
       if (typeof newValue !== "undefined") {
         let address = newValue;
-        // if (address.indexOf(".eth") > 0 || address.indexOf(".xyz") > 0) {
-        //   try {
-        //     const possibleAddress = await ensProvider.resolveName(address);
-        //     if (possibleAddress) {
-        //       address = possibleAddress;
-        //     }
-        //     // eslint-disable-next-line no-empty
-        //   } catch (e) {}
-        // }
+        if (address.indexOf(".eth") > 0 || address.indexOf(".xyz") > 0) {
+          try {
+            const possibleAddress = await ensProvider.resolveName(address);
+            if (possibleAddress) {
+              address = possibleAddress;
+            }
+            // eslint-disable-next-line no-empty
+          } catch (e) {}
+        }
         setValue(address);
-        console.log({ address });
         if (typeof onChange === "function") {
           onChange(address);
         }
@@ -66,38 +65,12 @@ export default function AddressInputChakra(props) {
     [ensProvider, onChange],
   );
 
-  const {
-    handleSubmit,
-    register,
-    control,
-    formState: { errors, isSubmitting },
-  } = useForm();
-
-  const { fields, append, prepend, remove, swap, move, insert } = useFieldArray({
-    control, // control props comes from useForm (optional: if you are using FormContext)
-    name: "candidates", // unique name for your Field Array
-    // keyName: "id", default to "id", you can change the key name
-  });
-
   return (
     <div>
-      {/* <Input
-        size="large"
-        id="0xAddress" // name it something other than address for auto fill doxxing
-        name="0xAddress" // name it something other than address for auto fill doxxing
-        autoComplete="false"
-        autoFocus={props.autoFocus}
-        placeholder={props.placeholder ? props.placeholder : "address"}
-        prefix={<Blockie address={currentValue} size={8} scale={3} />}
-        value={currentValue}
-        style={{ width: "30em" }}
-        onChange={e => {
-          updateAddress(e.target.value);
-        }}
-        allowClear={true}
-      /> */}
-      <InputGroup w="300px">
+      <InputGroup>
         <Input
+          id="0xAddress" // name it something other than address for auto fill doxxing
+          name="0xAddress" // name it something other than address for auto fill doxxing
           borderColor="purple.500"
           color="purple.500"
           placeholder="Enter Address"

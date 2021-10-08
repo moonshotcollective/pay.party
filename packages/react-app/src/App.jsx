@@ -436,7 +436,7 @@ function App(props) {
     );
   }
 
-  console.log({ yourLocalBalance });
+  //   console.log({ yourLocalBalance });
   const [lb, setLb] = useState(yourLocalBalance);
   useEffect(() => {
     setLb(yourLocalBalance);

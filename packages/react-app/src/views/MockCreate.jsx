@@ -13,6 +13,9 @@ import {
   Input,
   InputGroup,
   InputRightElement,
+  List,
+  ListItem,
+  ListIcon,
   NumberDecrementStepper,
   NumberIncrementStepper,
   NumberInput,
@@ -25,6 +28,7 @@ import {
   Select,
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
+import { fromWei, toWei, toBN } from "web3-utils";
 import { useFieldArray, useForm } from "react-hook-form";
 import { FiX } from "react-icons/fi";
 import { useHistory } from "react-router-dom";
@@ -73,10 +77,10 @@ const CreateElectionPage = ({
   const [electionId, setElectionId] = useState();
 
   const [newElection, setNewElection] = useState({
-    name: "test",
+    name: "",
     funds: "ETH",
-    fundAmount: 1,
-    votes: 5,
+    fundAmount: 0.1,
+    votes: 1,
     tokenAdr: "0x0000000000000000000000000000000000000000",
     tokenName: "",
     kind: "offChain",
@@ -136,10 +140,10 @@ const CreateElectionPage = ({
     setIsConfirmingElection(true);
     // Create a new election
     const formattedValues = Object.entries(values).reduce((fValues, [currentKey, currentValue]) => {
-      if (currentKey === "candidates") {
-        fValues[currentKey] = currentValue.map(({ value }) => value);
-        return fValues;
-      }
+      //   if (currentKey === "candidates") {
+      //     fValues[currentKey] = currentValue.map(({ value }) => value);
+      //     return fValues;
+      //   }
       if (currentKey === "fundAmount" || currentKey === "votes") {
         fValues[currentKey] = parseInt(currentValue);
         return fValues;
@@ -154,13 +158,24 @@ const CreateElectionPage = ({
       fValues[currentKey] = currentValue;
       return fValues;
     }, {});
-    console.log(formattedValues);
-    let id = await qdipHandler.createElection(newElection, selectedQdip);
+    formattedValues["candidates"] = newElection.candidates;
+    formattedValues["fundAmount"] = toWei(Number(newElection.fundAmount).toFixed(18).toString());
+    let id = await qdipHandler.createElection(formattedValues, selectedQdip);
     console.log(id);
     if (id) {
       setIsConfirmingElection(false);
       setIsCreatedElection(true);
       setElectionId(id);
+      setNewElection({
+        name: "",
+        funds: "ETH",
+        fundAmount: 0.1,
+        votes: 1,
+        tokenAdr: "0x0000000000000000000000000000000000000000",
+        tokenName: "",
+        kind: "offChain",
+        candidates: [],
+      });
     }
   };
   const updateSelectedQdip = qdip => {
@@ -169,6 +184,22 @@ const CreateElectionPage = ({
   };
 
   const [toAddress, setToAddress] = useState("");
+  const addVoter = async () => {
+    if (toAddress == "") return;
+    if (toAddress.indexOf(".eth") > 0 || toAddress.indexOf(".xyz") > 0) {
+      try {
+        const possibleAddress = await ensProvider.resolveName(toAddress);
+        if (possibleAddress) {
+          toAddress = possibleAddress;
+        }
+        // eslint-disable-next-line no-empty
+      } catch (e) {}
+    }
+    if (!newElection.candidates.includes(toAddress)) {
+      newElection.candidates.push(toAddress);
+    }
+    setToAddress("");
+  };
 
   return (
     <CenteredFrame>
@@ -202,7 +233,7 @@ const CreateElectionPage = ({
               <FormErrorMessage>{errors.name && errors.name.message}</FormErrorMessage>
             </FormControl>
 
-            <FormControl py="4">
+            {/* <FormControl py="4">
               <FormLabel htmlFor="description">Election description</FormLabel>
               <Textarea
                 placeholder="Election description"
@@ -215,10 +246,10 @@ const CreateElectionPage = ({
                 })}
               />
               <FormErrorMessage>{errors.description && errors.description.message}</FormErrorMessage>
-            </FormControl>
+            </FormControl> */}
 
-            <FormControl isInvalid={errors.fundAmount || errors.funds}>
-              <FormLabel htmlFor="fundAmount">fundAmount Allocation (amount to be distributed)</FormLabel>
+            <FormControl py="4" isInvalid={errors.fundAmount || errors.funds}>
+              <FormLabel htmlFor="fundAmount">Fund Allocation (amount to be distributed)</FormLabel>
               <HStack pb="1rem" justify="space-between">
                 <HStack>
                   <InputGroup w="300px">
@@ -297,45 +328,42 @@ const CreateElectionPage = ({
                 ))}
               </Select>
             </FormControl>
-
+            <Box pb="1rem"></Box>
+            <Divider backgroundColor="purple.500" />
+            <Box pb="1rem"></Box>
             <FormControl isInvalid={errors.candidates}>
               <FormLabel htmlFor="candidates">Candidates</FormLabel>
-              {fields.map((field, index) => (
-                <HStack pb="1rem" justify="space-between" key={index}>
-                  <Text>Voter {index + 1}</Text>
-                  <HStack>
-                    <AddressInputChakra
-                      ensProvider={mainnetProvider}
-                      placeholder="Enter ENS name"
-                      value={toAddress}
-                      field={field}
-                      index={index}
-                    />
-
-                    {/* <InputGroup w="300px">
-                      <ControllerPlus
-                        key={field.id} // important to include key with field's id
-                        {...register(`candidates.${index}.value`)}
-                        transform={{
-                          input: value => {
-                            return value;
-                          },
-                          output: e => e.target.value,
-                        }}
-                        control={control}
-                      />
-                      <InputRightElement p="2.5" children={<QRCodeIcon />} />
-                    </InputGroup>
-                    <Icon _hover={{ cursor: "pointer" }} color="red.500" as={FiX} onClick={() => remove(index)} /> */}
-                  </HStack>
-                </HStack>
-              ))}
+              <AddressInputChakra
+                ensProvider={mainnetProvider}
+                placeholder="Enter ENS name"
+                value={toAddress}
+                onChange={setToAddress}
+              />
               <FormErrorMessage>{errors.votes && errors.votes.message}</FormErrorMessage>
             </FormControl>
 
-            <Button w="100%" variant="outline" onClick={() => append({ address: "", ens: "" })}>
+            <Button w="100%" variant="outline" mt={4} onClick={addVoter}>
               + Add voter
             </Button>
+            <Box
+              borderColor="purple.500"
+              borderWidth="1px"
+              borderRadius="8px"
+              mt={4}
+              py="1rem"
+              px="2.5rem"
+              overflowY="scroll"
+              maxH="200px"
+            >
+              <List spacing={3}>
+                {newElection.candidates.map(addr => (
+                  <ListItem>
+                    <ListIcon color="green.500" />
+                    {addr}
+                  </ListItem>
+                ))}
+              </List>
+            </Box>
             <Box pb="1rem"></Box>
             <Divider backgroundColor="purple.500" />
             <Box pt="1rem" align="end">
