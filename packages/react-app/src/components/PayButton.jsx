@@ -42,9 +42,9 @@ export default function PayButton({
 
   const refreshETH = () => {
     console.log(yourLocalBalance.toString(), ethers.utils.parseEther(amount).toString());
-    let ylb = yourLocalBalance.gte(ethers.utils.parseEther(amount || "0")) ? 3 : 5;
+    // let ylb = yourLocalBalance.gte(ethers.utils.parseEther(amount || "0")) ? 3 : 5;
 
-    setStatus(ylb);
+    setStatus(3);
   };
 
   const refreshTokenDetails = async () => {

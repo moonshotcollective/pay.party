@@ -434,6 +434,12 @@ function App(props) {
     );
   }
 
+  console.log({ yourLocalBalance });
+  const [lb, setLb] = useState(yourLocalBalance);
+  useEffect(() => {
+    setLb(yourLocalBalance);
+  }, [yourLocalBalance]);
+
   return (
     <div className="App">
       {/* ✏️ Edit the header and change the title to your project name */}
@@ -492,7 +498,7 @@ function App(props) {
               userSigner={userSigner}
               mainnetProvider={mainnetProvider}
               localProvider={localProvider}
-              yourLocalBalance={yourLocalBalance}
+              yourLocalBalance={lb}
               price={price}
               tx={tx}
               writeContracts={writeContracts}

@@ -208,16 +208,17 @@ export default function Vote({
   };
 
   const ethPayHandler = () => {
-    const adrs = Array.from(candidateMap.keys());
-    const totalValueInWei = toWei(electionState.fundingAmount);
+    const adrs = electionState.candidates;
+    console.log({ electionState });
+    const totalValueInWei = electionState.fundAmount;
     //convert payout to wei
-    let payoutInWei = finalPayout.payout.map(p => toWei(p));
+    let payoutInWei = [totalValueInWei]; //finalPayout.payout.map(p => toWei(p));
 
     console.log(adrs, payoutInWei, totalValueInWei);
 
     return new Promise((resolve, reject) => {
       qdipHandler
-        .distributeEth(id, adrs, payoutInWei, totalValueInWei)
+        .distributeEth(id, adrs, payoutInWei, electionState.tokenAdr, totalValueInWei)
         .then(success => {
           loadElectionState();
           resolve(success);
@@ -396,7 +397,7 @@ export default function Vote({
             ),
             electionState && !electionState.active && electionState.isAdmin && !electionState.isPaid && (
               <PayButton
-                token={token}
+                token={"ETH"}
                 tokenAddr={electionState.tokenAdr}
                 appName="Quadratic Diplomacy"
                 tokenListHandler={tokens => setAvailableTokens(tokens)}
