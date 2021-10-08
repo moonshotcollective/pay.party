@@ -245,27 +245,42 @@ export default function OffChain(tx, readContracts, writeContracts, mainnetProvi
     };
   };
 
-  const distributeEth = async (id, adrs, weiDist, totalValueInWei) => {
-    console.log("Distributing...");
-    return new Promise((resolve, reject) => {
-      tx(
-        writeContracts.Diplomat.payElection(id, adrs, weiDist, {
-          value: totalValueInWei,
-        }),
-        update => {
-          console.log("📡 Transaction Update:", update);
-          if (update) {
-            if (update.status === "confirmed" || update.status === 1) {
-              resolve(update);
-            } else if (!update.status) {
-              reject(update);
-            }
-          } else {
-            reject(update);
-          }
-        },
-      );
+  const distributeEth = async (id, adrs, weiDist, tokenAdr, totalValueInWei) => {
+    console.log("Distributing..." + totalValueInWei);
+    const web3Modal = new Web3Modal();
+    const connection = await web3Modal.connect();
+    const provider = new ethers.providers.Web3Provider(connection);
+    const signer = provider.getSigner();
+    let network = await provider.getNetwork();
+    let contract = new ethers.Contract(
+      Diplomat[network.chainId][network.name].contracts.Diplomat.address,
+      Diplomat[network.chainId][network.name].contracts.Diplomat.abi,
+      signer,
+    );
+
+    console.log("Stuff", id, adrs, tokenAdr, totalValueInWei);
+
+    let transaction = await contract.payElection(id, adrs, weiDist, tokenAdr, {
+      value: totalValueInWei,
     });
+    const receipt = await transaction.wait();
+
+    return axios
+      .post(serverUrl + "distributions/" + id + "/pay", {
+        address: address,
+      })
+      .then(response => {
+        // console.log(response);
+        if (response.status == 200) {
+          return response.statusText;
+        } else {
+          throw response;
+        }
+      })
+      .catch(e => {
+        console.log("Error on 'distrubuteEth' distributions post");
+        throw e;
+      });
   };
 
   const sendBackendOnCreate = async (newElection, address) => {};
