@@ -407,6 +407,8 @@ app.post(
       .collection("distributions")
       .doc(request.params.distributionId);
 
+    // console.log({ request });
+
     const distribution = await electionSnapshotRef.get();
     console.log(distribution);
     if (!distribution) {
@@ -417,7 +419,7 @@ app.post(
     } else {
       console.log(distribution.data());
       // const distributionRef = distribution.ref;
-      const res = await distribution.update({ paid: true });
+      const res = await distribution.ref.update({ paid: true });
 
       return response.send(res);
     }
