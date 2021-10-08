@@ -73,6 +73,15 @@ const ElectionSchema = {
       type: "integer",
       title: "voteAllocation",
     },
+    fundAmount: {
+      type: "string",
+      title: "fundAmount",
+    },
+    tokenAddress: {
+      type: "string",
+      maxLength: 42,
+      title: "tokenAddress",
+    },
     isActive: {
       type: "boolean",
       title: "isActive",

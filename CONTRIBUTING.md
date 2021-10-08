@@ -11,5 +11,6 @@ yarn
 
 yarn chain
 yarn deploy
-yarn start
+yarn ceramic
 yarn api
+yarn start

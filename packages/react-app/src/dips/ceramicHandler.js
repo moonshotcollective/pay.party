@@ -12,7 +12,7 @@ import { getCeramicElectionIds, getNetwork, serializeCeramicElection, toCeramicI
 import { serverUrl } from "./baseHandler";
 
 export default function CeramicHandler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner) {
-  const createElection = async ({ name, description, candidates, votes }) => {
+  const createElection = async ({ name, candidates, fundAmount, tokenAdr, votes, kind }) => {
     const web3Modal = new Web3Modal();
     const connection = await web3Modal.connect();
     const provider = new ethers.providers.Web3Provider(connection);
@@ -29,15 +29,17 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
 
     // make sure the user is Authenticated
     if (ceramic?.did?.id) {
+      console.log({ kind });
       // create the election document on Ceramic
       const electionDoc = await TileDocument.create(
         ceramic,
         {
           name,
-          description,
           candidates,
           kind: "ceramic",
           voteAllocation: votes,
+          tokenAddress: tokenAdr,
+          fundAmount,
           createdAt: new Date().toISOString(),
           isActive: true,
           isPaid: false,
@@ -147,20 +149,15 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
   };
 
   const getFinalPayout = async id => {
-    let election = await axios.get(serverUrl + `distributions/${id}`); //await readContracts.Diplomat.getElection(id);
-    console.log({ election });
-    const electionFunding = election.data.fundAmount;
-    // const offChainElectionResult = await axios.get(serverUrl + `distribution/${id}`);
-    // const { election: offChainElection } = offChainElectionResult.data;
-
-    let totalScores = await getCandidatesScores(id);
+    const { idx, ceramic } = await makeCeramicClient();
+    const election = await serializeCeramicElection(id, address);
     let payout = [];
-    let totalScoresSum = totalScores.reduce((sum, curr) => sum + curr, 0);
-    console.log({ totalScoresSum });
+    console.log({ payout });
+    let totalScoresSum = election.totalScores.reduce((sum, curr) => sum + curr, 0);
     let scores = [];
 
-    for (let i = 0; i < election.data.candidates.length; i++) {
-      const candidateScore = election.data.votes[election.data.candidates[i]];
+    for (let i = 0; i < election.candidates.length; i++) {
+      const candidateScore = election.votes[election.candidates[i]];
       console.log({ candidateScore });
       let scoreSum = 0;
       if (!candidateScore) {
@@ -171,8 +168,8 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
       }
     }
 
-    for (let i = 0; i < totalScores.length; i++) {
-      const candidatePay = Math.floor((totalScores[i] / totalScoresSum) * electionFunding);
+    for (let i = 0; i < election.totalScores.length; i++) {
+      const candidatePay = Math.floor((election.totalScores[i] / totalScoresSum) * election.fundAmount);
       if (!isNaN(candidatePay)) {
         payout.push(fromWei(candidatePay.toString()));
       } else {
@@ -180,7 +177,7 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
       }
     }
     return {
-      scores: totalScores,
+      scores: election.totalScores,
       payout: payout,
       scoreSum: totalScoresSum,
     };

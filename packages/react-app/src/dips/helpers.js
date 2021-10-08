@@ -129,6 +129,8 @@ export const serializeCeramicElection = async (ceramicElectionId, address) => {
     hasVoted,
     created_date: new Date(electionDoc.content.createdAt).toLocaleDateString(),
     creatorDid,
+    fundAmount: electionDoc.content.fundAmount,
+    tokenAdr: electionDoc.content.tokenAddress,
     creator: creatorMainAddress || creatorDid,
     status: electionDoc.content.isActive,
     paid: electionDoc.content.isPaid,
