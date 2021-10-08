@@ -451,7 +451,7 @@ export default function Vote({
             )}
           </div>
           <div>{errorMsg && <Text type="danger">{errorMsg}</Text>}</div>
-          <div>{electionState.paid && <Text type="success">Election Payout Complete!</Text>}</div>
+          <div>{electionState.isPaid && <Text type="success">Election Payout Complete!</Text>}</div>
         </PageHeader>
       </div>
     </>

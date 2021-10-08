@@ -68,10 +68,7 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
     const electionDoc = await TileDocument.load(ceramic, id);
     console.log(electionDoc.controllers[0], ceramic.did.id.toString());
     if (electionDoc.controllers[0] === ceramic.did.id.toString()) {
-      console.log("ending...", { ...electionDoc.content });
       const updated = await electionDoc.update({ ...electionDoc.content, isActive: false });
-      const ended = await TileDocument.load(ceramic, id);
-      console.log("ended", ended.content);
       return updated;
     }
   };
@@ -180,6 +177,7 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
   };
 
   const distributeEth = async ({ id, candidates, payoutInWei, totalValueInWei, tokenAddress }) => {
+    const { ceramic } = await makeCeramicClient(address);
     const { network, signer } = await getNetwork();
     console.log({ signer });
     const contract = new ethers.Contract(
@@ -195,7 +193,12 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
     });
     const receipt = await transaction.wait();
     console.log({ receipt });
-    // TODO: set isPaid in Ceramic
+    const electionDoc = await TileDocument.load(ceramic, id);
+    console.log(electionDoc.controllers[0], ceramic.did.id.toString());
+    if (electionDoc.controllers[0] === ceramic.did.id.toString()) {
+      await electionDoc.update({ ...electionDoc.content, isPaid: true });
+    }
+
     return receipt;
   };
 

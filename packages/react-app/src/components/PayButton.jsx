@@ -119,17 +119,6 @@ export default function PayButton({
         setStatus(4);
       }
     }
-    // if (isETH()) {
-    //   setStatus(4);
-    //   await ethPayHandler();
-    //   setStatus(3);
-    // } else if (isMATIC()) {
-    //   setStatus(4);
-    //   await ethPayHandler();
-    //   setStatus(3);
-    // } else {
-
-    // }
   };
 
   useEffect(() => {
