@@ -25,10 +25,8 @@ import {
   Steps,
   Col,
   Row,
+  Tooltip,
 } from "antd";
-
-import { Input as ChakraInput } from "@chakra-ui/react";
-
 import {
   LeftOutlined,
   DeleteOutlined,
@@ -37,10 +35,14 @@ import {
   PlusCircleFilled,
   ExportOutlined,
   DoubleRightOutlined,
+  ImportOutlined,
+  SelectOutlined,
+  UploadOutlined,
 } from "@ant-design/icons";
 import dips from "../dips";
 import { serverUrl } from "../dips/offChain";
 import { ethers } from "ethers";
+import { CERAMIC_PREFIX } from "../dips/helpers";
 
 const CURRENCY = "ETH";
 const TOKEN = "UNI";
@@ -61,18 +63,15 @@ export default function Create({
   /***** Routes *****/
   const routeHistory = useHistory();
 
-  const viewElection = async () => {
-    let index = await readContracts.Diplomat.electionCount();
-    routeHistory.push("/vote/" + (index.toNumber() - 1));
-  };
-
   /***** States *****/
-  const [selectedQdip, setSelectedQdip] = useState("base");
+  const [selectedQdip, setSelectedQdip] = useState("offChain");
   const [qdipHandler, setQdipHandler] = useState();
   const [current, setCurrent] = useState(0);
   const [errorMsg, setErrorMsg] = useState();
+  const [electionId, setElectionId] = useState();
   const [isConfirmingElection, setIsConfirmingElection] = useState(false);
   const [isCreatedElection, setIsCreatedElection] = useState(false);
+
   const [newElection, setNewElection] = useState({
     name: "test",
     funds: "ETH",
@@ -128,16 +127,17 @@ export default function Create({
   }, [qdipHandler]);
 
   useEffect(() => {
-    console.log(selectedQdip);
-    setQdipHandler(handlers[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
+    setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
   }, [selectedQdip]);
 
   /***** Methods *****/
 
   const init = async () => {
-    setQdipHandler(
-      handlers[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner),
-    );
+    setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner));
+    // readContracts.Diplomat.on("NewElection", args => {
+    //   let sender = args[1];
+    //   console.log(sender);
+    // });
     const steps = [
       {
         title: "Election Details",
@@ -161,17 +161,29 @@ export default function Create({
     setIsConfirmingElection(true);
     // Create a new election
 
-    return qdipHandler
-      .createElection(newElection, selectedQdip)
-      .then(data => {
-        console.log({ data });
-        setIsConfirmingElection(false);
-        setIsCreatedElection(true);
-      })
-      .catch(err => {
-        console.log(err);
-        setIsConfirmingElection(false);
-      });
+    let id = await qdipHandler.createElection(newElection, selectedQdip);
+    console.log(id);
+    if (id) {
+      setIsConfirmingElection(false);
+      setIsCreatedElection(true);
+      setElectionId(id);
+    }
+    //   .then(data => {
+    //     setIsConfirmingElection(false);
+    //     setIsCreatedElection(true);
+    //   })
+    //   .catch(err => {
+    //     console.log(err);
+    //     setIsConfirmingElection(false);
+    //   });
+  };
+
+  const viewElection = () => {
+    if (electionId) {
+      const isCeramicRecord = electionId.startsWith(CERAMIC_PREFIX);
+      const id = isCeramicRecord ? electionId.split(CERAMIC_PREFIX)[1] : electionId;
+      routeHistory.push("/vote/" + id + `?kind=${isCeramicRecord ? "ceramic" : "offChain"}`);
+    }
   };
 
   const Step1 = () => {
@@ -193,9 +205,8 @@ export default function Create({
     );
 
     const updateSelectedQdip = qdip => {
-      console.log("update qdip", qdip);
       newElection.kind = qdip;
-      setQdipHandler(handlers[qdip].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner));
+      setQdipHandler(dips[qdip].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner));
     };
 
     return (
@@ -213,9 +224,13 @@ export default function Create({
             label="Election Name"
             rules={[{ required: true, message: "Please input election name!" }]}
           >
-            <ChakraInput
+            <Input
+              size="large"
               placeholder="Enter Name"
-              borderColor="purple.500"
+              allowClear={true}
+              style={{
+                width: "100%",
+              }}
               onChange={e => {
                 newElection.name = e.target.value ? e.target.value : "";
               }}
@@ -269,11 +284,15 @@ export default function Create({
               }}
             />
           </Form.Item>
-          <Form.Item name="type" label="Diplomacy Type">
-            <Select placeholder="Quadratic Diplomacy build..." defaultValue={["onChain"]} onSelect={updateSelectedQdip}>
+          <Form.Item name="type" label="Storage Location">
+            <Select
+              placeholder="Quadratic Diplomacy build..."
+              defaultValue={["Firebase (Centralized)"]}
+              onSelect={updateSelectedQdip}
+            >
               {DIP_TYPES.map(k => (
                 <Select.Option key={k} value={k}>
-                  {handlers[k].name}
+                  {dips[k].name}
                 </Select.Option>
               ))}
             </Select>
@@ -285,6 +304,60 @@ export default function Create({
 
   const Step2 = () => {
     const [toAddress, setToAddress] = useState("");
+
+    const handleAddVoters = async () => {
+      const text = await navigator.clipboard.readText();
+      const addresses = text.split(",");
+
+      const candidates = newElection.candidates.slice();
+
+      addresses.forEach(voteAddress => {
+        try {
+          const voteAddressWithChecksum = ethers.utils.getAddress(voteAddress);
+          if (!candidates.includes(voteAddressWithChecksum)) {
+            candidates.push(voteAddressWithChecksum);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      });
+      newElection.candidates = candidates;
+    };
+    const handleAddVotersCSV = async () => {
+      // const text = await navigator.clipboard.readText();
+      // const addresses = text.split(",");
+      // const candidates = newElection.candidates.slice();
+      // addresses.forEach(voteAddress => {
+      //   try {
+      //     const voteAddressWithChecksum = ethers.utils.getAddress(voteAddress);
+      //     if (!candidates.includes(voteAddressWithChecksum)) {
+      //       candidates.push(voteAddressWithChecksum);
+      //     }
+      //   } catch (error) {
+      //     console.log(error);
+      //   }
+      // });
+      // newElection.candidates = candidates;
+    };
+    const handleAddVotersPaste = async () => {
+      const text = await navigator.clipboard.readText();
+      const addresses = text.split(",");
+
+      const candidates = newElection.candidates.slice();
+
+      addresses.forEach(voteAddress => {
+        try {
+          const voteAddressWithChecksum = ethers.utils.getAddress(voteAddress);
+          if (!candidates.includes(voteAddressWithChecksum)) {
+            candidates.push(voteAddressWithChecksum);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      });
+      newElection.candidates = candidates;
+    };
+
     return (
       <>
         <Form
@@ -326,6 +399,18 @@ export default function Create({
               >
                 Add
               </Button>
+              <Tooltip placement="top" title="Paste from clipboard">
+                {" "}
+                <Button
+                  icon={<ImportOutlined />}
+                  type="link"
+                  block
+                  onClick={() => handleAddVotersPaste()}
+                ></Button>{" "}
+              </Tooltip>
+              <Tooltip placement="top" title="Import CSV">
+                <Button icon={<UploadOutlined />} type="link" block onClick={() => handleAddVotersCSV()}></Button>
+              </Tooltip>
             </Space>
 
             <List
@@ -360,7 +445,6 @@ export default function Create({
   };
 
   const Step3 = () => {
-    console.log({ newElection });
     return (
       <>
         <Descriptions bordered style={{ margin: "2em 5em" }} column={1} size="small">

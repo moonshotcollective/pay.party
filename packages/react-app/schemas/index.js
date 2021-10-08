@@ -33,10 +33,8 @@ const VotesListSchema = {
           id: {
             $ref: "#/definitions/CeramicStreamId",
           },
-          name: {
-            type: "string",
-            title: "name",
-            maxLength: 150,
+          electionId: {
+            $ref: "#/definitions/CeramicStreamId",
           },
         },
       },
@@ -65,6 +63,11 @@ const ElectionSchema = {
       type: "string",
       title: "description",
       maxLength: 450,
+    },
+    kind: {
+      type: "string",
+      title: "kind",
+      maxLength: 150,
     },
     voteAllocation: {
       type: "integer",

@@ -1,14 +1,1 @@
-{
-  "definitions": {
-    "votes": "kjzl6cwe1jw145vpuux23ixrom87shqtgdug2hsn0ovib2hvimauatfev6rmm5c",
-    "vote": "kjzl6cwe1jw149ix0t2tf24drmsvsccleq9ice2v71yv216qv3esydjzb0vsumd",
-    "elections": "kjzl6cwe1jw14bg5xthadztf4ym2lrse1pog2yykk5c2jlety4uo9ekt2aspmn5",
-    "election": "kjzl6cwe1jw145cz7m62g9amdvwjdyvxe50ti3lq2j4m11t3tx7t7gggl2ub95i"
-  },
-  "schemas": {
-    "votes": "ceramic://k3y52l7qbv1fryfsvq3d4ti86njs3ixc2cbtgef2bnf1x5skjlm7eoiv8g96ym8e8",
-    "vote": "ceramic://k3y52l7qbv1frxi7xmsu70la34ooa2eb0i182kq93u6608614hwu4o3qqik7e2neo",
-    "elections": "ceramic://k3y52l7qbv1fry2zi56ysw13g1sv27usjn46a409f17oovayvzjcqaw4nja8ww0lc",
-    "election": "ceramic://k3y52l7qbv1frxxrmu50234g5xiyl8jznhpj5i5qer8sygk4be5dsdd1i5ry54veo"
-  }
-}
+{"definitions":{"votes":"kjzl6cwe1jw146gg64ddnjnjpwp4b4g82bztzhu4czmj1x4dl279owu5p4xy6yd","vote":"kjzl6cwe1jw1494t6ipqldcho81lay6z6v2jab3f25uihgoaxhe46y5ao9xvzj3","elections":"kjzl6cwe1jw145flcf5r5ufwkd0itw67tl04hyb1efi8sq0d0syy83spkfeg3rb","election":"kjzl6cwe1jw1473ni3wfnf46bro8l39ybod4dw47ik6f9kjncj084naisamse22"},"schemas":{"votes":"ceramic://k3y52l7qbv1fry926b21limjgs0nt4s3n6fz3zp0avqkapqtkcdjj8b0ue6tv0u80","vote":"ceramic://k3y52l7qbv1frxwemppupffpfwnbk7jvmyo4kodozdxc9xk1r9n6e21v97um5639c","elections":"ceramic://k3y52l7qbv1fry3is112pjq605kmix04fo8pzz73p5807glo4ohd7wl4t3xv7j08w","election":"ceramic://k3y52l7qbv1fry4heot3prehkr1ffx4od7djo34rn5iqkd1y9xq794keq2f9h89hc"}}

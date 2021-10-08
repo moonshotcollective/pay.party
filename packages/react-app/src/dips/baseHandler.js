@@ -1,80 +1,76 @@
 import axios from "axios";
 import { makeCeramicClient } from "../helpers";
 import qs from "query-string";
+import { CERAMIC_PREFIX, serializeCeramicElection } from "./helpers";
+var Map = require("collections/map");
+
+export const serverUrl = process.env.REACT_APP_API_URL || "http://localhost:45622/";
 export default function BaseHandler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner) {
+  console.log("BaseHandler()");
   const getElections = async () => {
     const contract = readContracts.Diplomat;
-    const allElections = await contract.getElections();
+    const allContractElections = await contract.getElections();
 
-    if (allElections.length == 0) {
+    if (allContractElections.length == 0) {
       return [];
     }
 
-    const ceramicElections = allElections.filter(d => {
-      return d.startsWith("ceramic://");
+    const ceramicElections = allContractElections.filter(d => {
+      return d.startsWith(CERAMIC_PREFIX);
     });
 
-    const firebaseElectionIds = allElections.filter(d => {
-      return !d.startsWith("ceramic://");
+    const firebaseElectionIds = allContractElections.filter(d => {
+      return !d.startsWith(CERAMIC_PREFIX);
     });
 
-    const serverUrl = process.env.REACT_APP_API_URL || "http://localhost:45622/";
+    const firebaseDbElections = (await axios.get(serverUrl + `distributions/`)).data;
+    // console.log(await firebaseDbElections);
 
-    console.log({firebaseElectionIds})
-    const firebaseElections = await axios.post(serverUrl + `distributions/ids`, {
-        // params: { firebaseElectionIds },
-        // paramsSerializer: params => {
-        //     return qs.stringify(params.firebaseElectionIds)
-        // }
-        firebaseElectionIds
-
-    });
-
-    console.log({ firebaseElections });
     const newElectionsMap = new Map();
-    const { idx, ceramic } = await makeCeramicClient();
+    const formattedFirebaseElections = await Promise.all(
+      firebaseDbElections.map(async fb => {
+        const addressElectionState = await axios.get(serverUrl + `distribution/state/${fb.id}/${address}`);
+        const hasVoted = addressElectionState.data.hasVoted;
+        const nVoted = addressElectionState.data.nVoted;
+        const isAdmin = address === fb.data.creator;
+        const isCandidate = fb.data.candidates.includes(address);
 
-    for (let i = 0; i < elections.length; i++) {
-      const electionDoc = await ceramic.loadStream(elections[i]);
-      const creatorDid = electionDoc.controllers[0];
-
-      let creatorMainAddress = creatorDid;
-      const creatorAccounts = await idx.get("cryptoAccounts", creatorDid);
-      const tags = [];
-
-      if (creatorAccounts) {
-        console.log({ creatorAccounts });
-        const accounts = Object.keys(creatorAccounts);
-        const [mainAddress, networkAndChainId] = Object.keys(creatorAccounts)[0].split("@");
-        creatorMainAddress = mainAddress;
-        if (
-          Object.keys(creatorAccounts).some(creatorAddress =>
-            electionDoc.content.candidates.includes(creatorAddress.split("@")[0]),
-          )
-        ) {
-          tags.push("candidate");
+        const tags = [];
+        if (hasVoted) {
+          tags.push("voted");
         }
-        if (Object.keys(creatorAccounts).some(creatorAddress => address === creatorAddress.split("@")[0])) {
+        if (isAdmin) {
           tags.push("admin");
         }
-      }
-      const formattedElection = {
-        name: electionDoc.content.name,
-        description: electionDoc.content.description,
-        created_date: new Date(electionDoc.content.createdAt).toLocaleDateString(),
-        creatorDid,
-        creator: creatorMainAddress || creatorDid,
-        status: electionDoc.content.isActive,
-        paid: electionDoc.content.isPaid,
-        n_voted: { n_voted: 888, outOf: electionDoc.content.candidates.length },
-        tags,
-      };
-      newElectionsMap.set(elections[i], formattedElection);
+        if (isCandidate) {
+          tags.push("candidate");
+        }
+
+        const formattedElection = {
+          ...fb.data,
+          id: fb.id,
+          created_date: new Date().toLocaleDateString(), // TODO: Update date
+          n_voted: { n_voted: nVoted, outOf: fb.data.candidates.length },
+          status: fb.data.active,
+          tags: tags,
+        };
+
+        return formattedElection;
+      }),
+    );
+    formattedFirebaseElections.forEach(({ id, ...election }) => {
+      newElectionsMap.set(id, { id, ...election });
+    });
+
+    for (let i = 0; i < ceramicElections.length; i++) {
+      const serializedElection = await serializeCeramicElection(ceramicElections[i], address);
+      newElectionsMap.set(ceramicElections[i], serializedElection);
     }
+
     return newElectionsMap;
   };
 
   return {
-      getElections,
-  }
+    getElections,
+  };
 }

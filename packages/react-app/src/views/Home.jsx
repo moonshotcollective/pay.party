@@ -24,21 +24,22 @@ import {
 } from "@ant-design/icons";
 import { Address, AddressInput } from "../components";
 import dips from "../dips";
+import BaseHandler from "../dips/baseHandler";
 import { mainnetProvider, blockExplorer } from "../App";
+import { CERAMIC_PREFIX } from "../dips/helpers";
 
 export default function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
   /***** Routes *****/
   const routeHistory = useHistory();
   const viewElection = record => {
-    // console.log({ record });
-    routeHistory.push("/vote/" + record.id);
+    const isCeramicRecord = record.id.startsWith(CERAMIC_PREFIX);
+    const electionId = isCeramicRecord ? record.id.split(CERAMIC_PREFIX)[1] : record.id;
+    routeHistory.push("/vote/" + electionId + `?kind=${isCeramicRecord ? "ceramic" : "offChain"}`);
   };
 
   const createElection = () => {
     routeHistory.push("/create");
   };
-
-  console.log({dips})
 
   /***** States *****/
 
@@ -60,18 +61,18 @@ export default function Home({ tx, readContracts, writeContracts, mainnetProvide
   useEffect(() => {
     (async () => {
       if (qdipHandler) {
-        console.log("get elections");
+        setTableDataLoading(true);
         let electionsMap = await qdipHandler.getElections();
-        console.log(electionsMap);
         setElectionsMap(electionsMap);
+        setTableDataLoading(false);
       }
     })();
   }, [qdipHandler]);
 
   /***** Methods *****/
   const init = async () => {
-    setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
-    console.log(qdipHandler)
+    // TODO: Investigate if this ever needs to be anything other than the baseHandler
+    setQdipHandler(BaseHandler(tx, readContracts, writeContracts, mainnetProvider, address));
   };
 
   /***** Render *****/
@@ -114,11 +115,7 @@ export default function Home({ tx, readContracts, writeContracts, mainnetProvide
       key: "n_voted",
       align: "center",
       width: 100,
-      render: p => (
-        <Typography.Text>
-          {p.n_voted} / {p.outOf}
-        </Typography.Text>
-      ),
+      render: p => <Typography.Text>{`${p.n_voted} / ${p.outOf}`}</Typography.Text>,
     };
   };
   const statusCol = () => {
@@ -137,7 +134,9 @@ export default function Home({ tx, readContracts, writeContracts, mainnetProvide
       dataIndex: "tags",
       key: "tags",
       align: "center",
-      render: tags =>
+      render: (
+        tags, //["yeah"],
+      ) =>
         tags.map(r => {
           let color = "orange";
           if (r == "candidate") {

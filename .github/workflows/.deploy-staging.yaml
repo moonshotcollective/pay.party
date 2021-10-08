@@ -1,0 +1,33 @@
+name: Deploy to heroku dev/staging
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: dev
+      - name: Release Staging API
+        uses: akhileshns/heroku-deploy@v3.12.12 # This is the action
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: ${{secrets.HEROKU_API_STAGING_APP_NAME}} #Must be unique in Heroku
+          heroku_email: ${{secrets.HEROKU_EMAIL}}
+        env:
+          HD_APP_BASE: "packages/backend"
+      - name: Release Staging Web app
+        uses: akhileshns/heroku-deploy@v3.12.12 # This is the action
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: ${{secrets.HEROKU_WEB_STAGING_APP_NAME}} #Must be unique in Heroku
+          heroku_email: ${{secrets.HEROKU_EMAIL}}
+        env:
+          HD_APP_BASE: "packages/react-app"
+          REACT_APP_NETWORK_NAME: rinkeby
+          REACT_APP_API_URL: http://qd-api-staging.herokuapp.com/
+          REACT_APP_CERAMIC_SEED: ${{secrets.CERAMIC_SEED}}

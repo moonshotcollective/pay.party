@@ -14,11 +14,11 @@ const schemas = require("./schemas");
 
 async function makeCeramicClient() {
   const ceramicConfig = await fs.promises.readFile("./src/config.json");
-  if (!process.env.CERAMIC_SEED) {
-    console.warn("CERAMIC_SEED not found in .env, generating a new seed..");
+  if (!process.env.REACT_APP_CERAMIC_SEED) {
+    console.warn("REACT_APP_CERAMIC_SEED not found in .env, generating a new seed..");
     const newSeed = toString(randomBytes(32), "base16");
-    console.log(`Seed generated. Save this in your .env as CERAMIC_SEED=${newSeed}`);
-    process.env.CERAMIC_SEED = newSeed;
+    console.log(`Seed generated. Save this in your .env as REACT_APP_CERAMIC_SEED=${newSeed}`);
+    process.env.REACT_APP_CERAMIC_SEED = newSeed;
   }
   const ceramic = new Ceramic(process.env.CERAMIC_URL || "https://ceramic-clay.3boxlabs.com");
   const keyDidResolver = KeyDidResolver.getResolver();
@@ -28,7 +28,7 @@ async function makeCeramicClient() {
     ...keyDidResolver,
   };
   const did = new DID({
-    provider: new Ed25519Provider(fromString(process.env.CERAMIC_SEED, "base16")),
+    provider: new Ed25519Provider(fromString(process.env.REACT_APP_CERAMIC_SEED, "base16")),
     resolver: resolverRegistry,
   });
   await did.authenticate();

@@ -1,12 +1,15 @@
 import { PageHeader } from "antd";
-import { useParams, useHistory } from "react-router-dom";
+import { useParams, useHistory, useLocation } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 import { Button, Divider, Table, Space, Typography, Input } from "antd";
 import { fromWei, toWei, toBN, numberToHex } from "web3-utils";
 import { Address, PayButton } from "../components";
 import { ethers } from "ethers";
+import qs from "query-string";
 import { PlusSquareOutlined, MinusSquareOutlined, SendOutlined, CloseCircleOutlined } from "@ant-design/icons";
 import dips from "../dips";
+import { makeCeramicClient } from "../helpers";
+import { CERAMIC_PREFIX } from "../dips/helpers";
 
 const { Text } = Typography;
 
@@ -26,12 +29,14 @@ export default function Vote({
   /***** Routes *****/
   const routeHistory = useHistory();
   let { id } = useParams();
+  const location = useLocation();
 
   /***** States *****/
-  const [selectedQdip, setSelectedQdip] = useState("onChain");
+  const [selectedQdip, setSelectedQdip] = useState("ceramic");
   const [qdipHandler, setQdipHandler] = useState();
 
   const [electionState, setElectionState] = useState({});
+  console.log({ electionState });
   const [votesLeft, setVotesLeft] = useState(0);
   const [tableSrc, setTableSrc] = useState([]);
   //   const [tableCols, setTableCols] = useState([]);
@@ -73,30 +78,25 @@ export default function Vote({
   //   }, [candidateMap]);
 
   useEffect(() => {
-    if (electionState && electionState.name) {
-      updateTableSrc();
-      console.log({ electionState });
-      setVotesLeft(electionState.votes);
-      if (electionState.active) {
-        updateCandidateScore();
-      } else {
-        updateFinalPayout();
+    (async () => {
+      if (electionState && electionState.name) {
+        updateTableSrc();
+        setVotesLeft(electionState.voteAllocation);
+        if (electionState.active) {
+          await updateCandidateScore();
+        } else {
+          updateFinalPayout();
+        }
       }
-    }
+    })();
   }, [electionState, address]);
 
   /***** Methods *****/
 
   const init = async () => {
-    const election = await readContracts.Diplomat.getElection(id);
-    console.log({ election });
-    if (election.token == "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984") {
-      setToken("UNI");
-    }
-    // setSelectedQdip();
-    setQdipHandler(
-      dips[election.kind].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner),
-    );
+    // TODO: handle invalid urls in the UI -> 404 ?
+    const { kind } = qs.parse(location.search);
+    setQdipHandler(dips[kind].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner));
     setSpender(readContracts?.Diplomat?.address);
     // loadERC20List();
   };
@@ -113,7 +113,6 @@ export default function Vote({
 
   const loadElectionState = async () => {
     let electionState = await qdipHandler.getElectionStateById(id);
-    console.log({ electionState });
     setElectionState(electionState);
   };
 
@@ -144,23 +143,20 @@ export default function Vote({
       setVotesLeft(votesLeft + 1);
       setErrorMsg(null);
     }
-    // console.log(candidate);
   };
 
   const addVote = addr => {
     const candidate = candidateMap.get(addr);
-    if (candidate.votes < electionState.votes && votesLeft > 0) {
+    if (candidate.votes < electionState.voteAllocation && votesLeft > 0) {
       candidate.votes = candidate.votes + 1;
       candidate.score = (candidate.votes ** 0.5).toFixed(2);
       candidateMap.set(addr, candidate);
       setVotesLeft(votesLeft - 1);
       setErrorMsg(null);
     }
-    // console.log(candidate);
   };
 
   const castBallot = async () => {
-    console.log("casting ballot ", votesLeft);
     if (votesLeft > 0) {
       setErrorMsg("All remaining votes need to be distributed");
       return;
@@ -193,7 +189,6 @@ export default function Vote({
   };
 
   const endElection = async () => {
-    console.log("endElection");
     setIsElectionEnding(true);
     qdipHandler
       .endElection(id)
@@ -340,16 +335,13 @@ export default function Vote({
   const approveuni = async () => {
     const token = "UNI";
     const decimals = await readContracts[token].decimals();
-    console.log(decimals);
     const maxApproval = "100000000";
     const newAllowance = ethers.utils.parseUnits(maxApproval, decimals);
     const res = await writeContracts[token].approve(spender, newAllowance);
     await res.wait(1);
-    console.log("approved");
   };
 
   const testUni = async () => {
-    console.log("testUni");
     const adrs = ["0x76c48E1F02774C40372a3497620D946136136172"];
     //convert payout to wei
     let payoutInWei = ["0.01"].map(p => toWei(p));
@@ -358,7 +350,6 @@ export default function Vote({
         gasLimit: 12450000,
       }),
       async update => {
-        console.log(update);
         if (update) {
           if (update.status === "confirmed" || update.status === 1) {
             loadElectionState();
@@ -401,11 +392,12 @@ export default function Vote({
             electionState && !electionState.active && electionState.isAdmin && !electionState.isPaid && (
               <PayButton
                 token={token}
+                tokenAddr={electionState.tokenAdr}
                 appName="Quadratic Diplomacy"
                 tokenListHandler={tokens => setAvailableTokens(tokens)}
                 callerAddress={address}
-                maxApproval={electionState.fundingAmount}
-                amount={electionState.fundingAmount}
+                maxApproval={electionState.fundAmount}
+                amount={electionState.fundAmount}
                 spender={spender}
                 yourLocalBalance={yourLocalBalance}
                 readContracts={readContracts}
@@ -418,7 +410,7 @@ export default function Vote({
         >
           {electionState.canVote && (
             <Typography.Title level={5}>
-              Funding: {electionState.fundingAmount} {<Divider type="vertical" />} Remaining Votes: {votesLeft}{" "}
+              Funding: {electionState.fundAmount} {<Divider type="vertical" />} Remaining Votes: {votesLeft}{" "}
             </Typography.Title>
           )}
           <Table
