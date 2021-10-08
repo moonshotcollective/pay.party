@@ -374,19 +374,52 @@ app.post(
     //   return response.status(401).send("No admin in contract");
     // }
 
+    // const electionSnapshot = await db
+    //   .collection("distributions")
+    //   .where("id", "==", parseInt(request.params.distributionId, 10))
+    //   .get();
+    // const distribution = electionSnapshot.docs[0];
+
     const electionSnapshotRef = await db
       .collection("distributions")
       .doc(request.params.distributionId);
 
     const distribution = await electionSnapshotRef.get();
     console.log(distribution.data());
-
-    if (!distribution || !distribution.exists) {
+    if (!distribution) {
+      return response.status(404).send("Distribution not found");
+    }
+    if (!distribution) {
       return response.status(400).send("Distribution not found");
     } else {
       console.log(distribution.data());
       const distributionRef = distribution.ref;
       const res = await distributionRef.update({ active: false });
+
+      return response.send(res);
+    }
+  }
+);
+app.post(
+  "/distributions/:distributionId/pay",
+  async function (request, response) {
+    const electionSnapshotRef = await db
+      .collection("distributions")
+      .doc(request.params.distributionId);
+
+    // console.log({ request });
+
+    const distribution = await electionSnapshotRef.get();
+    console.log(distribution);
+    if (!distribution) {
+      return response.status(404).send("Distribution not found");
+    }
+    if (!distribution) {
+      return response.status(400).send("Distribution not found");
+    } else {
+      console.log(distribution.data());
+      // const distributionRef = distribution.ref;
+      const res = await distribution.ref.update({ paid: true });
 
       return response.send(res);
     }

@@ -63,15 +63,20 @@ export default function Create({
   /***** Routes *****/
   const routeHistory = useHistory();
 
+  const viewElection = async () => {
+    const isCeramicRecord = createdElectionId.startsWith(CERAMIC_PREFIX);
+    const electionId = isCeramicRecord ? createdElectionId.split(CERAMIC_PREFIX)[1] : createdElectionId;
+    routeHistory.push("/vote/" + electionId + `?kind=${isCeramicRecord ? "ceramic" : "offChain"}`);
+  };
+
   /***** States *****/
   const [selectedQdip, setSelectedQdip] = useState("offChain");
   const [qdipHandler, setQdipHandler] = useState();
   const [current, setCurrent] = useState(0);
   const [errorMsg, setErrorMsg] = useState();
-  const [electionId, setElectionId] = useState();
+  const [createdElectionId, setCreatedElectionId] = useState();
   const [isConfirmingElection, setIsConfirmingElection] = useState(false);
   const [isCreatedElection, setIsCreatedElection] = useState(false);
-
   const [newElection, setNewElection] = useState({
     name: "test",
     funds: "ETH",
@@ -161,29 +166,17 @@ export default function Create({
     setIsConfirmingElection(true);
     // Create a new election
 
-    let id = await qdipHandler.createElection(newElection, selectedQdip);
-    console.log(id);
-    if (id) {
-      setIsConfirmingElection(false);
-      setIsCreatedElection(true);
-      setElectionId(id);
-    }
-    //   .then(data => {
-    //     setIsConfirmingElection(false);
-    //     setIsCreatedElection(true);
-    //   })
-    //   .catch(err => {
-    //     console.log(err);
-    //     setIsConfirmingElection(false);
-    //   });
-  };
-
-  const viewElection = () => {
-    if (electionId) {
-      const isCeramicRecord = electionId.startsWith(CERAMIC_PREFIX);
-      const id = isCeramicRecord ? electionId.split(CERAMIC_PREFIX)[1] : electionId;
-      routeHistory.push("/vote/" + id + `?kind=${isCeramicRecord ? "ceramic" : "offChain"}`);
-    }
+    return qdipHandler
+      .createElection(newElection, selectedQdip)
+      .then(newElectionId => {
+        setCreatedElectionId(newElectionId);
+        setIsConfirmingElection(false);
+        setIsCreatedElection(true);
+      })
+      .catch(err => {
+        console.log(err);
+        setIsConfirmingElection(false);
+      });
   };
 
   const Step1 = () => {

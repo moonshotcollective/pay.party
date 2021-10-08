@@ -42,9 +42,9 @@ export default function PayButton({
 
   const refreshETH = () => {
     console.log(yourLocalBalance.toString(), ethers.utils.parseEther(amount).toString());
-    let ylb = yourLocalBalance.gte(ethers.utils.parseEther(amount || "0")) ? 3 : 5;
+    // let ylb = yourLocalBalance.gte(ethers.utils.parseEther(amount || "0")) ? 3 : 5;
 
-    setStatus(ylb);
+    setStatus(3);
   };
 
   const refreshTokenDetails = async () => {
@@ -119,17 +119,6 @@ export default function PayButton({
         setStatus(4);
       }
     }
-    // if (isETH()) {
-    //   setStatus(4);
-    //   await ethPayHandler();
-    //   setStatus(3);
-    // } else if (isMATIC()) {
-    //   setStatus(4);
-    //   await ethPayHandler();
-    //   setStatus(3);
-    // } else {
-
-    // }
   };
 
   useEffect(() => {

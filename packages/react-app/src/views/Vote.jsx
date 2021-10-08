@@ -39,6 +39,7 @@ export default function Vote({
   console.log({ electionState });
   const [votesLeft, setVotesLeft] = useState(0);
   const [tableSrc, setTableSrc] = useState([]);
+  const [isVoting, setIsVoting] = useState(false);
   //   const [tableCols, setTableCols] = useState([]);
   const [errorMsg, setErrorMsg] = useState("");
   const [isElectionEnding, setIsElectionEnding] = useState(false);
@@ -56,6 +57,15 @@ export default function Vote({
   const [availableTokens, setAvailableTokens] = useState([]);
   const [isPaying, setIsPaying] = useState(false);
 
+  const updateCandidateScore = async () => {
+    const scores = await qdipHandler.getCandidatesScores(id);
+    setCandidateScores(scores);
+  };
+
+  const updateFinalPayout = async () => {
+    const payout = await qdipHandler.getFinalPayout(id);
+    setFinalPayout(payout);
+  };
   /***** Effects *****/
   useEffect(() => {
     if (readContracts) {
@@ -67,7 +77,7 @@ export default function Vote({
 
   useEffect(async () => {
     if (qdipHandler) {
-      loadElectionState();
+      await loadElectionState();
     }
   }, [qdipHandler]);
 
@@ -85,7 +95,7 @@ export default function Vote({
         if (electionState.active) {
           await updateCandidateScore();
         } else {
-          updateFinalPayout();
+          await updateFinalPayout();
         }
       }
     })();
@@ -157,6 +167,7 @@ export default function Vote({
   };
 
   const castBallot = async () => {
+    setIsVoting(true);
     if (votesLeft > 0) {
       setErrorMsg("All remaining votes need to be distributed");
       return;
@@ -169,31 +180,26 @@ export default function Vote({
       scores.push(Math.floor(d.score * 100));
     });
     console.log(candidates, scores);
-    qdipHandler
+    return qdipHandler
       .castBallot(id, candidates, scores, userSigner)
-      .then(totalScores => {
+      .then(async totalScores => {
+        console.log({ totalScores });
         setCandidateScores(totalScores);
-        loadElectionState();
+        await loadElectionState();
+        setIsVoting(false);
       })
       .catch(err => {
         console.log(err);
+        setIsVoting(false);
       });
-  };
-
-  const updateCandidateScore = async () => {
-    setCandidateScores(await qdipHandler.getCandidatesScores(id));
-  };
-
-  const updateFinalPayout = async () => {
-    setFinalPayout(await qdipHandler.getFinalPayout(id));
   };
 
   const endElection = async () => {
     setIsElectionEnding(true);
-    qdipHandler
+    return qdipHandler
       .endElection(id)
-      .then(success => {
-        loadElectionState();
+      .then(async success => {
+        await loadElectionState();
         setIsElectionEnding(false);
       })
       .catch(err => {
@@ -203,24 +209,26 @@ export default function Vote({
   };
 
   const ethPayHandler = () => {
-    const adrs = Array.from(candidateMap.keys());
-    const totalValueInWei = toWei(electionState.fundingAmount);
+    console.log({ electionState, finalPayout });
+    const totalValueInWei = electionState.fundAmount;
     //convert payout to wei
     let payoutInWei = finalPayout.payout.map(p => toWei(p));
+    console.log({ payoutInWei });
 
-    console.log(adrs, payoutInWei, totalValueInWei);
-
-    return new Promise((resolve, reject) => {
-      qdipHandler
-        .distributeEth(id, adrs, payoutInWei, totalValueInWei)
-        .then(success => {
-          loadElectionState();
-          resolve(success);
-        })
-        .catch(err => {
-          reject(err);
-        });
-    });
+    return qdipHandler
+      .distributeEth({
+        id,
+        candidates: electionState.candidates,
+        payoutInWei,
+        totalValueInWei,
+        tokenAddress: electionState.tokenAdr,
+      })
+      .then(async success => {
+        return loadElectionState();
+      })
+      .catch(err => {
+        console.log(err);
+      });
   };
 
   const tokenPayHandler = async opts => {
@@ -391,7 +399,7 @@ export default function Vote({
             ),
             electionState && !electionState.active && electionState.isAdmin && !electionState.isPaid && (
               <PayButton
-                token={token}
+                token={"ETH"}
                 tokenAddr={electionState.tokenAdr}
                 appName="Quadratic Diplomacy"
                 tokenListHandler={tokens => setAvailableTokens(tokens)}
@@ -430,13 +438,20 @@ export default function Vote({
           <Divider />
           <div>
             {electionState.canVote && electionState.active && (
-              <Button icon={<SendOutlined />} size="large" shape="round" type="primary" onClick={castBallot}>
+              <Button
+                icon={<SendOutlined />}
+                size="large"
+                loading={isVoting}
+                shape="round"
+                type="primary"
+                onClick={castBallot}
+              >
                 Cast Ballot
               </Button>
             )}
           </div>
           <div>{errorMsg && <Text type="danger">{errorMsg}</Text>}</div>
-          <div>{electionState.paid && <Text type="success">Election Payout Complete!</Text>}</div>
+          <div>{electionState.isPaid && <Text type="success">Election Payout Complete!</Text>}</div>
         </PageHeader>
       </div>
     </>
