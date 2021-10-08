@@ -42,6 +42,7 @@ import {
 import dips from "../dips";
 import { serverUrl } from "../dips/offChain";
 import { ethers } from "ethers";
+import { CERAMIC_PREFIX } from "../dips/helpers";
 
 const CURRENCY = "ETH";
 const TOKEN = "UNI";
@@ -63,8 +64,9 @@ export default function Create({
   const routeHistory = useHistory();
 
   const viewElection = async () => {
-    let index = await readContracts.Diplomat.electionCount();
-    routeHistory.push("/vote/" + (index.toNumber() - 1));
+    const isCeramicRecord = createdElectionId.startsWith(CERAMIC_PREFIX);
+    const electionId = isCeramicRecord ? createdElectionId.split(CERAMIC_PREFIX)[1] : createdElectionId;
+    routeHistory.push("/vote/" + electionId + `?kind=${isCeramicRecord ? "ceramic" : "offChain"}`);
   };
 
   /***** States *****/
@@ -72,6 +74,7 @@ export default function Create({
   const [qdipHandler, setQdipHandler] = useState();
   const [current, setCurrent] = useState(0);
   const [errorMsg, setErrorMsg] = useState();
+  const [createdElectionId, setCreatedElectionId] = useState();
   const [isConfirmingElection, setIsConfirmingElection] = useState(false);
   const [isCreatedElection, setIsCreatedElection] = useState(false);
   const [newElection, setNewElection] = useState({
@@ -165,7 +168,8 @@ export default function Create({
 
     return qdipHandler
       .createElection(newElection, selectedQdip)
-      .then(data => {
+      .then(newElectionId => {
+        setCreatedElectionId(newElectionId);
         setIsConfirmingElection(false);
         setIsCreatedElection(true);
       })

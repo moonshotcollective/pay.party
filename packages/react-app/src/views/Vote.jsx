@@ -39,6 +39,7 @@ export default function Vote({
   console.log({ electionState });
   const [votesLeft, setVotesLeft] = useState(0);
   const [tableSrc, setTableSrc] = useState([]);
+  const [isVoting, setIsVoting] = useState(false);
   //   const [tableCols, setTableCols] = useState([]);
   const [errorMsg, setErrorMsg] = useState("");
   const [isElectionEnding, setIsElectionEnding] = useState(false);
@@ -157,6 +158,7 @@ export default function Vote({
   };
 
   const castBallot = async () => {
+    setIsVoting(true);
     if (votesLeft > 0) {
       setErrorMsg("All remaining votes need to be distributed");
       return;
@@ -172,11 +174,14 @@ export default function Vote({
     qdipHandler
       .castBallot(id, candidates, scores, userSigner)
       .then(totalScores => {
+        console.log({ totalScores });
         setCandidateScores(totalScores);
         loadElectionState();
+        setIsVoting(false);
       })
       .catch(err => {
         console.log(err);
+        setIsVoting(false);
       });
   };
 
@@ -431,7 +436,14 @@ export default function Vote({
           <Divider />
           <div>
             {electionState.canVote && electionState.active && (
-              <Button icon={<SendOutlined />} size="large" shape="round" type="primary" onClick={castBallot}>
+              <Button
+                icon={<SendOutlined />}
+                size="large"
+                loading={isVoting}
+                shape="round"
+                type="primary"
+                onClick={castBallot}
+              >
                 Cast Ballot
               </Button>
             )}
