@@ -43,5 +43,6 @@ export const makeCeramicClient = async address => {
   }
 
   const idx = new IDX({ ceramic, aliases: ceramicConfig.definitions });
+  console.log({ idx });
   return { ceramic, idx, schemasCommitId: ceramicConfig.schemas, definitions: ceramicConfig.definitions };
 };

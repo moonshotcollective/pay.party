@@ -14,7 +14,6 @@ import ElectionCard from "../components/Cards/ElectionCard";
 import BaseHandler from "../dips/baseHandler";
 import { fromWei, toBN } from "web3-utils";
 import CenteredFrame from "../components/layout/CenteredFrame";
-import { CERAMIC_PREFIX } from "../dips/helpers";
 
 function MockHome({ tx, readContracts, writeContracts, mainnetProvider, address }) {
   /***** Routes *****/
@@ -25,13 +24,6 @@ function MockHome({ tx, readContracts, writeContracts, mainnetProvider, address 
   const [qdipHandler, setQdipHandler] = useState();
   const [electionsMap, setElectionsMap] = useState();
   const [isLoading, setIsLoading] = useState(false);
-
-  const viewElection = record => {
-    // console.log({ record });
-    const isCeramicRecord = record.id.startsWith(CERAMIC_PREFIX);
-    const electionId = isCeramicRecord ? record.id.split(CERAMIC_PREFIX)[1] : record.id;
-    routeHistory.push("/mockelection/" + electionId + `?kind=${isCeramicRecord ? "ceramic" : "offChain"}`);
-  };
 
   const createElection = () => {
     routeHistory.push("/mockcreate");
@@ -54,79 +46,6 @@ function MockHome({ tx, readContracts, writeContracts, mainnetProvider, address 
         console.log({ electionsMap });
         setElectionsMap(electionsMap);
         setIsLoading(false);
-        //   const contract = readContracts.Diplomat;
-        //   console.log(contract);
-        //   (async () => {
-        //     const numElections = await contract.electionCount();
-        //     console.log({ numElections, n: numElections.toNumber() });
-        //     const newElectionsMap = new Map();
-        //     for await (const iterator of [...Array(numElections.toNumber()).keys()]) {
-        //       const election = await contract.getElection(iterator);
-        //       if (election) {
-        //         console.log({ election });
-        //         let electionEntry = {
-        //           n_voted: { outOf: election.candidates.length },
-        //         };
-        //         let hasVoted = false;
-        //         let isActive = false;
-        //         if (election && election.kind === "onChain") {
-        //           hasVoted = await contract.getAddressVoted(iterator, address);
-        //           isActive = election.active;
-        //           console.log({ hasVoted });
-        //           const electionVoted = await contract.getElectionNumVoted(iterator);
-        //           console.log({ electionVoted });
-        //           electionEntry.n_voted = {
-        //             ...electionEntry.n_voted,
-        //             n_voted: electionVoted.toNumber(),
-        //           };
-        //         }
-        //         if (election && election.kind === "offChain") {
-        //           try {
-        //             const votedResult = await axios.get(serverUrl + `distribution/state/${iterator}/${address}`);
-        //             console.log({ votedResult });
-        //             hasVoted = votedResult.data.hasVoted;
-        //             isActive = votedResult.data.isActive;
-        //             const offChainElectionResult = await axios.get(serverUrl + `distribution/${iterator}`);
-        //             const { election: offChainElection } = offChainElectionResult.data;
-        //             const nVoted = Object.keys(offChainElection.votes).length;
-        //             electionEntry.n_voted = {
-        //               ...electionEntry.n_voted,
-        //               n_voted: nVoted,
-        //             };
-        //           } catch (error) {
-        //             console.log("offChain get elections error", error);
-        //           }
-        //         }
-        //         const tags = [];
-        //         if (election.creator === address) {
-        //           tags.push("admin");
-        //         }
-        //         if (election.candidates.includes(address)) {
-        //           tags.push("candidate");
-        //         }
-        //         if (hasVoted) {
-        //           tags.push("voted");
-        //         }
-        //         let created = new Date(election.date * 1000).toISOString().substring(0, 10);
-        //         electionEntry = {
-        //           ...electionEntry,
-        //           id: iterator,
-        //           created_date: created,
-        //           amount: fromWei(election.amount.toString(), "ether"),
-        //           token: election.token,
-        //           tokenSymbol: election.token === "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984" ? "UNI" : "ETH",
-        //           name: election.name,
-        //           creator: election.creator,
-        //           active: isActive,
-        //           tags: tags,
-        //         };
-        //         newElectionsMap.set(iterator, electionEntry);
-        //         console.log(newElectionsMap);
-        //       }
-        //     }
-        //     setElectionsMap(newElectionsMap);
-        //     setIsLoading(false);
-        //   })();
       }
     })();
   }, [qdipHandler]);

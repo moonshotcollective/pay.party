@@ -5,7 +5,7 @@
       "chainId": "4",
       "contracts": {
         "Diplomat": {
-          "address": "0xf9c9F74a73A5528fc4af77CA597C554717F21aE5",
+          "address": "0xE743F3e7E7738f41a4b96e4874F2e5ECB981473F",
           "abi": [
             {
               "inputs": [],
@@ -448,7 +448,7 @@
       "chainId": "31337",
       "contracts": {
         "Diplomat": {
-          "address": "0x0165878A594ca255338adfa4d48449f69242Eb8F",
+          "address": "0x5FbDB2315678afecb367f032d93F642f64180aa3",
           "abi": [
             {
               "inputs": [],

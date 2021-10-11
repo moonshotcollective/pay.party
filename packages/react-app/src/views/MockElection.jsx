@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Box, Button, Grid, GridItem, Spinner, useColorModeValue, Heading, Flex } from "@chakra-ui/react";
+import { Box, Button, Grid, GridItem, Spinner, Text, useColorModeValue, Heading, Flex } from "@chakra-ui/react";
 import { useHistory, useParams } from "react-router-dom";
+import qs from "query-string";
+import { fromWei, toWei, toBN, numberToHex } from "web3-utils";
 
 import DistributionCard from "../components/Cards/DistributionCard";
 import Container from "../components/layout/Container";
@@ -9,7 +11,7 @@ import VoteCard from "../components/Cards/VoterCards/VoteCard";
 import dips from "../dips";
 import CenteredFrame from "../components/layout/CenteredFrame";
 
-function MockElectionPage({
+export default function MockElectionPage({
   address,
   mainnetProvider,
   blockExplorer,
@@ -74,39 +76,30 @@ function MockElectionPage({
     }
   }, [qdipHandler]);
 
-  //   useEffect(async () => {
-  //     if (candidateMap) {
-  //       setTableCols(makeTableCols());
-  //     }
-  //   }, [candidateMap]);
+  useEffect(async () => {
+    if (candidateMap) {
+      if (electionState.active) {
+        // updateCandidateScore();
+      } else {
+        // updateFinalPayout();
+      }
+    }
+  }, [candidateMap]);
 
   useEffect(() => {
     if (electionState && electionState.name) {
       // updateTableSrc();
       console.log({ electionState });
-      setVotesLeft(electionState.votes);
-      if (electionState.active) {
-        updateCandidateScore();
-      } else {
-        updateFinalPayout();
-      }
+      setVotesLeft(electionState.voteAllocation);
     }
   }, [electionState, address]);
 
   /***** Methods *****/
 
   const init = async () => {
-    const election = await readContracts.Diplomat.getElection(id);
-    console.log({ election });
-    if (election.token == "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984") {
-      setToken("UNI");
-    }
-    // setSelectedQdip();
-    setQdipHandler(
-      dips[election.kind].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner),
-    );
+    const { kind } = qs.parse(location.search);
+    setQdipHandler(dips[kind].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner));
     setSpender(readContracts?.Diplomat?.address);
-    // loadERC20List();
   };
 
   const loadERC20List = async () => {
@@ -122,7 +115,12 @@ function MockElectionPage({
   const loadElectionState = async () => {
     let electionState = await qdipHandler.getElectionStateById(id);
     console.log({ electionState });
+    electionState.amtFromWei = fromWei(electionState.fundAmount || "0");
+    if (electionState.tokenAdr == "0x0000000000000000000000000000000000000000") {
+      electionState.tokenSymbol = "ETH";
+    }
     setElectionState(electionState);
+    updateCandidateMap(electionState);
   };
 
   const minusVote = addr => {
@@ -139,14 +137,14 @@ function MockElectionPage({
 
   const addVote = addr => {
     const candidate = candidateMap.get(addr);
-    if (candidate.votes < electionState.votes && votesLeft > 0) {
+    console.log(candidate);
+    if (candidate.votes < electionState.voteAllocation && votesLeft > 0) {
       candidate.votes = candidate.votes + 1;
       candidate.score = (candidate.votes ** 0.5).toFixed(2);
       candidateMap.set(addr, candidate);
       setVotesLeft(votesLeft - 1);
       setErrorMsg(null);
     }
-    // console.log(candidate);
   };
 
   const castBallot = async () => {
@@ -163,19 +161,45 @@ function MockElectionPage({
       scores.push(Math.floor(d.score * 100));
     });
     console.log(candidates, scores);
-    qdipHandler
-      .castBallot(id, candidates, scores, userSigner)
-      .then(totalScores => {
-        setCandidateScores(totalScores);
-        loadElectionState();
-      })
-      .catch(err => {
-        console.log(err);
-      });
+    let totalScores = qdipHandler.castBallot(id, candidates, scores, userSigner);
+    console.log(totalScores);
   };
 
-  const updateCandidateScore = async () => {
-    setCandidateScores(await qdipHandler.getCandidatesScores(id));
+  const updateCandidateMap = async electionState => {
+    const candidates = electionState.candidates;
+    if (!candidates) {
+      console.log("no candidates found");
+      return;
+    }
+
+    let totalScores = await qdipHandler.getCandidatesScores(id);
+    console.log({ totalScores });
+    let totalScoresSum = totalScores.reduce((sum, curr) => sum + curr, 0);
+    console.log({ totalScoresSum });
+    let mapping = new Map();
+    if (candidateMap) {
+      mapping = candidateMap;
+    } else {
+      for (let i = 0; i < electionState.candidates.length; i++) {
+        mapping.set(electionState.candidates[i], { votes: 0, score: 0 });
+      }
+    }
+    candidates.forEach((addr, idx) => {
+      const candidate = mapping.get(addr);
+      let votedAddrs = Object.keys(electionState.votes);
+      candidate.voted = votedAddrs.includes(addr);
+      candidate.score = totalScores[idx];
+      candidate.allocation = (totalScores[idx] / totalScoresSum) * 100;
+      candidate.allocation = candidate.allocation.toFixed(2);
+      const candidatePay = Math.floor((totalScores[idx] / totalScoresSum) * electionState.fundAmount);
+      if (!isNaN(candidatePay)) {
+        candidate.payoutFromWei = fromWei(candidatePay.toString());
+      } else {
+        candidate.payoutFromWei = "0";
+      }
+      console.log(addr, candidate);
+      setCandidateMap(new Map(mapping.set(addr, candidate)));
+    });
   };
 
   const updateFinalPayout = async () => {
@@ -250,8 +274,9 @@ function MockElectionPage({
             tokenSymbol={electionState.tokenSymbol}
             voted={`${electionState.n_voted.n_voted} / ${electionState.n_voted.outOf}`}
             active={electionState.active}
-            amount={electionState.amount}
+            amount={electionState.amtFromWei}
             createdAt={electionState.created_date}
+            mainnetProvider={mainnetProvider}
           />
         </GridItem>
         <GridItem colSpan={2}>
@@ -267,26 +292,29 @@ function MockElectionPage({
           >
             {electionState.canVote ? (
               <>
-                <VoteCard candidates={electionState.candidates} voteAllocation={electionState.voteAllocation} />
+                <VoteCard
+                  candidates={electionState.candidates}
+                  candidateMap={candidateMap}
+                  voteAllocation={electionState.voteAllocation}
+                  votesLeft={votesLeft}
+                  addVote={addVote}
+                  minusVote={minusVote}
+                  mainnetProvider={mainnetProvider}
+                />
                 <Box w="full" pt="1rem" align="end">
-                  <Button
-                    ml="0.5rem"
-                    onClick={() => {
-                      console.log("submitted true");
-                      setSubmitted(true);
-                    }}
-                    px="1.25rem"
-                    fontSize="md"
-                  >
+                  <Text fontSize="1rem" color="red.400">
+                    {errorMsg}
+                  </Text>
+                  <Button ml="0.5rem" onClick={castBallot} px="1.25rem" fontSize="md">
                     Submit
                   </Button>
                 </Box>
               </>
             ) : (
               <>
-                <DistributionCard />
+                <DistributionCard candidates={electionState.candidates} candidateMap={candidateMap} />
                 {/* TO BE REMOVED AFTER BACKEND INTEGRATION */}
-                <Box w="full" pt="1rem" align="end">
+                {/* <Box w="full" pt="1rem" align="end">
                   <Button
                     ml="0.5rem"
                     onClick={() => {
@@ -298,7 +326,7 @@ function MockElectionPage({
                   >
                     Go to Vote
                   </Button>
-                </Box>
+                </Box> */}
               </>
             )}
           </Box>
@@ -307,5 +335,3 @@ function MockElectionPage({
     </Container>
   );
 }
-
-export default MockElectionPage;

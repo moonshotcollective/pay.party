@@ -3,7 +3,7 @@ import axios from "axios";
 import { useHistory } from "react-router-dom";
 import { useEventListener } from "../hooks";
 import { Address } from "../components";
-import { mainnetProvider, blockExplorer } from "../App";
+
 import { fromWei, toWei, toBN } from "web3-utils";
 import AddAddress from "../components/AddAddress";
 import {

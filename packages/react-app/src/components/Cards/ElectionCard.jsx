@@ -3,12 +3,15 @@ import { useHistory } from "react-router-dom";
 import { Address } from "../index";
 import { blockExplorer } from "../../App";
 
-function ElectionCard({ id, name, owner, voted, active, createdAt, amount, tokenSymbol, mainnetProvider }) {
+import { CERAMIC_PREFIX } from "../../dips/helpers";
+
+function ElectionCard({ id, name, owner, voted, active, createdAt, amount, tokenSymbol, election, mainnetProvider }) {
   const routeHistory = useHistory();
 
-  function openElection() {
-    // router.push("/election/exampleId");
-    routeHistory.push(`/vote/${id}`);
+  function viewElection() {
+    const isCeramicRecord = id.startsWith(CERAMIC_PREFIX);
+    const electionId = isCeramicRecord ? id.split(CERAMIC_PREFIX)[1] : id;
+    routeHistory.push("/mockelection/" + electionId + `?kind=${isCeramicRecord ? "ceramic" : "offChain"}`);
   }
 
   return (
@@ -36,7 +39,7 @@ function ElectionCard({ id, name, owner, voted, active, createdAt, amount, token
       <Text color="violet.50" pb="2rem" fontSize="1rem">
         Created on {createdAt}
       </Text>
-      <Button w="100%" fontSize="md" onClick={openElection}>
+      <Button w="100%" fontSize="md" onClick={viewElection}>
         View Election
       </Button>
     </Box>

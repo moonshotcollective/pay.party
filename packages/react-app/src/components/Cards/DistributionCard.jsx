@@ -1,15 +1,11 @@
 import { useColorModeValue } from "@chakra-ui/color-mode";
 import { Avatar, Divider, Heading, Table, Tbody, Td, Text, Th, Thead, Tr, VStack } from "@chakra-ui/react";
+import { blockExplorer } from "../../App";
+import AddressChakra from "../AddressChakra";
 
-function DistributionCard() {
+function DistributionCard({ candidates, candidateMap, mainnetProvider }) {
   const headingColor = useColorModeValue("yellow.600", "yellow.500");
 
-  const members = [
-    { address: "0xad", votes: 7 },
-    { address: "0xad", votes: 14 },
-    { address: "0xad", votes: 2 },
-    { address: "0xad", votes: 21 },
-  ];
   return (
     <VStack align="start" w="100%" spacing="0.5rem">
       <Heading fontSize="1.5rem" color={headingColor}>
@@ -25,31 +21,30 @@ function DistributionCard() {
             <Tr>
               <Th>Voter</Th>
               <Th>Voted</Th>
-              <Th>Total</Th>
+              <Th>Quadratic Score</Th>
               <Th>Allocation</Th>
               <Th>Amount</Th>
             </Tr>
           </Thead>
           <Tbody>
-            {members.map(member => (
-              <Tr key={member.address}>
+            {candidates.map(member => (
+              <Tr key={member}>
                 <Td>
-                  <Text>
-                    <Avatar
-                      mr="0.5rem"
-                      boxSize="1.5em"
-                      src="https://siasky.net/AAB-yQ5MuGLqpb5fT9w0gd54RbDfRS9sZDb2aMx9NeJ8QA"
-                    />
-                    {member.address}
-                  </Text>
+                  <AddressChakra
+                    address={member}
+                    ensProvider={mainnetProvider}
+                    blockExplorer={blockExplorer}
+                  ></AddressChakra>
                 </Td>
-                <Td>Voted</Td>
+                <Td>{candidateMap && candidateMap.get(member).voted && <Text>Voted</Text>}</Td>
                 <Td>
-                  <Text>{member.votes} votes</Text>
+                  <Text>{candidateMap && candidateMap.get(member).score}</Text>
                 </Td>
-                <Td> 13.2% allocation</Td>
                 <Td>
-                  <Text color="yellow.500">13.2 ETH</Text>
+                  <Text>{candidateMap && candidateMap.get(member).allocation}%</Text>
+                </Td>
+                <Td>
+                  <Text color="yellow.500">{candidateMap && candidateMap.get(member).payoutFromWei} ETH</Text>
                 </Td>
               </Tr>
             ))}

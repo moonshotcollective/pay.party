@@ -13,6 +13,7 @@ import { serverUrl } from "./baseHandler";
 
 export default function CeramicHandler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner) {
   const createElection = async ({ name, candidates, fundAmount, tokenAdr, votes, kind }) => {
+    console.log("createElection");
     const { network, signer } = await getNetwork();
     /* CREATE CERAMIC ELECTION */
     const { ceramic, idx, schemasCommitId } = await makeCeramicClient(address);
@@ -56,10 +57,20 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
         Diplomat[network.chainId][network.name].contracts.Diplomat.abi,
         signer,
       );
-      let transaction = await contract.createElection(electionId);
-      const receipt = await transaction.wait();
-      const id = receipt.events[0].args.electionId;
-      return id;
+
+      return await contract
+        .createElection(electionId)
+        .then(async tx => {
+          console.log({ tx });
+          const receipt = await tx.wait();
+          const id = receipt.events[0].args.electionId;
+          console.log({ id });
+          return id;
+        })
+        .catch(err => {
+          console.log(err);
+          return err;
+        });
     }
   };
 
@@ -110,6 +121,8 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
       ]);
 
       const sealedBallot = ballotDoc.commitId.toUrl();
+    } else {
+      console.log("ceramic did not found");
     }
 
     const electionResults = await serializeCeramicElection(id, address);

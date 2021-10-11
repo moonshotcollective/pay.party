@@ -160,12 +160,13 @@ const CreateElectionPage = ({
     }, {});
     formattedValues["candidates"] = newElection.candidates;
     formattedValues["fundAmount"] = toWei(Number(newElection.fundAmount).toFixed(18).toString());
-    let id = await qdipHandler.createElection(formattedValues, selectedQdip);
-    console.log(id);
-    if (id) {
+    let result = await qdipHandler.createElection(formattedValues, selectedQdip);
+    if (result.code) {
+      setIsConfirmingElection(false);
+    } else {
       setIsConfirmingElection(false);
       setIsCreatedElection(true);
-      setElectionId(id);
+      setElectionId(result);
       setNewElection({
         name: "",
         funds: "ETH",
@@ -178,9 +179,15 @@ const CreateElectionPage = ({
       });
     }
   };
-  const updateSelectedQdip = qdip => {
-    newElection.kind = qdip;
-    setQdipHandler(dips[qdip].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner));
+  const updateSelectedQdip = e => {
+    console.log("updated qdip handler ", e.target.value);
+    setNewElection(prevState => ({
+      ...prevState,
+      kind: e.target.value,
+    }));
+    setQdipHandler(
+      dips[e.target.value].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner),
+    );
   };
 
   const [toAddress, setToAddress] = useState("");
@@ -319,7 +326,8 @@ const CreateElectionPage = ({
                     message: "Maximum length should be 10",
                   },
                 })}
-                onSelect={updateSelectedQdip}
+                value={newElection.kind}
+                onChange={updateSelectedQdip}
               >
                 {DIP_TYPES.map(k => (
                   <option key={k} value={k}>

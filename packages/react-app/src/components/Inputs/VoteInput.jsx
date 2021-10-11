@@ -1,24 +1,15 @@
 import React from "react";
-import { HStack, Button, Input, useNumberInput } from "@chakra-ui/react";
+import { HStack, Button, Heading, Input, useNumberInput } from "@chakra-ui/react";
 
-function VoteInput({ addVote, minusVote }) {
-  const { getInputProps, getIncrementButtonProps, getDecrementButtonProps } = useNumberInput({
-    step: 1,
-    defaultValue: 0,
-    min: 0,
-    max: 6,
-    precision: 0,
-  });
-
-  const inc = getIncrementButtonProps();
-  const dec = getDecrementButtonProps();
-  const input = getInputProps({ readOnly: true });
-
+function VoteInput({ addVote, minusVote, votes }) {
   return (
     <HStack>
-      <Button onClick={addVote}>-</Button>
-      <Input textAlign="center" w="70px" {...input} />
-      <Button onClick={minusVote}>+</Button>
+      <Button onClick={minusVote}>-</Button>
+      {/* <Input textAlign="center" w="70px" {...votes} /> */}
+      <Heading fontSize="1.5rem" color="violet.50">
+        {votes}
+      </Heading>
+      <Button onClick={addVote}>+</Button>
     </HStack>
   );
 }
