@@ -10,14 +10,14 @@ export default {
   //   id: 0,
   //   handler: BaseHandler,
   // },
-  offChain: {
-    id: 0,
-    name: "Firebase (Centralized)",
-    description: "Election data is stored on backend.",
-    handler: OffChain,
-  },
+  // offChain: {
+  //   id: 0,
+  //   name: "Firebase (Centralized)",
+  //   description: "Election data is stored on backend.",
+  //   handler: OffChain,
+  // },
   ceramic: {
-    id: 1,
+    id: 0,
     name: "Ceramic (Decentralized)",
     description: "",
     handler: CeramicHandler,

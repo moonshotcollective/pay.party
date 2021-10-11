@@ -70,7 +70,7 @@ export default function Create({
   };
 
   /***** States *****/
-  const [selectedQdip, setSelectedQdip] = useState("offChain");
+  const [selectedQdip, setSelectedQdip] = useState("ceramic");
   const [qdipHandler, setQdipHandler] = useState();
   const [current, setCurrent] = useState(0);
   const [errorMsg, setErrorMsg] = useState();
@@ -280,7 +280,7 @@ export default function Create({
           <Form.Item name="type" label="Storage Location">
             <Select
               placeholder="Quadratic Diplomacy build..."
-              defaultValue={["Firebase (Centralized)"]}
+              defaultValue={["Ceramic (Decentralized)"]}
               onSelect={updateSelectedQdip}
             >
               {DIP_TYPES.map(k => (
