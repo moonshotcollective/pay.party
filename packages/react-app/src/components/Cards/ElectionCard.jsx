@@ -11,7 +11,7 @@ function ElectionCard({ id, name, owner, voted, active, createdAt, amount, token
   function viewElection() {
     const isCeramicRecord = id.startsWith(CERAMIC_PREFIX);
     const electionId = isCeramicRecord ? id.split(CERAMIC_PREFIX)[1] : id;
-    routeHistory.push("/mockelection/" + electionId + `?kind=${isCeramicRecord ? "ceramic" : "offChain"}`);
+    routeHistory.push("/election/" + electionId + `?kind=${isCeramicRecord ? "ceramic" : "offChain"}`);
   }
 
   return (

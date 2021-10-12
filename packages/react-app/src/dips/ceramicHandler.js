@@ -12,7 +12,7 @@ import { getCeramicElectionIds, getNetwork, serializeCeramicElection, toCeramicI
 import { serverUrl } from "./baseHandler";
 
 export default function CeramicHandler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner) {
-  const createElection = async ({ name, candidates, fundAmount, tokenAdr, votes, kind }) => {
+  const createElection = async ({ name, candidates, fundAmount, tokenAdr, voteAllocation, kind }) => {
     console.log("createElection");
     const { network, signer } = await getNetwork();
     /* CREATE CERAMIC ELECTION */
@@ -31,7 +31,7 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
           name,
           candidates,
           kind: "ceramic",
-          voteAllocation: votes,
+          voteAllocation: voteAllocation,
           tokenAddress: tokenAdr,
           fundAmount,
           createdAt: new Date().toISOString(),
@@ -77,10 +77,14 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
   const endElection = async id => {
     const { idx, ceramic } = await makeCeramicClient(address);
     const electionDoc = await TileDocument.load(ceramic, id);
-    console.log(electionDoc.controllers[0], ceramic.did.id.toString());
+    // console.log(electionDoc.controllers[0], ceramic.did.id.toString());
     if (electionDoc.controllers[0] === ceramic.did.id.toString()) {
-      const updated = await electionDoc.update({ ...electionDoc.content, isActive: false });
-      return updated;
+      console.log(electionDoc.content);
+      await electionDoc.update({ ...electionDoc.content, isActive: false });
+      console.log("updated");
+      return "success";
+    } else {
+      return null;
     }
   };
 

@@ -2,11 +2,13 @@ import axios from "axios";
 import { makeCeramicClient } from "../helpers";
 import qs from "query-string";
 import { CERAMIC_PREFIX, serializeCeramicElection } from "./helpers";
+import { fromWei, toWei, toBN, numberToHex } from "web3-utils";
+
 var Map = require("collections/map");
 
 export const serverUrl = process.env.REACT_APP_API_URL || "http://localhost:45622/";
 export default function BaseHandler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner) {
-  console.log("BaseHandler()");
+  //   console.log("BaseHandler()");
   const getElections = async () => {
     const contract = readContracts.Diplomat;
     const allContractElections = await contract.getElections();
@@ -19,17 +21,17 @@ export default function BaseHandler(tx, readContracts, writeContracts, mainnetPr
       return d.startsWith(CERAMIC_PREFIX);
     });
 
-    const firebaseElectionIds = allContractElections.filter(d => {
-      return !d.startsWith(CERAMIC_PREFIX);
-    });
+    // const firebaseElectionIds = allContractElections.filter(d => {
+    //   return !d.startsWith(CERAMIC_PREFIX);
+    // });
 
-    const isFirebaseOn = true;
-    // try {
-    //   const result = axios.get(serverUrl + `distributions/`);
-    //   isFirebaseOn = true;
-    // } catch (e) {
-    //   console.log(e);
-    // }
+    const isFirebaseOn = false;
+    // // try {
+    // //   const result = axios.get(serverUrl + `distributions/`);
+    // //   isFirebaseOn = true;
+    // // } catch (e) {
+    // //   console.log(e);
+    // // }
 
     const newElectionsMap = new Map();
 
@@ -75,7 +77,9 @@ export default function BaseHandler(tx, readContracts, writeContracts, mainnetPr
 
     for (let i = 0; i < ceramicElections.length; i++) {
       const serializedElection = await serializeCeramicElection(ceramicElections[i], address);
-      console.log({ serializedElection });
+      console.log(serializedElection.name, serializedElection.isAdmin, serializedElection.isCandidate);
+      serializedElection.amtFromWei = fromWei(serializedElection.fundAmount || "0");
+      serializedElection.amtFromWei = parseFloat(serializedElection.amtFromWei).toFixed(2);
       newElectionsMap.set(ceramicElections[i], serializedElection);
     }
 

@@ -11,7 +11,11 @@ import VoteCard from "../components/Cards/VoterCards/VoteCard";
 import dips from "../dips";
 import CenteredFrame from "../components/layout/CenteredFrame";
 
-export default function MockElectionPage({
+const CURRENCY = "ETH";
+const TOKEN = "UNI";
+const TOKEN_ADR = "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984";
+
+export default function Election({
   address,
   mainnetProvider,
   blockExplorer,
@@ -36,6 +40,7 @@ export default function MockElectionPage({
   //   const [tableCols, setTableCols] = useState([]);
   const [errorMsg, setErrorMsg] = useState("");
   const [isElectionEnding, setIsElectionEnding] = useState(false);
+  const [isVoting, setIsVoting] = useState(false);
   const [candidateMap, setCandidateMap] = useState();
   const [candidateScores, setCandidateScores] = useState([]);
 
@@ -114,10 +119,11 @@ export default function MockElectionPage({
 
   const loadElectionState = async () => {
     let electionState = await qdipHandler.getElectionStateById(id);
-    console.log({ electionState });
+    // console.log({ electionState });
     electionState.amtFromWei = fromWei(electionState.fundAmount || "0");
-    if (electionState.tokenAdr == "0x0000000000000000000000000000000000000000") {
-      electionState.tokenSymbol = "ETH";
+    electionState.tokenSymbol = "ETH";
+    if (electionState.tokenAdr == TOKEN_ADR) {
+      electionState.tokenSymbol = TOKEN;
     }
     setElectionState(electionState);
     updateCandidateMap(electionState);
@@ -154,15 +160,19 @@ export default function MockElectionPage({
       return;
     }
     setErrorMsg(null);
-
+    setIsVoting(true);
     const candidates = Array.from(candidateMap.keys());
     const scores = [];
     candidateMap.forEach(d => {
       scores.push(Math.floor(d.score * 100));
     });
     console.log(candidates, scores);
-    let totalScores = qdipHandler.castBallot(id, candidates, scores, userSigner);
-    console.log(totalScores);
+    let totalScores = await qdipHandler.castBallot(id, candidates, scores, userSigner);
+    // console.log(totalScores);
+    if (totalScores) {
+      loadElectionState();
+    }
+    setIsVoting(false);
   };
 
   const updateCandidateMap = async electionState => {
@@ -173,9 +183,9 @@ export default function MockElectionPage({
     }
 
     let totalScores = await qdipHandler.getCandidatesScores(id);
-    console.log({ totalScores });
+    // console.log({ totalScores });
     let totalScoresSum = totalScores.reduce((sum, curr) => sum + curr, 0);
-    console.log({ totalScoresSum });
+    // console.log({ totalScoresSum });
     let mapping = new Map();
     if (candidateMap) {
       mapping = candidateMap;
@@ -197,7 +207,7 @@ export default function MockElectionPage({
       } else {
         candidate.payoutFromWei = "0";
       }
-      console.log(addr, candidate);
+      //   console.log(candidate);
       setCandidateMap(new Map(mapping.set(addr, candidate)));
     });
   };
@@ -209,49 +219,58 @@ export default function MockElectionPage({
   const endElection = async () => {
     console.log("endElection");
     setIsElectionEnding(true);
-    qdipHandler
-      .endElection(id)
-      .then(success => {
-        loadElectionState();
-        setIsElectionEnding(false);
-      })
-      .catch(err => {
-        console.log("err endElection", err);
-        setIsElectionEnding(false);
-      });
+    let result = await qdipHandler.endElection(electionState.id);
+    if (result) {
+      console.log(result);
+      loadElectionState();
+    }
+    setIsElectionEnding(false);
   };
 
   const ethPayHandler = () => {
-    const adrs = Array.from(candidateMap.keys());
-    const totalValueInWei = toWei(electionState.fundingAmount);
+    // console.log({ electionState, finalPayout });
+    const totalValueInWei = electionState.fundAmount;
     //convert payout to wei
-    let payoutInWei = finalPayout.payout.map(p => toWei(p));
+    let payoutInWei = [];
 
-    console.log(adrs, payoutInWei, totalValueInWei);
+    // let payoutInWei = finalPayout.payout.map(p => toWei(p));
 
-    return new Promise((resolve, reject) => {
-      qdipHandler
-        .distributeEth(id, adrs, payoutInWei, totalValueInWei)
-        .then(success => {
-          loadElectionState();
-          resolve(success);
-        })
-        .catch(err => {
-          reject(err);
-        });
+    electionState.candidates.forEach((addr, idx) => {
+      const candidate = candidateMap.get(addr);
+      payoutInWei.push(toWei(candidate.payoutFromWei));
     });
+    // console.log({ payoutInWei });
+    return qdipHandler
+      .distributeEth({
+        id,
+        candidates: electionState.candidates,
+        payoutInWei,
+        totalValueInWei,
+        tokenAddress: electionState.tokenAdr,
+      })
+      .then(async success => {
+        return loadElectionState();
+      })
+      .catch(err => {
+        console.log(err);
+      });
   };
 
   const tokenPayHandler = async opts => {
     const adrs = Array.from(candidateMap.keys());
     //convert payout to wei
     let payoutInWei = finalPayout.payout.map(p => toWei(p));
-    const election = await readContracts.Diplomat.getElection(id);
-    console.log({ election });
     tx(
       writeContracts.Diplomat.payElection(id, adrs, payoutInWei, {
         gasLimit: 12450000,
       }),
+      async update => {
+        if (update) {
+          if (update.status === "confirmed" || update.status === 1) {
+            loadElectionState();
+          }
+        }
+      },
     );
   };
   return isLoading || !electionState.n_voted ? (
@@ -268,15 +287,17 @@ export default function MockElectionPage({
       <Grid w="full" templateColumns="repeat(3, 1fr)" gap={6}>
         <GridItem colSpan={1}>
           <SideCard
-            id={electionState.id}
-            name={electionState.name}
-            creator={electionState.creator}
-            tokenSymbol={electionState.tokenSymbol}
-            voted={`${electionState.n_voted.n_voted} / ${electionState.n_voted.outOf}`}
-            active={electionState.active}
-            amount={electionState.amtFromWei}
-            createdAt={electionState.created_date}
+            electionState={electionState}
             mainnetProvider={mainnetProvider}
+            endElection={endElection}
+            isEndingElection={isElectionEnding}
+            address={address}
+            spender={spender}
+            yourLocalBalance={yourLocalBalance}
+            readContracts={readContracts}
+            writeContracts={writeContracts}
+            ethPayHandler={ethPayHandler}
+            tokenPayHandler={tokenPayHandler}
           />
         </GridItem>
         <GridItem colSpan={2}>
@@ -305,14 +326,27 @@ export default function MockElectionPage({
                   <Text fontSize="1rem" color="red.400">
                     {errorMsg}
                   </Text>
-                  <Button ml="0.5rem" onClick={castBallot} px="1.25rem" fontSize="md">
+                  <Button
+                    ml="0.5rem"
+                    onClick={castBallot}
+                    px="1.25rem"
+                    fontSize="md"
+                    isLoading={isVoting}
+                    loadingText="Voting"
+                  >
                     Submit
                   </Button>
                 </Box>
               </>
             ) : (
               <>
-                <DistributionCard candidates={electionState.candidates} candidateMap={candidateMap} />
+                <DistributionCard
+                  candidates={electionState.candidates}
+                  candidateMap={candidateMap}
+                  mainnetProvider={mainnetProvider}
+                  isPaid={electionState.isPaid}
+                  tokenSym={electionState.tokenSymbol}
+                />
                 {/* TO BE REMOVED AFTER BACKEND INTEGRATION */}
                 {/* <Box w="full" pt="1rem" align="end">
                   <Button

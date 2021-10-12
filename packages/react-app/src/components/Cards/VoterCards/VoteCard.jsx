@@ -5,11 +5,20 @@ import VoteInput from "../../Inputs/VoteInput";
 import { blockExplorer } from "../../../App";
 import AddressChakra from "../../AddressChakra";
 
-function VoteCard({ candidates, candidateMap, voteAllocation, votesLeft, addVote, minusVote, mainnetProvider }) {
+function VoteCard({
+  candidates,
+  candidateMap,
+  voteAllocation,
+  votesLeft,
+  addVote,
+  minusVote,
+  mainnetProvider,
+  isVoting,
+}) {
   const headingColor = useColorModeValue("yellow.600", "yellow.500");
 
   useEffect(() => {
-    console.log({ candidateMap });
+    // console.log({ candidateMap });
   }, [candidateMap]);
 
   return (

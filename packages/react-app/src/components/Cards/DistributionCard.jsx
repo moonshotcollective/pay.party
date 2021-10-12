@@ -3,14 +3,21 @@ import { Avatar, Divider, Heading, Table, Tbody, Td, Text, Th, Thead, Tr, VStack
 import { blockExplorer } from "../../App";
 import AddressChakra from "../AddressChakra";
 
-function DistributionCard({ candidates, candidateMap, mainnetProvider }) {
+function DistributionCard({ candidates, candidateMap, mainnetProvider, isPaid, tokenSym }) {
   const headingColor = useColorModeValue("yellow.600", "yellow.500");
 
   return (
     <VStack align="start" w="100%" spacing="0.5rem">
-      <Heading fontSize="1.5rem" color={headingColor}>
-        Current Distribution
-      </Heading>
+      {!isPaid && (
+        <Heading fontSize="1.5rem" color={headingColor}>
+          Current Distribution
+        </Heading>
+      )}
+      {isPaid && (
+        <Heading fontSize="1.5rem" color={headingColor}>
+          Final Distribution
+        </Heading>
+      )}
       <Text pb="2rem" fontSize="1rem">
         Note that payout distribution might still change as more members vote.
       </Text>
@@ -36,7 +43,10 @@ function DistributionCard({ candidates, candidateMap, mainnetProvider }) {
                     blockExplorer={blockExplorer}
                   ></AddressChakra>
                 </Td>
-                <Td>{candidateMap && candidateMap.get(member).voted && <Text>Voted</Text>}</Td>
+                <Td>
+                  {candidateMap && candidateMap.get(member).voted && <Text color="green.600">Voted</Text>}{" "}
+                  {candidateMap && !candidateMap.get(member).voted && isPaid && <Text color="red.600">Absent</Text>}
+                </Td>
                 <Td>
                   <Text>{candidateMap && candidateMap.get(member).score}</Text>
                 </Td>
@@ -44,7 +54,9 @@ function DistributionCard({ candidates, candidateMap, mainnetProvider }) {
                   <Text>{candidateMap && candidateMap.get(member).allocation}%</Text>
                 </Td>
                 <Td>
-                  <Text color="yellow.500">{candidateMap && candidateMap.get(member).payoutFromWei} ETH</Text>
+                  <Text color="yellow.500">
+                    {candidateMap && candidateMap.get(member).payoutFromWei} {tokenSym}
+                  </Text>
                 </Td>
               </Tr>
             ))}

@@ -14,7 +14,7 @@ import { Transactor } from "./helpers";
 import { useBalance, useContractReader, useGasPrice, useOnBlock, useUserProviderAndSigner } from "eth-hooks";
 import { useEventListener } from "eth-hooks/events/useEventListener";
 import { useExchangeEthPrice } from "eth-hooks/dapps/dex";
-import { Home, Reward, Vote, Create, MockHome, MockCreate, MockElection } from "./views";
+import { Home, Create, Election } from "./views";
 
 import { useContractConfig, useContractLoader } from "./hooks";
 import Portis from "@portis/web3";
@@ -450,7 +450,7 @@ function App(props) {
       <BrowserRouter>
         <Switch>
           <Route exact path="/">
-            <MockHome
+            <Home
               address={address}
               tx={tx}
               readContracts={readContracts}
@@ -471,8 +471,8 @@ function App(props) {
               readContracts={readContracts}
             />
           </Route>
-          <Route path="/vote/:id">
-            <Vote
+          <Route path="/election/:id">
+            <Election
               address={address}
               userSigner={userSigner}
               mainnetProvider={mainnetProvider}
@@ -484,9 +484,6 @@ function App(props) {
               readContracts={readContracts}
             />
           </Route>
-          <Route path="/reward/:id">
-            <Reward />
-          </Route>
           <Route exact path="/debug">
             <Contract
               name="Diplomat"
@@ -495,37 +492,6 @@ function App(props) {
               address={address}
               blockExplorer={blockExplorer}
               contractConfig={contractConfig}
-            />
-          </Route>
-          <Route exact path="/mockhome">
-            <MockHome
-              address={address}
-              tx={tx}
-              readContracts={readContracts}
-              writeContracts={writeContracts}
-              mainnetProvider={mainnetProvider}
-            />
-          </Route>
-          <Route exact path="/mockcreate">
-            <MockCreate
-              address={address}
-              tx={tx}
-              readContracts={readContracts}
-              writeContracts={writeContracts}
-              mainnetProvider={mainnetProvider}
-            />
-          </Route>
-          <Route path="/mockelection/:id">
-            <MockElection
-              address={address}
-              userSigner={userSigner}
-              mainnetProvider={mainnetProvider}
-              localProvider={localProvider}
-              yourLocalBalance={yourLocalBalance}
-              price={price}
-              tx={tx}
-              writeContracts={writeContracts}
-              readContracts={readContracts}
             />
           </Route>
         </Switch>

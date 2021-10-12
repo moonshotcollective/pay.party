@@ -47,7 +47,7 @@ export const serializeCeramicElection = async (ceramicElectionId, address) => {
   const existingVotes = await idx.get("votes", caip10.did);
   // TODO: check if already voted for this election through another address
   const previousVotes = existingVotes ? Object.values(existingVotes) : null;
-  console.log({ previousVotes });
+  //   console.log({ existingVotes });
   const hasVoted = previousVotes && previousVotes.find(vote => toCeramicId(vote.electionId) === id);
   if (creatorAccounts) {
     const accounts = Object.keys(creatorAccounts);
@@ -59,11 +59,7 @@ export const serializeCeramicElection = async (ceramicElectionId, address) => {
     if (Object.keys(creatorAccounts).some(creatorAddress => address === creatorAddress.split("@")[0])) {
       tags.push("admin");
     }
-    if (
-      Object.keys(creatorAccounts).some(creatorAddress =>
-        electionDoc.content.candidates.includes(creatorAddress.split("@")[0]),
-      )
-    ) {
+    if (electionDoc.content.candidates.includes(address)) {
       tags.push("candidate");
     }
   }
@@ -120,7 +116,7 @@ export const serializeCeramicElection = async (ceramicElectionId, address) => {
       });
     }
   }
-
+  //   console.log({ content: electionDoc.content });
   const serializedElection = {
     id,
     name: electionDoc.content.name,
