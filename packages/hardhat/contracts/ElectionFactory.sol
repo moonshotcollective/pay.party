@@ -46,7 +46,7 @@ contract ElectionFactory is Distributor {
 
     modifier onlyElectionAdmin(string memory electionId) {
         require(
-            isElectionAdmin[electionId][msg.sender],
+            !isElectionAdmin[electionId][msg.sender],
             "Is Not Election Admin!"
         );
         _;
