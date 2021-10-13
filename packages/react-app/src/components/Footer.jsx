@@ -6,11 +6,11 @@ import GitcoinIcon from "./Icons/GitcoinIcon";
 
 const Footer = () => {
   return (
-    <Box as="footer" width="95%" alignContent="center" pt="8" pb="12" mt={4} ml={4} mr={8}>
+    <Box as="footer" width="100%" alignContent="center" pt="8" pb="12" pl="16" mt={4} ml={4} mr={8}>
       <HStack alignItems="center" justifyContent="space-between" width="full">
-        <Flex alignItems="center" justifyContent="center">
+        <Flex alignItems="bottom" justifyContent="bottom">
           <GitcoinIcon />
-          <Text ml="4">
+          <Text ml="2">
             <Link href="https://moonshotcollective.space/" isExternal>
               Built with 💜 by the Gitcoin community | Moonshot Collective
             </Link>

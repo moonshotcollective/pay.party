@@ -9,7 +9,7 @@ function GitcoinIcon() {
       width="19px"
       height="25px"
       xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 19 25"
+      viewBox="0 3 22 25"
       fill="none"
       _hover={{
         fill: "brand.accent",
