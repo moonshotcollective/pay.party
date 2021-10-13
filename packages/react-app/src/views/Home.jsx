@@ -59,7 +59,6 @@ function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
 
   return (
     <Container>
-      <Divider backgroundColor="purple.500" />
       <HStack w="full" justifyContent="space-between">
         <Heading fontSize="1.5rem" color={headingColor}>
           Elections
@@ -70,13 +69,12 @@ function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
           </Button>
         </Box>
       </HStack>
-      <Divider backgroundColor="purple.500" />
 
       {isLoading || !electionsMap ? (
         <CenteredFrame>
           <Flex flexDirection="column" justifyContent="center" alignItems="center">
             <Heading fontSize="1.5rem" color={headingColor}>
-              Loading elections
+              Loading elections...
             </Heading>
             <Spinner color="purple.700" size="xl" />
           </Flex>

@@ -135,7 +135,7 @@ const Create = ({
   }, [append]);
   /***** Methods *****/
   const goBack = () => {
-    routeHistory.push("/mockhome");
+    routeHistory.push("/");
   };
 
   const init = async () => {

@@ -275,7 +275,7 @@ export default function Election({
     <CenteredFrame>
       <Flex flexDirection="column" justifyContent="center" alignItems="center">
         <Heading fontSize="1.5rem" color={headingColor}>
-          Loading election {id}
+          Loading election...
         </Heading>
         <Spinner color="purple.700" size="xl" />
       </Flex>
