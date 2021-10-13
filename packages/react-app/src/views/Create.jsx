@@ -82,6 +82,7 @@ const Create = ({
   const [isConfirmingElection, setIsConfirmingElection] = useState(false);
   const [isCreatedElection, setIsCreatedElection] = useState(false);
   const [electionId, setElectionId] = useState();
+  const [title, setTitle] = useState("Configure Election");
 
   const [newElection, setNewElection] = useState({
     name: "",
@@ -259,7 +260,7 @@ const Create = ({
               Back
             </Text>
             <Heading py="15" fontSize="1.5rem" color={headingColor}>
-              Configure Election
+              {title}
             </Heading>
             <div></div>
           </Flex>
@@ -364,7 +365,7 @@ const Create = ({
                 <FormErrorMessage>{errors.votes && errors.votes.message}</FormErrorMessage>
               </FormControl>
 
-              <FormControl isInvalid={errors.kind} py="4">
+              {/* <FormControl isInvalid={errors.kind} py="4">
                 <FormLabel htmlFor="kind">Diplomacy Type</FormLabel>
                 <Select
                   {...register("kind", {
@@ -383,7 +384,7 @@ const Create = ({
                     </option>
                   ))}
                 </Select>
-              </FormControl>
+              </FormControl> */}
               <Box pb="1rem"></Box>
               <Divider backgroundColor="purple.500" />
               <Box pb="1rem"></Box>
@@ -447,9 +448,6 @@ const Create = ({
             <HStack justify="center" align="center" w="100%">
               <Button mt={4} colorScheme="teal" onClick={viewElection}>
                 View Election
-              </Button>
-              <Button mt={4} colorScheme="teal" onClick={createAnotherElection}>
-                Create another Election
               </Button>
             </HStack>
           )}

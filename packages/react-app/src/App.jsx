@@ -360,7 +360,7 @@ function App(props) {
     }
   } else {
     networkDisplay = (
-      <div style={{ zIndex: -1, position: "absolute", right: 154, top: 28, padding: 16, color: targetNetwork.color }}>
+      <div style={{ zIndex: -1, position: "fixed", right: 154, top: 28, padding: 16, color: targetNetwork.color }}>
         {targetNetwork.name}
       </div>
     );
@@ -435,78 +435,76 @@ function App(props) {
   }, [yourLocalBalance]);
 
   return (
-    <Box mb={8} w="full">
-      {/* ✏️ Edit the header and change the title to your project name */}
-      <Header />
+    <div style={{ padding: 52 }}>
       {networkDisplay}
-      <BrowserRouter>
-        <Switch>
-          <Route exact path="/">
-            <Home
-              address={address}
-              tx={tx}
-              readContracts={readContracts}
-              writeContracts={writeContracts}
-              mainnetProvider={mainnetProvider}
-            />
-          </Route>
-          <Route path="/create">
-            <Create
-              address={address}
-              userSigner={userSigner}
-              mainnetProvider={mainnetProvider}
-              localProvider={localProvider}
-              yourLocalBalance={yourLocalBalance}
-              price={price}
-              tx={tx}
-              writeContracts={writeContracts}
-              readContracts={readContracts}
-            />
-          </Route>
-          <Route path="/election/:id">
-            <Election
-              address={address}
-              userSigner={userSigner}
-              mainnetProvider={mainnetProvider}
-              localProvider={localProvider}
-              yourLocalBalance={lb}
-              price={price}
-              tx={tx}
-              writeContracts={writeContracts}
-              readContracts={readContracts}
-            />
-          </Route>
-          <Route exact path="/debug">
-            <Contract
-              name="Diplomat"
-              signer={userSigner}
-              provider={localProvider}
-              address={address}
-              blockExplorer={blockExplorer}
-              contractConfig={contractConfig}
-            />
-          </Route>
-        </Switch>
-      </BrowserRouter>
-
-      <ThemeSwitch />
-      <Footer />
-      {/* 👨‍💼 Your account is in the top right with a wallet at connect options */}
-      <div style={{ position: "fixed", textAlign: "right", right: 0, top: 0, padding: 10 }}>
-        <Account
-          address={address}
-          localProvider={localProvider}
-          userSigner={userSigner}
-          mainnetProvider={mainnetProvider}
-          price={price}
-          web3Modal={web3Modal}
-          loadWeb3Modal={loadWeb3Modal}
-          logoutOfWeb3Modal={logoutOfWeb3Modal}
-          blockExplorer={blockExplorer}
-        />
-        {faucetHint}
-      </div>
-    </Box>
+      <Box mb={8} w="full">
+        <div style={{ position: "fixed", textAlign: "right", right: 32, top: 60, padding: 10 }}>
+          <Account
+            address={address}
+            localProvider={localProvider}
+            userSigner={userSigner}
+            mainnetProvider={mainnetProvider}
+            price={price}
+            web3Modal={web3Modal}
+            loadWeb3Modal={loadWeb3Modal}
+            logoutOfWeb3Modal={logoutOfWeb3Modal}
+            blockExplorer={blockExplorer}
+          />
+        </div>
+        <Header />
+        <BrowserRouter>
+          <Switch>
+            <Route exact path="/">
+              <Home
+                address={address}
+                tx={tx}
+                readContracts={readContracts}
+                writeContracts={writeContracts}
+                mainnetProvider={mainnetProvider}
+              />
+            </Route>
+            <Route path="/create">
+              <Create
+                address={address}
+                userSigner={userSigner}
+                mainnetProvider={mainnetProvider}
+                localProvider={localProvider}
+                yourLocalBalance={yourLocalBalance}
+                price={price}
+                tx={tx}
+                writeContracts={writeContracts}
+                readContracts={readContracts}
+              />
+            </Route>
+            <Route path="/election/:id">
+              <Election
+                address={address}
+                userSigner={userSigner}
+                mainnetProvider={mainnetProvider}
+                localProvider={localProvider}
+                yourLocalBalance={lb}
+                price={price}
+                tx={tx}
+                writeContracts={writeContracts}
+                readContracts={readContracts}
+              />
+            </Route>
+            <Route exact path="/debug">
+              <Contract
+                name="Diplomat"
+                signer={userSigner}
+                provider={localProvider}
+                address={address}
+                blockExplorer={blockExplorer}
+                contractConfig={contractConfig}
+              />
+            </Route>
+          </Switch>
+        </BrowserRouter>
+        <ThemeSwitch />
+        <Footer />
+      </Box>
+    </div>
   );
 }
 

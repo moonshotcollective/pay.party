@@ -15,19 +15,19 @@ function ElectionCard({ id, name, owner, voted, active, createdAt, amount, token
   }
 
   return (
-    <Box borderColor="purple.500" borderWidth="1px" borderRadius="8px" py="1.5rem" px="2.5rem">
+    <Box borderColor="purple.500" borderWidth="1px" borderRadius="8px" py="1.5rem" px="2.5rem" width="100%">
       <HStack spacing={4} justifyContent="space-between">
         <Heading fontSize="1.5rem" color="violet.50">
           {name}
         </Heading>
-        <VStack>
-          <Tag size="sm" variant="solid" colorScheme={active ? "green" : "red"}>
-            {active ? "Active" : "Inactive"}
-          </Tag>
-          <Tag size="sm" variant="solid" colorScheme="purple">
-            {voted} voted
-          </Tag>
-        </VStack>
+      </HStack>
+      <HStack spacing={2} pb={4}>
+        <Tag size="sm" variant="solid" colorScheme={active ? "green" : "red"}>
+          {active ? "Active" : "Inactive"}
+        </Tag>
+        <Tag size="sm" variant="solid" colorScheme="purple">
+          {voted} voted
+        </Tag>
       </HStack>
       <Address address={owner} fontSize="14pt" ensProvider={mainnetProvider} blockExplorer={blockExplorer} />
       <Text py="2rem" fontSize="1rem">
