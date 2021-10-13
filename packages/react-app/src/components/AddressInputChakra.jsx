@@ -49,6 +49,9 @@ export default function AddressInputChakra(props) {
         let address = newValue;
         if (address.indexOf(".eth") > 0 || address.indexOf(".xyz") > 0) {
           try {
+            if (typeof onChange === "function") {
+              onChange("resolving ...");
+            }
             const possibleAddress = await ensProvider.resolveName(address);
             if (possibleAddress) {
               address = possibleAddress;
@@ -69,11 +72,10 @@ export default function AddressInputChakra(props) {
     <div>
       <InputGroup>
         <Input
-          id="0xAddress" // name it something other than address for auto fill doxxing
-          name="0xAddress" // name it something other than address for auto fill doxxing
           borderColor="purple.500"
-          color="purple.500"
-          placeholder="Enter Address"
+          color="white"
+          placeholder="Enter ENS/ETH Address"
+          autoComplete="off"
           onChange={e => {
             updateAddress(e.target.value);
           }}

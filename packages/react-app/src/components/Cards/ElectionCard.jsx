@@ -31,7 +31,7 @@ function ElectionCard({ id, name, owner, voted, active, createdAt, amount, token
       </HStack>
       <Address address={owner} fontSize="14pt" ensProvider={mainnetProvider} blockExplorer={blockExplorer} />
       <Text py="2rem" fontSize="1rem">
-        This is an election description that is maximum 2 lines long
+        {/* This is an election description that is maximum 2 lines long */}
       </Text>
       <Text color="violet.50" fontSize="1rem">
         {amount} {tokenSymbol || "ETH"}

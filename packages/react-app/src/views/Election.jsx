@@ -11,10 +11,6 @@ import VoteCard from "../components/Cards/VoterCards/VoteCard";
 import dips from "../dips";
 import CenteredFrame from "../components/layout/CenteredFrame";
 
-const CURRENCY = "ETH";
-const TOKEN = "UNI";
-const TOKEN_ADR = "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984";
-
 export default function Election({
   address,
   mainnetProvider,
@@ -119,12 +115,12 @@ export default function Election({
 
   const loadElectionState = async () => {
     let electionState = await qdipHandler.getElectionStateById(id);
-    // console.log({ electionState });
+    console.log(electionState.tokenSymbol);
     electionState.amtFromWei = fromWei(electionState.fundAmount || "0");
-    electionState.tokenSymbol = "ETH";
-    if (electionState.tokenAdr == TOKEN_ADR) {
-      electionState.tokenSymbol = TOKEN;
-    }
+    // electionState.tokenSymbol = "ETH";
+    // if (electionState.tokenAdr == TOKEN_ADR) {
+    //   electionState.tokenSymbol = TOKEN;
+    // }
     setElectionState(electionState);
     updateCandidateMap(electionState);
   };
@@ -223,6 +219,8 @@ export default function Election({
     if (result) {
       console.log(result);
       loadElectionState();
+    } else {
+      console.log("coulnd't end election");
     }
     setIsElectionEnding(false);
   };

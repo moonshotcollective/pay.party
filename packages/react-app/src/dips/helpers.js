@@ -6,6 +6,11 @@ import Web3Modal from "web3modal";
 import { makeCeramicClient } from "../helpers";
 
 export const CERAMIC_PREFIX = "ceramic://";
+
+const CURRENCY = "ETH";
+const TOKEN = "UNI";
+const TOKEN_ADR = "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984";
+
 export const getCeramicElectionIds = async diplomatContract => {
   const allElections = await diplomatContract.getElections();
   if (!allElections) {
@@ -116,6 +121,10 @@ export const serializeCeramicElection = async (ceramicElectionId, address) => {
       });
     }
   }
+  let tokenSymbol = "ETH";
+  if (electionDoc.content.tokenAddress == TOKEN_ADR) {
+    tokenSymbol = TOKEN;
+  }
   //   console.log({ content: electionDoc.content });
   const serializedElection = {
     id,
@@ -128,6 +137,7 @@ export const serializeCeramicElection = async (ceramicElectionId, address) => {
     creatorDid,
     fundAmount: electionDoc.content.fundAmount,
     tokenAdr: electionDoc.content.tokenAddress,
+    tokenSymbol: tokenSymbol,
     creator: creatorMainAddress || creatorDid,
     status: electionDoc.content.isActive,
     isPaid: electionDoc.content.isPaid,

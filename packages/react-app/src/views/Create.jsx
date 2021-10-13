@@ -37,6 +37,8 @@ import { ControllerPlus } from "../components/Inputs/ControllerPlus";
 import CenteredFrame from "../components/layout/CenteredFrame";
 import dips from "../dips";
 import AddressInputChakra from "../components/AddressInputChakra";
+import AddressChakra from "../components/AddressChakra";
+import { blockExplorer } from "../App";
 
 import { CERAMIC_PREFIX } from "../dips/helpers";
 
@@ -68,10 +70,14 @@ const Create = ({
     }
   };
 
+  const createAnotherElection = () => {
+    setIsCreatedElection(false);
+    setIsConfirmingElection(false);
+  };
+
   /***** States *****/
   const [selectedQdip, setSelectedQdip] = useState("ceramic");
   const [qdipHandler, setQdipHandler] = useState();
-  const [current, setCurrent] = useState(0);
   const [errorMsg, setErrorMsg] = useState();
   const [isConfirmingElection, setIsConfirmingElection] = useState(false);
   const [isCreatedElection, setIsCreatedElection] = useState(false);
@@ -137,6 +143,10 @@ const Create = ({
   };
 
   const onSubmit = async values => {
+    if (newElection.candidates.length == 0) {
+      setErrorMsg("Need to add atleast 1 ENS/address");
+      return;
+    }
     setIsConfirmingElection(true);
     // Create a new election
     console.log({ newElection });
@@ -208,6 +218,14 @@ const Create = ({
     }));
   };
 
+  const removeCandidate = cand => {
+    const newList = newElection.candidates.filter(item => item !== cand);
+    setNewElection(prevState => ({
+      ...prevState,
+      candidates: newList,
+    }));
+  };
+
   const [toAddress, setToAddress] = useState("");
   const addVoter = async () => {
     if (toAddress == "") return;
@@ -220,9 +238,14 @@ const Create = ({
         // eslint-disable-next-line no-empty
       } catch (e) {}
     }
-    if (!newElection.candidates.includes(toAddress)) {
-      newElection.candidates.push(toAddress);
+    if (toAddress.length != 42 || !toAddress.startsWith("0x")) {
+      setToAddress("");
+    } else {
+      if (!newElection.candidates.includes(toAddress)) {
+        newElection.candidates.push(toAddress);
+      }
     }
+
     setToAddress("");
   };
 
@@ -240,27 +263,28 @@ const Create = ({
             </Heading>
             <div></div>
           </Flex>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <FormControl isInvalid={errors.name}>
-              <FormLabel htmlFor="name">Election name</FormLabel>
-              <Input
-                placeholder="Election name"
-                borderColor="purple.500"
-                defaultValue={newElection.name}
-                value={newElection.name}
-                {...register("name", {
-                  required: "This is required",
-                  maxLength: {
-                    value: 150,
-                    message: "Maximum length should be 150",
-                  },
-                })}
-                onChange={updateName}
-              />
-              <FormErrorMessage>{errors.name && errors.name.message}</FormErrorMessage>
-            </FormControl>
+          {!isCreatedElection && (
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <FormControl isInvalid={errors.elec_name} id="elec_name">
+                <FormLabel htmlFor="elec_name">Election name</FormLabel>
+                <Input
+                  placeholder="Election name"
+                  borderColor="purple.500"
+                  value={newElection.name}
+                  {...register("elec_name", {
+                    required: "This is required",
+                    maxLength: {
+                      value: 150,
+                      message: "Maximum length should be 150",
+                    },
+                  })}
+                  autoComplete="off"
+                  onChange={updateName}
+                />
+                <FormErrorMessage>{errors.name && errors.name.message}</FormErrorMessage>
+              </FormControl>
 
-            {/* <FormControl py="4">
+              {/* <FormControl py="4">
               <FormLabel htmlFor="description">Election description</FormLabel>
               <Textarea
                 placeholder="Election description"
@@ -275,150 +299,160 @@ const Create = ({
               <FormErrorMessage>{errors.description && errors.description.message}</FormErrorMessage>
             </FormControl> */}
 
-            <FormControl py="4" isInvalid={errors.fundAmount || errors.funds}>
-              <FormLabel htmlFor="fundAmount">Fund Allocation (amount to be distributed)</FormLabel>
-              <HStack pb="1rem" justify="space-between">
-                <HStack>
-                  <InputGroup w="300px">
-                    <NumberInput max={50} min={0.001} defaultValue={newElection.fundAmount}>
-                      <NumberInputField
-                        placeholder="fundAmount"
-                        borderColor="purple.500"
-                        {...register("fundAmount", {
-                          required: "This is required",
-                        })}
-                        value={newElection.fundAmount}
-                        onChange={updateFundAmount}
-                      />
-                      {/* <NumberInputStepper>
+              <FormControl py="4" isInvalid={errors.fundAmount || errors.funds}>
+                <FormLabel htmlFor="fundAmount">Fund Allocation (amount to be distributed)</FormLabel>
+                <HStack pb="1rem" justify="space-between">
+                  <HStack>
+                    <InputGroup w="300px">
+                      <NumberInput max={50} min={0.001} defaultValue={newElection.fundAmount}>
+                        <NumberInputField
+                          placeholder="fundAmount"
+                          borderColor="purple.500"
+                          {...register("fundAmount", {
+                            required: "This is required",
+                          })}
+                          value={newElection.fundAmount}
+                          onChange={updateFundAmount}
+                        />
+                        {/* <NumberInputStepper>
                         <NumberIncrementStepper onChange={updateFundAmount} />
                         <NumberDecrementStepper onChange={updateFundAmount} />
                       </NumberInputStepper> */}
-                    </NumberInput>
-                  </InputGroup>
-                  <Select
-                    defaultValue={CURRENCY}
-                    {...register("funds", {
-                      required: "This is required",
-                      maxLength: {
-                        value: 10,
-                        message: "Maximum length should be 10",
-                      },
-                    })}
-                    value={newElection.tokenSym}
-                    onChange={updateSelectedToken}
-                  >
-                    <option value={CURRENCY}>{CURRENCY}</option>
-                    <option value={TOKEN}>{TOKEN}</option>
-                  </Select>
+                      </NumberInput>
+                    </InputGroup>
+                    <Select
+                      {...register("funds", {
+                        required: "This is required",
+                        maxLength: {
+                          value: 10,
+                          message: "Maximum length should be 10",
+                        },
+                      })}
+                      value={newElection.tokenSym}
+                      onChange={updateSelectedToken}
+                    >
+                      <option value={CURRENCY}>{CURRENCY}</option>
+                      <option value={TOKEN}>{TOKEN}</option>
+                    </Select>
+                  </HStack>
                 </HStack>
-              </HStack>
-              <FormErrorMessage>
-                {(errors.fundAmount && errors.fundAmount.message) || (errors.funds && errors.funds.message)}
-              </FormErrorMessage>
-            </FormControl>
+                <FormErrorMessage>
+                  {(errors.fundAmount && errors.fundAmount.message) || (errors.funds && errors.funds.message)}
+                </FormErrorMessage>
+              </FormControl>
 
-            <FormControl isInvalid={errors.votes}>
-              <FormLabel htmlFor="votes">
-                Vote Allocation (number of votes for each voter)
-                <br />
-              </FormLabel>
-              <NumberInput max={50} min={1} defaultValue={newElection.voteAllocation}>
-                <NumberInputField
-                  placeholder="Vote allocation"
-                  borderColor="purple.500"
-                  {...register("votes", {
+              <FormControl isInvalid={errors.votes}>
+                <FormLabel htmlFor="votes">
+                  Vote Allocation (number of votes for each voter)
+                  <br />
+                </FormLabel>
+                <NumberInput max={50} min={1} defaultValue={newElection.voteAllocation}>
+                  <NumberInputField
+                    placeholder="Vote allocation"
+                    borderColor="purple.500"
+                    {...register("votes", {
+                      required: "This is required",
+                    })}
+                    value={newElection.voteAllocation}
+                    onChange={updateVoteAllocation}
+                  />
+                  <NumberInputStepper>
+                    <NumberIncrementStepper />
+                    <NumberDecrementStepper />
+                  </NumberInputStepper>
+                </NumberInput>
+                <FormErrorMessage>{errors.votes && errors.votes.message}</FormErrorMessage>
+              </FormControl>
+
+              <FormControl isInvalid={errors.kind} py="4">
+                <FormLabel htmlFor="kind">Diplomacy Type</FormLabel>
+                <Select
+                  {...register("kind", {
                     required: "This is required",
+                    maxLength: {
+                      value: 10,
+                      message: "Maximum length should be 10",
+                    },
                   })}
-                  value={newElection.voteAllocation}
-                  onChange={updateVoteAllocation}
-                />
-                <NumberInputStepper>
-                  <NumberIncrementStepper />
-                  <NumberDecrementStepper />
-                </NumberInputStepper>
-              </NumberInput>
-              <FormErrorMessage>{errors.votes && errors.votes.message}</FormErrorMessage>
-            </FormControl>
-
-            <FormControl isInvalid={errors.kind} py="4">
-              <FormLabel htmlFor="kind">Diplomacy Type</FormLabel>
-              <Select
-                defaultValue="Firebase (Centralized)"
-                {...register("kind", {
-                  required: "This is required",
-                  maxLength: {
-                    value: 10,
-                    message: "Maximum length should be 10",
-                  },
-                })}
-                value={newElection.kind}
-                onChange={updateSelectedQdip}
-              >
-                {DIP_TYPES.map(k => (
-                  <option key={k} value={k}>
-                    {dips[k].name}
-                  </option>
-                ))}
-              </Select>
-            </FormControl>
-            <Box pb="1rem"></Box>
-            <Divider backgroundColor="purple.500" />
-            <Box pb="1rem"></Box>
-            <FormControl isInvalid={errors.candidates}>
-              <FormLabel htmlFor="candidates">Candidates</FormLabel>
-              <AddressInputChakra
-                ensProvider={mainnetProvider}
-                placeholder="Enter ENS name"
-                value={toAddress}
-                onChange={setToAddress}
-              />
-              <FormErrorMessage>{errors.votes && errors.votes.message}</FormErrorMessage>
-            </FormControl>
-
-            <Button w="100%" variant="outline" mt={4} onClick={addVoter}>
-              + Add voter
-            </Button>
-            <Box
-              borderColor="purple.500"
-              borderWidth="1px"
-              borderRadius="8px"
-              mt={4}
-              py="1rem"
-              px="2.5rem"
-              overflowY="scroll"
-              maxH="200px"
-            >
-              <List spacing={3}>
-                {newElection.candidates.map(addr => (
-                  <ListItem>
-                    <ListIcon color="green.500" />
-                    {addr}
-                  </ListItem>
-                ))}
-              </List>
-            </Box>
-            <Box pb="1rem"></Box>
-            <Divider backgroundColor="purple.500" />
-            <Box pt="1rem" align="end">
-              {!isCreatedElection && (
-                <Button
-                  mt={4}
-                  colorScheme="teal"
-                  isLoading={isSubmitting || isConfirmingElection}
-                  loadingText="Submitting"
-                  type="submit"
+                  value={newElection.kind}
+                  onChange={updateSelectedQdip}
                 >
-                  Submit
-                </Button>
-              )}
-              {isCreatedElection && (
-                <Button mt={4} colorScheme="teal" onClick={viewElection}>
-                  View Election
-                </Button>
-              )}
-            </Box>
-          </form>
+                  {DIP_TYPES.map(k => (
+                    <option key={k} value={k}>
+                      {dips[k].name}
+                    </option>
+                  ))}
+                </Select>
+              </FormControl>
+              <Box pb="1rem"></Box>
+              <Divider backgroundColor="purple.500" />
+              <Box pb="1rem"></Box>
+              <FormControl isInvalid={newElection.candidates.length == 0}>
+                <FormLabel htmlFor="candidates">Candidates</FormLabel>
+                <AddressInputChakra
+                  ensProvider={mainnetProvider}
+                  placeholder="Enter ENS name"
+                  value={toAddress}
+                  onChange={setToAddress}
+                />
+                <FormErrorMessage>{errors.votes && errors.votes.message}</FormErrorMessage>
+              </FormControl>
+
+              <Button w="100%" variant="outline" mt={4} onClick={addVoter}>
+                + Add voter
+              </Button>
+              <Box
+                borderColor="purple.500"
+                borderWidth="1px"
+                borderRadius="8px"
+                mt={4}
+                py="1rem"
+                px="2.5rem"
+                overflowY="scroll"
+                maxH="200px"
+              >
+                <List spacing={3}>
+                  {newElection.candidates.map((addr, idx) => (
+                    <HStack key={idx} align="start" w="100%" spacing="24px">
+                      <AddressChakra
+                        address={addr}
+                        ensProvider={mainnetProvider}
+                        blockExplorer={blockExplorer}
+                      ></AddressChakra>
+                      <Button colorScheme="teal" size="sm" onClick={() => removeCandidate(addr)}>
+                        X
+                      </Button>
+                    </HStack>
+                  ))}
+                </List>
+              </Box>
+              <Box pb="1rem"></Box>
+              <Divider backgroundColor="purple.500" />
+              <Box pt="1rem" align="end">
+                {!isCreatedElection && (
+                  <Button
+                    mt={4}
+                    colorScheme="teal"
+                    isLoading={isSubmitting || isConfirmingElection}
+                    loadingText="Submitting"
+                    type="submit"
+                  >
+                    Submit
+                  </Button>
+                )}
+              </Box>
+            </form>
+          )}
+          {isCreatedElection && (
+            <HStack justify="center" align="center" w="100%">
+              <Button mt={4} colorScheme="teal" onClick={viewElection}>
+                View Election
+              </Button>
+              <Button mt={4} colorScheme="teal" onClick={createAnotherElection}>
+                Create another Election
+              </Button>
+            </HStack>
+          )}
         </Flex>
       </HStack>
     </CenteredFrame>

@@ -40,7 +40,7 @@ function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
   useEffect(() => {
     (async () => {
       if (qdipHandler) {
-        console.log("rerendered ", qdipHandler);
+        console.log("rerendered ");
         setIsLoading(true);
         let electionsMap = await qdipHandler.getElections();
         console.log({ electionsMap });
@@ -94,10 +94,11 @@ function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
                   {Array.from(electionsMap.values())
                     .reverse()
                     .map(
-                      election =>
+                      (election, idx) =>
                         election.tags.includes("candidate") && (
                           <ElectionCard
                             id={election.id}
+                            key={idx}
                             name={election.name}
                             owner={election.creator}
                             voted={`${election.n_voted.n_voted} / ${election.n_voted.outOf}`}
@@ -117,10 +118,11 @@ function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
                     Array.from(electionsMap.values())
                       .reverse()
                       .map(
-                        election =>
+                        (election, idx) =>
                           election.tags.includes("admin") && (
                             <ElectionCard
                               id={election.id}
+                              key={idx}
                               name={election.name}
                               owner={election.creator}
                               tokenSymbol={election.tokenSymbol}

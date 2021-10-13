@@ -21,22 +21,22 @@ export default function PayButton({
   ethPayHandler,
   tokenPayHandler,
 }) {
-  console.log({
-    token,
-    tokenAddr,
-    amount,
-    appName,
-    spender,
-    style,
-    callerAddress,
-    maxApproval,
-    readContracts,
-    writeContracts,
-    yourLocalBalance,
-    tokenListHandler,
-    ethPayHandler,
-    tokenPayHandler,
-  });
+  //   console.log({
+  //     token,
+  //     tokenAddr,
+  //     amount,
+  //     appName,
+  //     spender,
+  //     style,
+  //     callerAddress,
+  //     maxApproval,
+  //     readContracts,
+  //     writeContracts,
+  //     yourLocalBalance,
+  //     tokenListHandler,
+  //     ethPayHandler,
+  //     tokenPayHandler,
+  //   });
   const [tokenInfo, setTokenInfo] = useState({});
   const [status, setStatus] = useState(0); // loading | lowAllowance | approving | ready | distributing | noBalance
 
@@ -48,7 +48,7 @@ export default function PayButton({
   };
 
   const refreshTokenDetails = async () => {
-    console.log(readContracts);
+    // console.log(readContracts);
     if (!readContracts[token]) {
       console.log("cannot read token", token);
       return;
@@ -78,7 +78,9 @@ export default function PayButton({
     setStatus(2);
     const newAllowance = ethers.utils.parseUnits(maxApproval, tokenInfo[token].decimals);
 
-    const res = await writeContracts[token].approve(spender, newAllowance);
+    const res = await writeContracts[token].approve(spender, newAllowance, {
+      gasLimit: 12450000,
+    });
     await res.wait(1);
     await refreshTokenDetails();
   };
@@ -159,7 +161,6 @@ export default function PayButton({
   const renderButtonText = () => {
     let text = "Loading...";
 
-    console.log({ status });
     switch (status) {
       case 1:
         text = `Approve ${appName} to transfer ${token}`;
