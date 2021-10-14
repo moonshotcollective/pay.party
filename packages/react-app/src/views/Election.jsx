@@ -10,6 +10,7 @@ import SideCard from "../components/Cards/SideCard";
 import VoteCard from "../components/Cards/VoterCards/VoteCard";
 import dips from "../dips";
 import CenteredFrame from "../components/layout/CenteredFrame";
+import Confetti from "react-confetti";
 
 export default function Election({
   address,
@@ -53,6 +54,14 @@ export default function Election({
   const [isLoading, setIsLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const headingColor = useColorModeValue("yellow.600", "yellow.500");
+  const [numberOfConfettiPieces, setNumberOfConfettiPieces] = useState(0);
+
+  const handleConfetti = e => {
+    setNumberOfConfettiPieces(200);
+    setTimeout(() => {
+      setNumberOfConfettiPieces(0);
+    }, 4000);
+  };
 
   /***** Effects *****/
   useEffect(() => {
@@ -166,6 +175,7 @@ export default function Election({
       loadElectionState();
     }
     setIsVoting(false);
+    handleConfetti();
   };
 
   const updateCandidateMap = async electionState => {
@@ -277,6 +287,7 @@ export default function Election({
     </CenteredFrame>
   ) : (
     <Container>
+      <Confetti recycle={true} run={true} numberOfPieces={numberOfConfettiPieces} tweenDuration={3000} />
       <Grid w="full" templateColumns="repeat(3, 1fr)" gap={6}>
         <GridItem colSpan={1}>
           <SideCard
