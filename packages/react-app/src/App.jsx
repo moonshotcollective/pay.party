@@ -502,7 +502,6 @@ function App(props) {
             </Route>
           </Switch>
         </BrowserRouter>
-        <ThemeSwitch />
         <Footer />
       </Box>
     </div>

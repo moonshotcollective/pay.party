@@ -112,7 +112,6 @@ export default function PayButton({
       if (status === 1) {
         setStatus(3);
         await approveTokenAllowance();
-        setStatus(4);
       } else {
         setStatus(4);
         let result = await tokenPayHandler(payParams);
