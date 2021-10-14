@@ -102,10 +102,14 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
       return election.totalScores;
     }
 
+    console.log({ quad_scores });
+
     const voteAttribution = quad_scores.map((voteAttributionCount, i) => ({
       address: election.candidates[i],
       voteAttribution: voteAttributionCount,
     }));
+
+    console.log({ voteAttribution });
 
     if (ceramic?.did?.id) {
       const ballotDoc = await TileDocument.create(ceramic, voteAttribution, {

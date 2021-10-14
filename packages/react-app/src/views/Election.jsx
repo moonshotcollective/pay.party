@@ -169,13 +169,19 @@ export default function Election({
       scores.push(Math.floor(d.score * 100));
     });
     console.log(candidates, scores);
-    let totalScores = await qdipHandler.castBallot(id, candidates, scores, userSigner);
+    let result = await qdipHandler.castBallot(id, candidates, scores, userSigner);
     // console.log(totalScores);
-    if (totalScores) {
-      loadElectionState();
+    if (result) {
+      console.log(result);
+      let res = await loadElectionState();
+      if (res == "success") {
+        setIsVoting(false);
+        handleConfetti();
+      }
+    } else {
+      console.log("coulnd't end election");
+      setIsVoting(false);
     }
-    setIsVoting(false);
-    handleConfetti();
   };
 
   const updateCandidateMap = async electionState => {
@@ -225,12 +231,13 @@ export default function Election({
     let result = await qdipHandler.endElection(electionState.id);
     if (result) {
       console.log(result);
-      let res = loadElectionState();
+      let res = await loadElectionState();
       if (res == "success") {
         setIsElectionEnding(false);
       }
     } else {
       console.log("coulnd't end election");
+      setIsElectionEnding(false);
     }
   };
 
@@ -253,9 +260,12 @@ export default function Election({
     });
     console.log(result);
     if (result) {
-      loadElectionState();
+      let res = await loadElectionState();
+      if (res == "success") {
+        handleConfetti();
+        return result;
+      }
     }
-    return result;
   };
 
   const tokenPayHandler = async opts => {
@@ -272,9 +282,12 @@ export default function Election({
       tokenAddress: electionState.tokenAdr,
     });
     if (result) {
-      loadElectionState();
+      let res = await loadElectionState();
+      if (res == "success") {
+        handleConfetti();
+        return result;
+      }
     }
-    return result;
   };
   return isLoading || !electionState.n_voted ? (
     <CenteredFrame>
