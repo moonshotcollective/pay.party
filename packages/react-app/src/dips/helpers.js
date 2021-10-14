@@ -87,13 +87,11 @@ export const serializeCeramicElection = async (ceramicElectionId, address, ceram
   for (let i = 0; i < candidateDids.length; i++) {
     const candidateDid = candidateDids[i];
     const candidateVotes = await idx.get("votes", candidateDid);
-    // console.log({ candidateVotes });
     if (candidateVotes) {
       const foundElectionBallots = Object.values(candidateVotes).find(vote => {
         return toCeramicId(vote.electionId) === id;
       });
       if (foundElectionBallots) {
-        console.log({ foundElectionBallots });
         // load the stream
         const candidateBallotDoc = await TileDocument.load(ceramic, foundElectionBallots.id);
         // get the first commitId which immutable
@@ -102,7 +100,7 @@ export const serializeCeramicElection = async (ceramicElectionId, address, ceram
         const sealedVote = allCommitIds[0];
         // load the first commit
         const sealedVoteDoc = await TileDocument.load(ceramic, sealedVote);
-        console.log(sealedVoteDoc.content);
+        // console.log(sealedVoteDoc.content);
         candidatesSealedBallots[electionDoc.content.candidates[i]] = sealedVoteDoc.content.map(
           vote => vote.voteAttribution,
         );
@@ -119,10 +117,13 @@ export const serializeCeramicElection = async (ceramicElectionId, address, ceram
   }, {});
 
   const ballots = Object.values(candidatesSealedBallots);
+  //   console.log(ballots);
   let totalScores = [];
   if (ballots.length > 0) {
     for (const candidateVotes of ballots) {
+      console.log({ candidateVotes });
       candidateVotes.forEach((voteScore, i) => {
+        // console.log(voteScore);
         if (totalScores[i] !== 0 && !totalScores[i]) {
           return totalScores.push(voteScore);
         }
