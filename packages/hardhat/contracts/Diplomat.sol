@@ -36,8 +36,9 @@ pragma solidity ^0.8.9;
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "./ElectionFactory.sol";
+import "./EIP712MetaTransaction.sol";
 
-contract Diplomat is AccessControl, ElectionFactory {
+contract Diplomat is AccessControl, ElectionFactory, EIP712MetaTransaction("Diplomat", "1") {
 
     bytes32 public constant VOTER_ROLE = 
         keccak256("VOTER_ROLE");
