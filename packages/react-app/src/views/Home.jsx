@@ -55,7 +55,9 @@ function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
   /***** Methods *****/
   const init = async () => {
     console.log(address);
-    setQdipHandler(BaseHandler(tx, readContracts, writeContracts, mainnetProvider, address));
+    if (address) {
+      setQdipHandler(BaseHandler(tx, readContracts, writeContracts, mainnetProvider, address));
+    }
   };
   const headingColor = useColorModeValue("yellow.600", "yellow.500");
 

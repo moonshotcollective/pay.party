@@ -93,6 +93,7 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
     const election = await serializeCeramicElection(id, address);
 
     const existingVotes = await idx.get("votes");
+
     // TODO: check if already voted for this election through another address linked to this did
     const previousVotes = existingVotes ? Object.values(existingVotes) : null;
     const hasAlreadyVotedForElec = previousVotes && previousVotes.find(vote => vote.electionId === id);

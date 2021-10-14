@@ -11,10 +11,11 @@ import "./App.css";
 import { Account, Contract, Faucet, GasGauge, Header, Footer, Ramp, ThemeSwitch } from "./components";
 import { INFURA_ID, NETWORK, NETWORKS } from "./constants";
 import { Transactor } from "./helpers";
-import { useBalance, useContractReader, useGasPrice, useOnBlock, useUserProviderAndSigner } from "eth-hooks";
+import { useBalance, useContractReader, useGasPrice, useOnBlock } from "eth-hooks";
 import { useEventListener } from "eth-hooks/events/useEventListener";
 import { useExchangeEthPrice } from "eth-hooks/dapps/dex";
 import { Home, Create, Election } from "./views";
+import { useUserProviderAndSigner } from "./hooks";
 
 import { useContractConfig, useContractLoader } from "./hooks";
 import Portis from "@portis/web3";

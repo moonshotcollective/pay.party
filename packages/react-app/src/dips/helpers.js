@@ -40,6 +40,7 @@ export const getNetwork = async () => {
 export const toCeramicId = id => (id.startsWith(CERAMIC_PREFIX) ? id : CERAMIC_PREFIX + id);
 
 export const serializeCeramicElection = async (ceramicElectionId, address, ceramic, idx) => {
+  console.log("serializeCeramicElection");
   const id = toCeramicId(ceramicElectionId);
   if (!idx || !ceramic) {
     // console.log("making ceramic client");
@@ -78,7 +79,7 @@ export const serializeCeramicElection = async (ceramicElectionId, address, ceram
 
   const candidateDids = await Promise.all(
     electionDoc.content.candidates.map(async candidateAddress => {
-      const caip10 = await Caip10Link.fromAccount(ceramic, `${address}@eip155:${network.chainId}`);
+      const caip10 = await Caip10Link.fromAccount(ceramic, `${candidateAddress}@eip155:${network.chainId}`);
       return caip10.did;
     }),
   );
@@ -86,11 +87,13 @@ export const serializeCeramicElection = async (ceramicElectionId, address, ceram
   for (let i = 0; i < candidateDids.length; i++) {
     const candidateDid = candidateDids[i];
     const candidateVotes = await idx.get("votes", candidateDid);
+    // console.log({ candidateVotes });
     if (candidateVotes) {
       const foundElectionBallots = Object.values(candidateVotes).find(vote => {
         return toCeramicId(vote.electionId) === id;
       });
       if (foundElectionBallots) {
+        console.log({ foundElectionBallots });
         // load the stream
         const candidateBallotDoc = await TileDocument.load(ceramic, foundElectionBallots.id);
         // get the first commitId which immutable
@@ -99,11 +102,10 @@ export const serializeCeramicElection = async (ceramicElectionId, address, ceram
         const sealedVote = allCommitIds[0];
         // load the first commit
         const sealedVoteDoc = await TileDocument.load(ceramic, sealedVote);
-        if (electionDoc.content.candidates[i] === address) {
-          candidatesSealedBallots[electionDoc.content.candidates[i]] = sealedVoteDoc.content.map(
-            vote => vote.voteAttribution,
-          );
-        }
+        console.log(sealedVoteDoc.content);
+        candidatesSealedBallots[electionDoc.content.candidates[i]] = sealedVoteDoc.content.map(
+          vote => vote.voteAttribution,
+        );
       }
     }
   }
