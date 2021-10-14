@@ -4,6 +4,7 @@ import { useHistory } from "react-router-dom";
 import { blockExplorer } from "../../App";
 import AddressChakra from "../AddressChakra";
 import { PayButton } from "../../components";
+import { fromWei } from "web3-utils";
 
 function ElectionCard({
   electionState,
@@ -57,7 +58,7 @@ function ElectionCard({
         Total Funds
       </Text>
       <Text>
-        {electionState.amtFromWei} {electionState.tokenSymbol}
+        {fromWei(electionState.amtFromWei)} {electionState.tokenSymbol}
       </Text>
       <Text fontSize="1rem" color="violet.500" mb="0">
         Voters
