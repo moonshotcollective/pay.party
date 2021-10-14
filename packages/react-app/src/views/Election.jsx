@@ -204,7 +204,7 @@ export default function Election({
       candidate.score = totalScores[idx];
       candidate.allocation = (totalScores[idx] / totalScoresSum) * 100;
       candidate.allocation = candidate.allocation.toFixed(2);
-      const candidatePay = Math.floor((totalScores[idx] / totalScoresSum) * electionState.amtFromWei);
+      const candidatePay = Math.floor((totalScores[idx] / totalScoresSum) * electionState.fundAmount);
       if (!isNaN(candidatePay)) {
         candidate.payoutFromWei = fromWei(candidatePay.toString());
       } else {
