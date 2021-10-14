@@ -66,22 +66,25 @@ export default function PayButton({
     if (balance.isZero()) {
       setStatus(5);
     } else {
-      if (allowance.isZero() || hasEnoughAllowance) {
+      if (allowance.isZero() || !hasEnoughAllowance) {
+        console.log("lowAllowance");
         setStatus(1);
       } else {
         setStatus(3);
+        console.log("ready");
       }
     }
   };
 
   const approveTokenAllowance = async () => {
     setStatus(2);
+    const maxApproval = "100000000";
     const newAllowance = ethers.utils.parseUnits(maxApproval, tokenInfo[token].decimals);
-
+    console.log({ newAllowance });
     const res = await writeContracts[token].approve(spender, newAllowance, {
-      gasLimit: 12450000,
+      gasLimit: 1245000,
     });
-    await res.wait(1);
+    await res.wait(2);
     await refreshTokenDetails();
   };
 
@@ -100,25 +103,23 @@ export default function PayButton({
     console.log("handlePay ", isETH());
     if (isETH()) {
       setStatus(4);
-      ethPayHandler()
-        .then(success => {
-          console.log(success);
-          setStatus(3);
-        })
-        .catch(err => {
-          console.log(err);
-          setStatus(3);
-        });
+      let result = await ethPayHandler();
+      if (!result) {
+        console.log("error in payhandler");
+      }
+      setStatus(3);
     } else {
       if (status === 1) {
         setStatus(3);
         await approveTokenAllowance();
         setStatus(4);
       } else {
-        setStatus(1);
-        await tokenPayHandler(payParams);
-        await refreshTokenDetails();
         setStatus(4);
+        let result = await tokenPayHandler(payParams);
+        if (!result) {
+          console.log("error in payhandler");
+        }
+        await refreshTokenDetails();
       }
     }
   };

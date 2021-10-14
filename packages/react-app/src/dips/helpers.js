@@ -39,9 +39,16 @@ export const getNetwork = async () => {
 
 export const toCeramicId = id => (id.startsWith(CERAMIC_PREFIX) ? id : CERAMIC_PREFIX + id);
 
-export const serializeCeramicElection = async (ceramicElectionId, address) => {
+export const serializeCeramicElection = async (ceramicElectionId, address, ceramic, idx) => {
   const id = toCeramicId(ceramicElectionId);
-  const { idx, ceramic } = await makeCeramicClient();
+  if (!idx || !ceramic) {
+    // console.log("making ceramic client");
+    const { idx: idx1, ceramic: ceramic1 } = await makeCeramicClient();
+    ceramic = ceramic1;
+    idx = idx1;
+  }
+  //   const { idx, ceramic } = await makeCeramicClient();
+
   const electionDoc = await ceramic.loadStream(id);
   const creatorDid = electionDoc.controllers[0];
   let creatorMainAddress = creatorDid;

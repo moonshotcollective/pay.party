@@ -204,19 +204,49 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
     );
 
     console.log({ id, candidates, tokenAddress, totalValueInWei, payoutInWei });
-
-    const transaction = await contract.payElection(id, candidates, payoutInWei, tokenAddress, {
-      value: totalValueInWei,
-    });
-    const receipt = await transaction.wait();
-    console.log({ receipt });
-    const electionDoc = await TileDocument.load(ceramic, id);
-    console.log(electionDoc.controllers[0], ceramic.did.id.toString());
-    if (electionDoc.controllers[0] === ceramic.did.id.toString()) {
-      await electionDoc.update({ ...electionDoc.content, isPaid: true });
+    try {
+      const transaction = await contract.payElection(id, candidates, payoutInWei, tokenAddress, {
+        value: totalValueInWei,
+      });
+      const receipt = await transaction.wait();
+      console.log({ receipt });
+      const electionDoc = await TileDocument.load(ceramic, id);
+      //   console.log(electionDoc.controllers[0], ceramic.did.id.toString());
+      if (electionDoc.controllers[0] === ceramic.did.id.toString()) {
+        await electionDoc.update({ ...electionDoc.content, isPaid: true });
+      }
+      return receipt;
+    } catch (e) {
+      console.log("error in handler");
+      return null;
     }
+  };
 
-    return receipt;
+  const distributeTokens = async ({ id, candidates, payoutInWei, tokenAddress }) => {
+    const { ceramic } = await makeCeramicClient(address);
+    const { network, signer } = await getNetwork();
+    console.log({ signer });
+    const contract = new ethers.Contract(
+      Diplomat[network.chainId][network.name].contracts.Diplomat.address,
+      Diplomat[network.chainId][network.name].contracts.Diplomat.abi,
+      signer,
+    );
+
+    console.log({ id, candidates, tokenAddress, payoutInWei });
+    try {
+      const transaction = await contract.payElection(id, candidates, payoutInWei, tokenAddress);
+      const receipt = await transaction.wait();
+      console.log({ receipt });
+      const electionDoc = await TileDocument.load(ceramic, id);
+      // console.log(electionDoc.controllers[0], ceramic.did.id.toString());
+      if (electionDoc.controllers[0] === ceramic.did.id.toString()) {
+        await electionDoc.update({ ...electionDoc.content, isPaid: true });
+      }
+      return receipt;
+    } catch (e) {
+      console.log("error in handler");
+      return null;
+    }
   };
 
   const sendBackendOnCreate = async (newElection, address) => {};
@@ -230,6 +260,7 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
     getCandidatesScores,
     getFinalPayout,
     distributeEth,
+    distributeTokens,
     sendBackendOnCreate,
   };
 }

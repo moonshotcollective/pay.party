@@ -21,6 +21,7 @@ function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
 
   /***** States *****/
   const [selectedQdip, setSelectedQdip] = useState("base");
+  const [ceramic, setCeramic] = useState();
   const [qdipHandler, setQdipHandler] = useState();
   const [electionsMap, setElectionsMap] = useState();
   const [isLoading, setIsLoading] = useState(false);
@@ -42,7 +43,8 @@ function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
       if (qdipHandler) {
         console.log("rerendered ");
         setIsLoading(true);
-        let electionsMap = await qdipHandler.getElections();
+        let { idx, ceramic } = await qdipHandler.makeCeramic();
+        let electionsMap = await qdipHandler.getElections(ceramic, idx);
         console.log({ electionsMap });
         setElectionsMap(electionsMap);
         setIsLoading(false);

@@ -5,7 +5,7 @@
       "chainId": "4",
       "contracts": {
         "Diplomat": {
-          "address": "0x7F399fEA654ffCf0384980E43653575742ddE71C",
+          "address": "0x1C6d3C1B829684753fD9729adD8102dDe3e2b088",
           "abi": [
             {
               "inputs": [],
