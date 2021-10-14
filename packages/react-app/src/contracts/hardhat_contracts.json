@@ -1,11 +1,11 @@
 {
-  "4": {
-    "rinkeby": {
-      "name": "rinkeby",
-      "chainId": "4",
+  "1": {
+    "mainnet": {
+      "name": "mainnet",
+      "chainId": "1",
       "contracts": {
         "Diplomat": {
-          "address": "0x8f133596A10a96C50a560C2806E6e2f71782D042",
+          "address": "0xEa99C58645f897ac8BF530538e36e6D651ff8bF7",
           "abi": [
             {
               "inputs": [],
@@ -29,6 +29,31 @@
                 }
               ],
               "name": "EndedElection",
+              "type": "event"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": false,
+                  "internalType": "address",
+                  "name": "userAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address payable",
+                  "name": "relayerAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "bytes",
+                  "name": "functionSignature",
+                  "type": "bytes"
+                }
+              ],
+              "name": "MetaTransactionExecuted",
               "type": "event"
             },
             {
@@ -277,6 +302,45 @@
               "type": "function"
             },
             {
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "userAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "functionSignature",
+                  "type": "bytes"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "sigR",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "sigS",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "uint8",
+                  "name": "sigV",
+                  "type": "uint8"
+                }
+              ],
+              "name": "executeMetaTransaction",
+              "outputs": [
+                {
+                  "internalType": "bytes",
+                  "name": "",
+                  "type": "bytes"
+                }
+              ],
+              "stateMutability": "payable",
+              "type": "function"
+            },
+            {
               "inputs": [],
               "name": "getElections",
               "outputs": [
@@ -284,6 +348,25 @@
                   "internalType": "string[]",
                   "name": "",
                   "type": "string[]"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "user",
+                  "type": "address"
+                }
+              ],
+              "name": "getNonce",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "nonce",
+                  "type": "uint256"
                 }
               ],
               "stateMutability": "view",
@@ -442,13 +525,13 @@
       }
     }
   },
-  "31337": {
-    "localhost": {
-      "name": "localhost",
-      "chainId": "31337",
+  "4": {
+    "rinkeby": {
+      "name": "rinkeby",
+      "chainId": "4",
       "contracts": {
         "Diplomat": {
-          "address": "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
+          "address": "0xec118246161bC4F4b0Cf7C177577416F6424FF86",
           "abi": [
             {
               "inputs": [],
@@ -472,6 +555,31 @@
                 }
               ],
               "name": "EndedElection",
+              "type": "event"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": false,
+                  "internalType": "address",
+                  "name": "userAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "address payable",
+                  "name": "relayerAddress",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "bytes",
+                  "name": "functionSignature",
+                  "type": "bytes"
+                }
+              ],
+              "name": "MetaTransactionExecuted",
               "type": "event"
             },
             {
@@ -720,6 +828,45 @@
               "type": "function"
             },
             {
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "userAddress",
+                  "type": "address"
+                },
+                {
+                  "internalType": "bytes",
+                  "name": "functionSignature",
+                  "type": "bytes"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "sigR",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "bytes32",
+                  "name": "sigS",
+                  "type": "bytes32"
+                },
+                {
+                  "internalType": "uint8",
+                  "name": "sigV",
+                  "type": "uint8"
+                }
+              ],
+              "name": "executeMetaTransaction",
+              "outputs": [
+                {
+                  "internalType": "bytes",
+                  "name": "",
+                  "type": "bytes"
+                }
+              ],
+              "stateMutability": "payable",
+              "type": "function"
+            },
+            {
               "inputs": [],
               "name": "getElections",
               "outputs": [
@@ -727,6 +874,25 @@
                   "internalType": "string[]",
                   "name": "",
                   "type": "string[]"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "user",
+                  "type": "address"
+                }
+              ],
+              "name": "getNonce",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "nonce",
+                  "type": "uint256"
                 }
               ],
               "stateMutability": "view",
