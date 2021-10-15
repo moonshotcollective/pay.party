@@ -31,8 +31,12 @@ export const getNetwork = async () => {
   const provider = new ethers.providers.Web3Provider(connection);
   const signer = provider.getSigner();
   let network = await provider.getNetwork();
+  console.log(network);
   if (network.chainId === 31337 || network.chainId === 1337) {
     network = { name: "localhost", chainId: 31337 };
+  }
+  if (network.name === "homestead") {
+    network = { name: "mainnet", chainId: 1 };
   }
   return { network, signer, provider };
 };
