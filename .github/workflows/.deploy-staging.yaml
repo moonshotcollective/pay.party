@@ -1,9 +1,9 @@
-name: Deploy to heroku dev/staging
+name: Deploy to heroku staging
 
 on:
   push:
     branches:
-      - dev
+      - staging
 
 jobs:
   build:
@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: dev
+          ref: staging
       - name: Release Staging API
         uses: akhileshns/heroku-deploy@v3.12.12 # This is the action
         with:
