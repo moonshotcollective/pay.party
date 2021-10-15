@@ -33,7 +33,7 @@ ReactDOM.render(
   <ApolloProvider client={client}>
     <CacheProvider value={emotionCache}>
       <ChakraProvider theme={customTheme}>
-        <ThemeSwitcherProvider themeMap={themes} defaultTheme={prevTheme || "light"}>
+        <ThemeSwitcherProvider themeMap={themes} defaultTheme="dark">
           <App subgraphUri={subgraphUri} />
         </ThemeSwitcherProvider>
       </ChakraProvider>
