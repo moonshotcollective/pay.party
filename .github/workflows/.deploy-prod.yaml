@@ -22,5 +22,5 @@ jobs:
           HD_APP_BASE: "packages/react-app"
           REACT_APP_NETWORK_NAME: mainnet
           REACT_APP_CERAMIC_SEED: ${{secrets.CERAMIC_SEED}}
-          REACT_APP_TOKEN_ADDRESS: 0xde30da39c46104798bb5aa3fe8b9e0e1f348163f
+          REACT_APP_TOKEN_ADDRESS: "0xde30da39c46104798bb5aa3fe8b9e0e1f348163f"
           REACT_APP_TOKEN_SYMBOL: GTC
