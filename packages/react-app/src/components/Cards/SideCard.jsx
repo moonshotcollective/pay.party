@@ -58,7 +58,7 @@ function ElectionCard({
         Total Funds
       </Text>
       <Text>
-        {fromWei(electionState.amtFromWei)} {electionState.tokenSymbol}
+        {electionState.amtFromWei} {electionState.tokenSymbol}
       </Text>
       <Text fontSize="1rem" color="violet.500" mb="0">
         Voters

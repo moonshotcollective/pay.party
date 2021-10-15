@@ -140,7 +140,7 @@ export const serializeCeramicElection = async (ceramicElectionId, address, ceram
     id,
     name: electionDoc.content.name,
     candidates: electionDoc.content.candidates,
-    canVote: !hasVoted && tags.includes("candidate"),
+    canVote: electionDoc.content.isActive && !hasVoted && tags.includes("candidate"),
     description: electionDoc.content.description,
     hasVoted,
     created_date: new Date(electionDoc.content.createdAt).toLocaleDateString(),
