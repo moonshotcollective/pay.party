@@ -45,7 +45,7 @@ import { ethers } from "ethers";
 import { CERAMIC_PREFIX } from "../../dips/helpers";
 
 const CURRENCY = "ETH";
-const TOKEN = "UNI";
+const TOKEN = process.env.REACT_APP_TOKEN_SYMBOL;
 const DIP_TYPES = Object.keys(dips);
 
 export default function Create({

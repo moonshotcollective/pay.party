@@ -341,7 +341,7 @@ export default function Vote({
   };
 
   const approveuni = async () => {
-    const token = "UNI";
+    const token = process.env.REACT_APP_TOKEN_SYMBOL;
     const decimals = await readContracts[token].decimals();
     const maxApproval = "100000000";
     const newAllowance = ethers.utils.parseUnits(maxApproval, decimals);
