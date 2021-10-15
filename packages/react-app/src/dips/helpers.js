@@ -8,8 +8,8 @@ import { makeCeramicClient } from "../helpers";
 export const CERAMIC_PREFIX = "ceramic://";
 
 const CURRENCY = "ETH";
-const TOKEN = "UNI";
-const TOKEN_ADR = "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984";
+const TOKEN = process.env.REACT_APP_TOKEN_SYMBOL;
+const TOKEN_ADR = process.env.REACT_APP_TOKEN_ADDRESS;
 
 export const getCeramicElectionIds = async diplomatContract => {
   const allElections = await diplomatContract.getElections();

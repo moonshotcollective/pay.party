@@ -1,0 +1,26 @@
+name: Deploy to heroku main
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          ref: main
+      - name: Release Production Web app
+        uses: akhileshns/heroku-deploy@v3.12.12 # This is the action
+        with:
+          heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+          heroku_app_name: ${{secrets.HEROKU_WEB_STAGING_APP_NAME}} #Must be unique in Heroku
+          heroku_email: ${{secrets.HEROKU_EMAIL}}
+        env:
+          HD_APP_BASE: "packages/react-app"
+          REACT_APP_NETWORK_NAME: mainnet
+          REACT_APP_CERAMIC_SEED: ${{secrets.CERAMIC_SEED}}
+          REACT_APP_TOKEN_ADDRESS: 0xde30da39c46104798bb5aa3fe8b9e0e1f348163f
+          REACT_APP_TOKEN_SYMBOL: GTC

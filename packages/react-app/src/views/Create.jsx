@@ -43,8 +43,8 @@ import { blockExplorer } from "../App";
 import { CERAMIC_PREFIX } from "../dips/helpers";
 
 const CURRENCY = "ETH";
-const TOKEN = "UNI";
-const TOKEN_ADR = "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984";
+const TOKEN = process.env.REACT_APP_TOKEN_SYMBOL;
+const TOKEN_ADR = process.env.REACT_APP_TOKEN_ADDRESS;
 const DIP_TYPES = Object.keys(dips);
 
 const Create = ({
