@@ -88,7 +88,7 @@ export default function Election({
 
   useEffect(async () => {
     if (candidateMap) {
-      if (electionState.active) {
+      if (electionState.isActive) {
         // updateCandidateScore();
       } else {
         // updateFinalPayout();
@@ -132,55 +132,61 @@ export default function Election({
   };
 
   const minusVote = addr => {
-    const candidate = candidateMap.get(addr);
-    if (candidate.votes > 0) {
-      candidate.votes = candidate.votes - 1;
-      candidate.score = (candidate.votes ** 0.5).toFixed(2);
-      candidateMap.set(addr, candidate);
-      setVotesLeft(votesLeft + 1);
-      setErrorMsg(null);
+    if (typeof candidateMap !== "undefined") {
+      const candidate = candidateMap.get(addr);
+      if (candidate.votes > 0) {
+        candidate.votes = candidate.votes - 1;
+        candidate.score = (candidate.votes ** 0.5).toFixed(2);
+        candidateMap.set(addr, candidate);
+        setVotesLeft(votesLeft + 1);
+        setErrorMsg(null);
+      }
     }
     // console.log(candidate);
   };
 
   const addVote = addr => {
-    const candidate = candidateMap.get(addr);
-    // console.log(candidate);
-    if (candidate.votes < electionState.voteAllocation && votesLeft > 0) {
-      candidate.votes = candidate.votes + 1;
-      candidate.score = (candidate.votes ** 0.5).toFixed(2);
-      candidateMap.set(addr, candidate);
-      setVotesLeft(votesLeft - 1);
-      setErrorMsg(null);
+    if (typeof candidateMap !== "undefined") {
+      const candidate = candidateMap.get(addr);
+      // console.log(candidate);
+      if (candidate.votes < electionState.voteAllocation && votesLeft > 0) {
+        candidate.votes = candidate.votes + 1;
+        candidate.score = (candidate.votes ** 0.5).toFixed(2);
+        candidateMap.set(addr, candidate);
+        setVotesLeft(votesLeft - 1);
+        setErrorMsg(null);
+      }
     }
   };
 
   const castBallot = async () => {
-    console.log("casting ballot ", votesLeft);
-    if (votesLeft > 0) {
-      setErrorMsg("All remaining votes need to be distributed");
-      return;
-    }
-    setErrorMsg(null);
-    setIsVoting(true);
-    const candidates = Array.from(candidateMap.keys());
-    const scores = [];
-    candidateMap.forEach(d => {
-      scores.push(Math.floor(d.score * 100));
-    });
-    console.log(candidates, scores);
-    let result = await qdipHandler.castBallot(id, candidates, scores, userSigner);
-    // console.log(totalScores);
-    if (result) {
-      console.log(result);
-      let res = await loadElectionState();
-      if (res == "success") {
-        setIsVoting(false);
-        handleConfetti();
+    if (typeof candidateMap !== "undefined") {
+      console.log("casting ballot ", votesLeft);
+      if (votesLeft > 0) {
+        setErrorMsg("All remaining votes need to be distributed");
+        return;
       }
-    } else {
-      console.log("coulnd't end election");
-      setIsVoting(false);
+      setErrorMsg(null);
+      setIsVoting(true);
+      const candidates = Array.from(candidateMap.keys());
+      const scores = [];
+      candidateMap.forEach(d => {
+        scores.push(Math.floor(d.score * 100));
+      });
+      console.log(candidates, scores);
+      let result = await qdipHandler.castBallot(id, candidates, scores, userSigner);
+      // console.log(totalScores);
+      if (result) {
+        console.log(result);
+        let res = await loadElectionState();
+        if (res == "success") {
+          setIsVoting(false);
+          handleConfetti();
+        }
+      } else {
+        console.log("coulnd't end election");
+        setIsVoting(false);
+      }
     }
   };
 
@@ -242,50 +248,54 @@ export default function Election({
   };
 
   const ethPayHandler = async () => {
-    // console.log({ electionState, finalPayout });
-    const totalValueInWei = electionState.fundAmount;
-    //convert payout to wei
-    let payoutInWei = [];
-    electionState.candidates.forEach((addr, idx) => {
-      const candidate = candidateMap.get(addr);
-      payoutInWei.push(toWei(candidate.payoutFromWei));
-    });
-    // console.log({ payoutInWei });
-    const result = await qdipHandler.distributeEth({
-      id,
-      candidates: electionState.candidates,
-      payoutInWei,
-      totalValueInWei,
-      tokenAddress: electionState.tokenAdr,
-    });
-    console.log(result);
-    if (result) {
-      let res = await loadElectionState();
-      if (res == "success") {
-        handleConfetti();
-        return result;
+    if (typeof candidateMap !== "undefined") {
+      // console.log({ electionState, finalPayout });
+      const totalValueInWei = electionState.fundAmount;
+      //convert payout to wei
+      let payoutInWei = [];
+      electionState.candidates.forEach((addr, idx) => {
+        const candidate = candidateMap.get(addr);
+        payoutInWei.push(toWei(candidate.payoutFromWei));
+      });
+      // console.log({ payoutInWei });
+      const result = await qdipHandler.distributeEth({
+        id,
+        candidates: electionState.candidates,
+        payoutInWei,
+        totalValueInWei,
+        tokenAddress: electionState.tokenAdr,
+      });
+      console.log(result);
+      if (result) {
+        let res = await loadElectionState();
+        if (res == "success") {
+          handleConfetti();
+          return result;
+        }
       }
     }
   };
 
   const tokenPayHandler = async opts => {
-    //convert payout to wei
-    let payoutInWei = [];
-    electionState.candidates.forEach((addr, idx) => {
-      const candidate = candidateMap.get(addr);
-      payoutInWei.push(toWei(candidate.payoutFromWei));
-    });
-    const result = await qdipHandler.distributeTokens({
-      id,
-      candidates: electionState.candidates,
-      payoutInWei,
-      tokenAddress: electionState.tokenAdr,
-    });
-    if (result) {
-      let res = await loadElectionState();
-      if (res == "success") {
-        handleConfetti();
-        return result;
+    if (typeof candidateMap !== "undefined") {
+      //convert payout to wei
+      let payoutInWei = [];
+      electionState.candidates.forEach((addr, idx) => {
+        const candidate = candidateMap.get(addr);
+        payoutInWei.push(toWei(candidate.payoutFromWei));
+      });
+      const result = await qdipHandler.distributeTokens({
+        id,
+        candidates: electionState.candidates,
+        payoutInWei,
+        tokenAddress: electionState.tokenAdr,
+      });
+      if (result) {
+        let res = await loadElectionState();
+        if (res == "success") {
+          handleConfetti();
+          return result;
+        }
       }
     }
   };
