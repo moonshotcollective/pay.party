@@ -5,7 +5,7 @@
       "chainId": "4",
       "contracts": {
         "Diplomat": {
-          "address": "0x8b4eDF0f728A976Ccb715FE15e6E199e057184Ef",
+          "address": "0x44199Ac4fe2A5e3da1A36D55b22c1be17504423A",
           "abi": [
             {
               "inputs": [],
@@ -176,19 +176,6 @@
             {
               "inputs": [],
               "name": "DEFAULT_ADMIN_ROLE",
-              "outputs": [
-                {
-                  "internalType": "bytes32",
-                  "name": "",
-                  "type": "bytes32"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "VOTER_ROLE",
               "outputs": [
                 {
                   "internalType": "bytes32",
@@ -514,6 +501,37 @@
                 }
               ],
               "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "amount",
+                  "type": "uint256"
+                }
+              ],
+              "name": "withdraw",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "contract IERC20",
+                  "name": "token",
+                  "type": "address"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "amount",
+                  "type": "uint256"
+                }
+              ],
+              "name": "withdrawToken",
+              "outputs": [],
+              "stateMutability": "nonpayable",
               "type": "function"
             },
             {
