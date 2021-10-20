@@ -52,7 +52,6 @@ module.exports = {
   // DON'T PUSH THESE HERE!!!
   // An `example.env` has been provided in the Hardhat root. Copy it and rename it `.env`
   // Follow the directions, and uncomment the network you wish to deploy to.
-
   // hardhat gas reporter configs
   gasReporter: {
     currency: "USD",
