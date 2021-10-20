@@ -26,6 +26,7 @@ import {
   useColorModeValue,
   Textarea,
   Select,
+  Spinner,
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import { fromWei, toWei, toBN } from "web3-utils";
@@ -38,6 +39,7 @@ import CenteredFrame from "../components/layout/CenteredFrame";
 import dips from "../dips";
 import AddressInputChakra from "../components/AddressInputChakra";
 import AddressChakra from "../components/AddressChakra";
+import ElectionCard from "../components/Cards/ElectionCard";
 import { blockExplorer } from "../App";
 
 import { CERAMIC_PREFIX } from "../dips/helpers";
@@ -83,6 +85,7 @@ const Create = ({
   const [isCreatedElection, setIsCreatedElection] = useState(false);
   const [electionId, setElectionId] = useState();
   const [title, setTitle] = useState("Configure Election");
+  const [createdElection, setCreatedElection] = useState({});
 
   const [newElection, setNewElection] = useState({
     name: "",
@@ -161,6 +164,9 @@ const Create = ({
       setIsConfirmingElection(false);
       setIsCreatedElection(true);
       setElectionId(result);
+      const electionState = await qdipHandler.getElectionStateById(result);
+      setCreatedElection(electionState);
+      setTitle("Election Created!");
       setNewElection({
         name: "",
         tokenSym: "ETH",
@@ -444,11 +450,29 @@ const Create = ({
               </Box>
             </form>
           )}
-          {isCreatedElection && (
-            <HStack justify="center" align="center" w="100%">
-              <Button mt={4} colorScheme="teal" onClick={viewElection}>
-                View Election
-              </Button>
+          {isCreatedElection && !createdElection.id && (
+            <CenteredFrame>
+              <Flex flexDirection="column" justifyContent="center" alignItems="center">
+                <Heading fontSize="1.5rem" color={headingColor}>
+                  Creating election...
+                </Heading>
+                <Spinner color="purple.700" size="xl" />
+              </Flex>
+            </CenteredFrame>
+          )}
+          {isCreatedElection && createdElection.id && (
+            <HStack justify="center" align="center" w="30%">
+              <ElectionCard
+                id={createdElection.id}
+                name={createdElection.name}
+                owner={createdElection.creator}
+                voted={`${createdElection.n_voted.n_voted} / ${createdElection.n_voted.outOf}`}
+                active={createdElection.active}
+                amount={createdElection.amtFromWei}
+                tokenSymbol={createdElection.tokenSymbol}
+                createdAt={createdElection.created_date}
+                mainnetProvider={mainnetProvider}
+              />
             </HStack>
           )}
         </Flex>
