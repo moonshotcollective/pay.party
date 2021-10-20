@@ -90,7 +90,6 @@ contract Distributor {
     function _sharePayedETH(address[] memory users, uint256[] memory shares)
         internal
         accurateUserSharesRatio(users, shares)
-      
     {
         _distribute(users, shares, address(0), address(0));
     }
@@ -104,7 +103,7 @@ contract Distributor {
     )
         internal
         accurateUserSharesRatio(users, shares)
-        hasEnoughBalance(shares, msg.sender.balance)
+        hasEnoughBalance(shares, token.balanceOf(spender))
     {
         require(
             spender == msg.sender,
@@ -144,9 +143,9 @@ contract Distributor {
                         );
                     }
                 } else {
-                    // transfer ETH otherwise (we do not care if the transfer is successful 
+                    // transfer ETH otherwise (we do not care if the transfer is successful
                     // or not, as this would block all other transfers)
-                    // NOTE: add re-entrancy guard for this ^ 
+                    // NOTE: add re-entrancy guard for this ^
                     users[i].call{value: shares[i]}("");
                 }
             }
