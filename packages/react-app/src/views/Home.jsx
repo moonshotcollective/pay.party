@@ -124,7 +124,7 @@ function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
                     width="100%"
                   >
                     <HStack spacing={4} justifyContent="space-between">
-                      <Heading fontSize="1.5rem" color="violet.50">
+                      <Heading fontSize="1.0rem" color="violet.50">
                         You are not part of any elections.
                       </Heading>
                     </HStack>
@@ -164,7 +164,7 @@ function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
                     width="100%"
                   >
                     <HStack spacing={4} justifyContent="space-between">
-                      <Heading fontSize="1.5rem" color="violet.50">
+                      <Heading fontSize="1.0rem" color="violet.50">
                         You don't have any elections.
                       </Heading>
                     </HStack>
