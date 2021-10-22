@@ -5,31 +5,12 @@
       "chainId": "4",
       "contracts": {
         "Diplomat": {
-          "address": "0x44199Ac4fe2A5e3da1A36D55b22c1be17504423A",
+          "address": "0xf4BBaB5EFF3ea0EA0F91a0FE585F1FCa9c06032f",
           "abi": [
             {
               "inputs": [],
               "stateMutability": "nonpayable",
               "type": "constructor"
-            },
-            {
-              "anonymous": false,
-              "inputs": [
-                {
-                  "indexed": false,
-                  "internalType": "string",
-                  "name": "electionId",
-                  "type": "string"
-                },
-                {
-                  "indexed": false,
-                  "internalType": "address",
-                  "name": "sender",
-                  "type": "address"
-                }
-              ],
-              "name": "EndedElection",
-              "type": "event"
             },
             {
               "anonymous": false,
@@ -244,19 +225,6 @@
               "type": "function"
             },
             {
-              "inputs": [],
-              "name": "electionCount",
-              "outputs": [
-                {
-                  "internalType": "uint256",
-                  "name": "",
-                  "type": "uint256"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
               "inputs": [
                 {
                   "internalType": "uint256",
@@ -273,19 +241,6 @@
                 }
               ],
               "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [
-                {
-                  "internalType": "string",
-                  "name": "electionId",
-                  "type": "string"
-                }
-              ],
-              "name": "endElection",
-              "outputs": [],
-              "stateMutability": "nonpayable",
               "type": "function"
             },
             {

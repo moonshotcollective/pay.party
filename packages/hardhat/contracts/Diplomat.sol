@@ -46,7 +46,6 @@ contract Diplomat is
     using SafeERC20 for IERC20;
 
     uint256 public currentElectionStartBlock;
-    uint256 public electionCount;
 
     constructor() {
         _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
@@ -74,10 +73,6 @@ contract Diplomat is
 
     function getElections() public view returns (string[] memory) {
         return elections;
-    }
-
-    function endElection(string memory electionId) public {
-        _endElection(electionId);
     }
 
     function payElection(
