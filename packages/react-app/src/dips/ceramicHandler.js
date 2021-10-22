@@ -12,7 +12,16 @@ import { getCeramicElectionIds, getNetwork, serializeCeramicElection, toCeramicI
 import { serverUrl } from "./baseHandler";
 
 export default function CeramicHandler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner) {
-  const createElection = async ({ name, candidates, fundAmount, fundAmountInWei, tokenAdr, voteAllocation, kind }) => {
+  const createElection = async ({
+    name,
+    description,
+    candidates,
+    fundAmount,
+    fundAmountInWei,
+    tokenAdr,
+    voteAllocation,
+    kind,
+  }) => {
     console.log("createElection");
     const { network, signer } = await getNetwork();
     /* CREATE CERAMIC ELECTION */
@@ -28,8 +37,9 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
       const electionDoc = await TileDocument.create(
         ceramic,
         {
-          name,
-          candidates,
+          name: name,
+          description: description,
+          candidates: candidates,
           kind: "ceramic",
           voteAllocation: voteAllocation,
           tokenAddress: tokenAdr,

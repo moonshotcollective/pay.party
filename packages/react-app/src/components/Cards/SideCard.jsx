@@ -39,7 +39,7 @@ function ElectionCard({
         {electionState.name}
       </Heading>
       <Text pb="1rem" fontSize="1rem">
-        This is an election description that is maximum 2 lines long
+        {electionState.description}
       </Text>
       <Text fontSize="1rem" color="violet.500">
         Admin

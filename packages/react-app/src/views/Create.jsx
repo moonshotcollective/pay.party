@@ -89,6 +89,7 @@ const Create = ({
 
   const [newElection, setNewElection] = useState({
     name: "",
+    description: "",
     tokenSym: "ETH",
     tokenAdr: "0x0000000000000000000000000000000000000000",
     fundAmount: 0.1,
@@ -172,6 +173,7 @@ const Create = ({
       setTitle("Election Created!");
       setNewElection({
         name: "",
+        description: "",
         tokenSym: "ETH",
         fundAmount: 0.1,
         fundAmountInWei: toWei("0.1"),
@@ -186,6 +188,13 @@ const Create = ({
     setNewElection(prevState => ({
       ...prevState,
       name: e.target.value,
+    }));
+  };
+
+  const updateDesc = e => {
+    setNewElection(prevState => ({
+      ...prevState,
+      description: e.target.value,
     }));
   };
 
@@ -295,20 +304,23 @@ const Create = ({
                 <FormErrorMessage>{errors.name && errors.name.message}</FormErrorMessage>
               </FormControl>
 
-              {/* <FormControl py="4">
-              <FormLabel htmlFor="description">Election description</FormLabel>
-              <Textarea
-                placeholder="Election description"
-                borderColor="purple.500"
-                {...register("description", {
-                  maxLength: {
-                    value: 150,
-                    message: "Maximum length should be 150",
-                  },
-                })}
-              />
-              <FormErrorMessage>{errors.description && errors.description.message}</FormErrorMessage>
-            </FormControl> */}
+              <FormControl py="4">
+                <FormLabel htmlFor="description">Election description</FormLabel>
+                <Textarea
+                  placeholder="Election description"
+                  borderColor="purple.500"
+                  value={newElection.description}
+                  {...register("description", {
+                    maxLength: {
+                      value: 150,
+                      message: "Maximum length should be 150",
+                    },
+                  })}
+                  autoComplete="off"
+                  onChange={updateDesc}
+                />
+                <FormErrorMessage>{errors.description && errors.description.message}</FormErrorMessage>
+              </FormControl>
 
               <FormControl py="4" isInvalid={errors.fundAmount || errors.funds}>
                 <FormLabel htmlFor="fundAmount">Fund Allocation (amount to be distributed)</FormLabel>
