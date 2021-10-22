@@ -106,7 +106,7 @@ function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
                               owner={election.creator}
                               voted={`${election.n_voted.n_voted} / ${election.n_voted.outOf}`}
                               active={election.active}
-                              amount={election.amtFromWei}
+                              amount={fromWei(election.amtFromWei || "0")}
                               tokenSymbol={election.tokenSymbol}
                               createdAt={election.created_date}
                               mainnetProvider={mainnetProvider}
@@ -148,7 +148,7 @@ function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
                                 tokenSymbol={election.tokenSymbol}
                                 voted={`${election.n_voted.n_voted} / ${election.n_voted.outOf}`}
                                 active={election.active}
-                                amount={election.amtFromWei}
+                                amount={fromWei(election.amtFromWei)}
                                 createdAt={election.created_date}
                               />
                             ),

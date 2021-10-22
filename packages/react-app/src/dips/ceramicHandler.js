@@ -12,7 +12,7 @@ import { getCeramicElectionIds, getNetwork, serializeCeramicElection, toCeramicI
 import { serverUrl } from "./baseHandler";
 
 export default function CeramicHandler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner) {
-  const createElection = async ({ name, candidates, fundAmount, tokenAdr, voteAllocation, kind }) => {
+  const createElection = async ({ name, candidates, fundAmount, fundAmountInWei, tokenAdr, voteAllocation, kind }) => {
     console.log("createElection");
     const { network, signer } = await getNetwork();
     /* CREATE CERAMIC ELECTION */
@@ -33,7 +33,8 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
           kind: "ceramic",
           voteAllocation: voteAllocation,
           tokenAddress: tokenAdr,
-          fundAmount,
+          fundAmount: fundAmount.toString(),
+          fundAmountInWei: fundAmountInWei,
           createdAt: new Date().toISOString(),
           isActive: true,
           isPaid: false,

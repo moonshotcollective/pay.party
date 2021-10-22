@@ -125,7 +125,7 @@ export default function Election({
   const loadElectionState = async () => {
     let electionState = await qdipHandler.getElectionStateById(id);
     console.log({ electionState });
-    electionState.amtFromWei = fromWei(electionState.fundAmount || "0");
+    electionState.amtFromWei = electionState.fundAmountInWei || "0";
     setElectionState(electionState);
     updateCandidateMap(electionState);
     return "success";
@@ -184,7 +184,7 @@ export default function Election({
           handleConfetti();
         }
       } else {
-        console.log("coulnd't end election");
+        console.log("could not end election");
         setIsVoting(false);
       }
     }
@@ -209,6 +209,7 @@ export default function Election({
         mapping.set(electionState.candidates[i], { votes: 0, score: 0 });
       }
     }
+    // Score Updating and Quadratic Calculation
     candidates.forEach((addr, idx) => {
       const candidate = mapping.get(addr);
       let votedAddrs = Object.keys(electionState.votes);
@@ -216,13 +217,15 @@ export default function Election({
       candidate.score = totalScores[idx];
       candidate.allocation = (totalScores[idx] / totalScoresSum) * 100;
       candidate.allocation = candidate.allocation.toFixed(2);
-      const candidatePay = Math.floor((totalScores[idx] / totalScoresSum) * electionState.fundAmount);
+      console.log({ electionState });
+
+      const candidatePay = (totalScores[idx] / totalScoresSum) * electionState.fundAmount;
+      console.log({ candidatePay });
       if (!isNaN(candidatePay)) {
-        candidate.payoutFromWei = fromWei(candidatePay.toString());
+        candidate.payoutFromWei = candidatePay.toString();
       } else {
         candidate.payoutFromWei = "0";
       }
-      //   console.log(candidate);
       setCandidateMap(new Map(mapping.set(addr, candidate)));
     });
   };
@@ -250,7 +253,7 @@ export default function Election({
   const ethPayHandler = async () => {
     if (typeof candidateMap !== "undefined") {
       // console.log({ electionState, finalPayout });
-      const totalValueInWei = electionState.fundAmount;
+      const totalValueInWei = electionState.fundAmountInWei;
       //convert payout to wei
       let payoutInWei = [];
       electionState.candidates.forEach((addr, idx) => {

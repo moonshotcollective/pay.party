@@ -92,6 +92,7 @@ const Create = ({
     tokenSym: "ETH",
     tokenAdr: "0x0000000000000000000000000000000000000000",
     fundAmount: 0.1,
+    fundAmountInWei: toWei("0.1"),
     voteAllocation: 1,
     kind: "ceramic",
     candidates: [],
@@ -154,7 +155,8 @@ const Create = ({
     setIsConfirmingElection(true);
     // Create a new election
     console.log({ newElection });
-    newElection.fundAmount = toWei(Number(newElection.fundAmount).toFixed(18).toString());
+    // NOTE: Avoid Weird rounding!
+    newElection.fundAmountInWei = toWei(newElection.fundAmount.toString());
     newElection.voteAllocation = parseInt(newElection.voteAllocation);
 
     let result = await qdipHandler.createElection(newElection, selectedQdip);
@@ -166,11 +168,13 @@ const Create = ({
       setElectionId(result);
       const electionState = await qdipHandler.getElectionStateById(result);
       setCreatedElection(electionState);
+      console.log({ electionState });
       setTitle("Election Created!");
       setNewElection({
         name: "",
         tokenSym: "ETH",
         fundAmount: 0.1,
+        fundAmountInWei: toWei("0.1"),
         voteAllocation: 1,
         tokenAdr: "0x0000000000000000000000000000000000000000",
         kind: "ceramic",
