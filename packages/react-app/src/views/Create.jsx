@@ -41,6 +41,7 @@ import AddressInputChakra from "../components/AddressInputChakra";
 import AddressChakra from "../components/AddressChakra";
 import ElectionCard from "../components/Cards/ElectionCard";
 import { blockExplorer } from "../App";
+import { ethers } from "ethers";
 
 import { CERAMIC_PREFIX } from "../dips/helpers";
 
@@ -269,6 +270,25 @@ const Create = ({
     setToAddress("");
   };
 
+  const handleAddVoters = async () => {
+    const text = await navigator.clipboard.readText();
+    const addresses = text.split(",");
+
+    addresses.forEach(voteAddress => {
+      try {
+        console.log(voteAddress);
+        const voteAddressWithChecksum = ethers.utils.getAddress(voteAddress);
+        if (!newElection.candidates.includes(voteAddressWithChecksum)) {
+          newElection.candidates.push(voteAddressWithChecksum);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    });
+    setToAddress(" ");
+    setToAddress("");
+  };
+
   return (
     <CenteredFrame>
       <HStack w="80vw" justifyContent="space-between">
@@ -449,6 +469,9 @@ const Create = ({
                   ))}
                 </List>
               </Box>
+              <Button w="100%" variant="outline" mt={4} onClick={() => handleAddVoters()}>
+                Add Candidates from Clipboard
+              </Button>
               <Box pb="1rem"></Box>
               <Divider backgroundColor="purple.500" />
               <Box pt="1rem" align="end">
