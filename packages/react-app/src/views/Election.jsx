@@ -124,7 +124,7 @@ export default function Election({
 
   const loadElectionState = async () => {
     let electionState = await qdipHandler.getElectionStateById(id);
-    console.log({ electionState });
+    // console.log({ electionState });
     electionState.amtFromWei = electionState.fundAmountInWei || "0";
     setElectionState(electionState);
     updateCandidateMap(electionState);
@@ -168,12 +168,17 @@ export default function Election({
       }
       setErrorMsg(null);
       setIsVoting(true);
+      // FIX THIS
       const candidates = Array.from(candidateMap.keys());
+      // console.log({ candidates });
       const scores = [];
       candidateMap.forEach(d => {
-        scores.push(Math.floor(d.score * 100));
+        if (typeof d.score === "undefined") {
+          d.score = "0.00";
+        }
+        scores.push(Number(d.score));
       });
-      console.log(candidates, scores);
+      console.log({ scores });
       let result = await qdipHandler.castBallot(id, candidates, scores, userSigner);
       // console.log(totalScores);
       if (result) {
@@ -184,7 +189,7 @@ export default function Election({
           handleConfetti();
         }
       } else {
-        console.log("could not end election");
+        console.log("could not cast ballot");
         setIsVoting(false);
       }
     }
@@ -217,10 +222,10 @@ export default function Election({
       candidate.score = totalScores[idx];
       candidate.allocation = (totalScores[idx] / totalScoresSum) * 100;
       candidate.allocation = candidate.allocation.toFixed(2);
-      console.log({ electionState });
+      // console.log({ electionState });
 
       const candidatePay = (totalScores[idx] / totalScoresSum) * electionState.fundAmount;
-      console.log({ candidatePay });
+      // console.log({ candidatePay });
       if (!isNaN(candidatePay)) {
         candidate.payoutFromWei = candidatePay.toString();
       } else {
@@ -235,7 +240,7 @@ export default function Election({
   };
 
   const endElection = async () => {
-    console.log("endElection");
+    // console.log("endElection");
     setIsElectionEnding(true);
     let result = await qdipHandler.endElection(electionState.id);
     if (result) {
@@ -268,7 +273,7 @@ export default function Election({
         totalValueInWei,
         tokenAddress: electionState.tokenAdr,
       });
-      console.log(result);
+      // console.log(result);
       if (result) {
         let res = await loadElectionState();
         if (res == "success") {

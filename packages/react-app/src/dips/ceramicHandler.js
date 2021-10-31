@@ -32,7 +32,7 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
 
     // make sure the user is Authenticated
     if (ceramic?.did?.id) {
-      console.log({ kind });
+      // console.log({ kind });
       // create the election document on Ceramic
       const electionDoc = await TileDocument.create(
         ceramic,
@@ -72,10 +72,10 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
       return await contract
         .createElection(electionId)
         .then(async tx => {
-          console.log({ tx });
+          // console.log({ tx });
           const receipt = await tx.wait();
           const id = receipt.events[0].args.electionId;
-          console.log({ id });
+          // console.log({ id });
           return id;
         })
         .catch(err => {
@@ -90,7 +90,7 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
     const electionDoc = await TileDocument.load(ceramic, id);
     // console.log(electionDoc.controllers[0], ceramic.did.id.toString());
     if (electionDoc.controllers[0] === ceramic.did.id.toString()) {
-      console.log(electionDoc.content);
+      // console.log(electionDoc.content);
       await electionDoc.update({ ...electionDoc.content, isActive: false });
       console.log("updated");
       return "success";
@@ -100,10 +100,13 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
   };
 
   const castBallot = async (id, candidates, quad_scores) => {
+    console.log({ quad_scores });
     const { idx, ceramic, schemasCommitId } = await makeCeramicClient(address);
     const election = await serializeCeramicElection(id, address);
+    console.log({ election });
 
     const existingVotes = await idx.get("votes");
+    console.log({ existingVotes });
 
     // TODO: check if already voted for this election through another address linked to this did
     const previousVotes = existingVotes ? Object.values(existingVotes) : null;
@@ -113,14 +116,14 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
       return election.totalScores;
     }
 
-    console.log({ quad_scores });
+    // console.log({ quad_scores });
 
     const voteAttribution = quad_scores.map((voteAttributionCount, i) => ({
       address: election.candidates[i],
       voteAttribution: voteAttributionCount,
     }));
 
-    console.log({ voteAttribution });
+    // console.log({ voteAttribution });
 
     if (ceramic?.did?.id) {
       const ballotDoc = await TileDocument.create(ceramic, voteAttribution, {
@@ -177,14 +180,15 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
   const getFinalPayout = async id => {
     const { idx, ceramic } = await makeCeramicClient();
     const election = await serializeCeramicElection(id, address);
+    // console.log({ election });
     let payout = [];
-    console.log({ payout });
+    // console.log({ payout });
     let totalScoresSum = election.totalScores.reduce((sum, curr) => sum + curr, 0);
     let scores = [];
 
     for (let i = 0; i < election.candidates.length; i++) {
       const candidateScore = election.votes[election.candidates[i]];
-      console.log({ candidateScore });
+      // console.log({ candidateScore });
       let scoreSum = 0;
       if (!candidateScore) {
         scores.push(candidateScore);
@@ -212,20 +216,20 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
   const distributeEth = async ({ id, candidates, payoutInWei, totalValueInWei, tokenAddress }) => {
     const { ceramic } = await makeCeramicClient(address);
     const { network, signer } = await getNetwork();
-    console.log({ signer });
+    // console.log({ signer });
     const contract = new ethers.Contract(
       Diplomat[network.chainId][network.name].contracts.Diplomat.address,
       Diplomat[network.chainId][network.name].contracts.Diplomat.abi,
       signer,
     );
 
-    console.log({ id, candidates, tokenAddress, totalValueInWei, payoutInWei });
+    // console.log({ id, candidates, tokenAddress, totalValueInWei, payoutInWei });
     try {
       const transaction = await contract.payElection(id, candidates, payoutInWei, tokenAddress, {
         value: totalValueInWei,
       });
       const receipt = await transaction.wait();
-      console.log({ receipt });
+      // console.log({ receipt });
       const electionDoc = await TileDocument.load(ceramic, id);
       //   console.log(electionDoc.controllers[0], ceramic.did.id.toString());
       if (electionDoc.controllers[0] === ceramic.did.id.toString()) {
@@ -241,14 +245,14 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
   const distributeTokens = async ({ id, candidates, payoutInWei, tokenAddress }) => {
     const { ceramic } = await makeCeramicClient(address);
     const { network, signer } = await getNetwork();
-    console.log({ signer });
+    // console.log({ signer });
     const contract = new ethers.Contract(
       Diplomat[network.chainId][network.name].contracts.Diplomat.address,
       Diplomat[network.chainId][network.name].contracts.Diplomat.abi,
       signer,
     );
 
-    console.log({ id, candidates, tokenAddress, payoutInWei });
+    // console.log({ id, candidates, tokenAddress, payoutInWei });
     try {
       const transaction = await contract.payElection(id, candidates, payoutInWei, tokenAddress);
       const receipt = await transaction.wait();

@@ -36,7 +36,7 @@ export default function Vote({
   const [qdipHandler, setQdipHandler] = useState();
 
   const [electionState, setElectionState] = useState({});
-  console.log({ electionState });
+  // console.log({ electionState });
   const [votesLeft, setVotesLeft] = useState(0);
   const [tableSrc, setTableSrc] = useState([]);
   const [isVoting, setIsVoting] = useState(false);
@@ -113,7 +113,7 @@ export default function Vote({
 
   const loadERC20List = async () => {
     const erc20List = Object.keys(readContracts).reduce((acc, contract) => {
-      console.log(contract);
+      // console.log(contract);
       if (typeof readContracts[contract].decimals !== "undefined") {
         acc.push(contract);
       }
@@ -179,11 +179,11 @@ export default function Vote({
     candidateMap.forEach(d => {
       scores.push(Math.floor(d.score * 100));
     });
-    console.log(candidates, scores);
+    console.log({ scores });
     return qdipHandler
       .castBallot(id, candidates, scores, userSigner)
       .then(async totalScores => {
-        console.log({ totalScores });
+        // console.log({ totalScores });
         setCandidateScores(totalScores);
         await loadElectionState();
         setIsVoting(false);
@@ -209,11 +209,11 @@ export default function Vote({
   };
 
   const ethPayHandler = () => {
-    console.log({ electionState, finalPayout });
+    // console.log({ electionState, finalPayout });
     const totalValueInWei = electionState.fundAmount;
     //convert payout to wei
     let payoutInWei = finalPayout.payout.map(p => toWei(p));
-    console.log({ payoutInWei });
+    // console.log({ payoutInWei });
 
     return qdipHandler
       .distributeEth({

@@ -45,7 +45,7 @@ function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
         setIsLoading(true);
         let { idx, ceramic } = await qdipHandler.makeCeramic();
         let electionsMap = await qdipHandler.getElections(ceramic, idx);
-        console.log({ electionsMap });
+        // console.log({ electionsMap });
         setElectionsMap(electionsMap);
         setIsLoading(false);
       }

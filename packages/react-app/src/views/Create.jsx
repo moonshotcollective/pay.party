@@ -1,4 +1,5 @@
-import { ChevronLeftIcon } from "@chakra-ui/icons";
+import { ChevronLeftIcon, CopyIcon, AddIcon, DeleteIcon, CheckIcon } from "@chakra-ui/icons";
+import { MdContentPaste } from "react-icons/md";
 import {
   Box,
   Button,
@@ -27,6 +28,7 @@ import {
   Textarea,
   Select,
   Spinner,
+  IconButton,
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import { fromWei, toWei, toBN } from "web3-utils";
@@ -349,6 +351,7 @@ const Create = ({
                     <InputGroup w="300px">
                       <NumberInput max={50} min={0.001} defaultValue={newElection.fundAmount}>
                         <NumberInputField
+                          w="300px"
                           placeholder="fundAmount"
                           borderColor="purple.500"
                           {...register("fundAmount", {
@@ -357,10 +360,6 @@ const Create = ({
                           value={newElection.fundAmount}
                           onChange={updateFundAmount}
                         />
-                        {/* <NumberInputStepper>
-                        <NumberIncrementStepper onChange={updateFundAmount} />
-                        <NumberDecrementStepper onChange={updateFundAmount} />
-                      </NumberInputStepper> */}
                       </NumberInput>
                     </InputGroup>
                     <Select
@@ -373,6 +372,7 @@ const Create = ({
                       })}
                       value={newElection.tokenSym}
                       onChange={updateSelectedToken}
+                      w="200px"
                     >
                       <option value={CURRENCY}>{CURRENCY}</option>
                       <option value={TOKEN}>{TOKEN}</option>
@@ -407,43 +407,33 @@ const Create = ({
                 <FormErrorMessage>{errors.votes && errors.votes.message}</FormErrorMessage>
               </FormControl>
 
-              {/* <FormControl isInvalid={errors.kind} py="4">
-                <FormLabel htmlFor="kind">Diplomacy Type</FormLabel>
-                <Select
-                  {...register("kind", {
-                    required: "This is required",
-                    maxLength: {
-                      value: 10,
-                      message: "Maximum length should be 10",
-                    },
-                  })}
-                  value={newElection.kind}
-                  onChange={updateSelectedQdip}
-                >
-                  {DIP_TYPES.map(k => (
-                    <option key={k} value={k}>
-                      {dips[k].name}
-                    </option>
-                  ))}
-                </Select>
-              </FormControl> */}
               <Box pb="1rem"></Box>
               <Divider backgroundColor="purple.500" />
               <Box pb="1rem"></Box>
               <FormControl isInvalid={newElection.candidates.length == 0}>
                 <FormLabel htmlFor="candidates">Candidates</FormLabel>
+                <FormErrorMessage>{errors.votes && errors.votes.message}</FormErrorMessage>
+              </FormControl>
+              <HStack>
                 <AddressInputChakra
                   ensProvider={mainnetProvider}
                   placeholder="Enter ENS name"
                   value={toAddress}
                   onChange={setToAddress}
                 />
-                <FormErrorMessage>{errors.votes && errors.votes.message}</FormErrorMessage>
-              </FormControl>
-
-              <Button w="100%" variant="outline" mt={4} onClick={addVoter}>
-                + Add voter
-              </Button>
+                <InputGroup>
+                  <IconButton aria-label="Add address" icon={<AddIcon />} onClick={addVoter} variant="ghost" />
+                  // Sniff browser -- firefox does not support clipboard
+                  {navigator.userAgent.indexOf("Firefox") < 0 && (
+                    <IconButton
+                      aria-label="Add from clipboard"
+                      icon={<MdContentPaste />}
+                      onClick={() => handleAddVoters()}
+                      variant="ghost"
+                    />
+                  )}
+                </InputGroup>
+              </HStack>
               <Box
                 borderColor="purple.500"
                 borderWidth="1px"
@@ -462,28 +452,31 @@ const Create = ({
                         ensProvider={mainnetProvider}
                         blockExplorer={blockExplorer}
                       ></AddressChakra>
-                      <Button colorScheme="teal" size="sm" onClick={() => removeCandidate(addr)}>
-                        X
-                      </Button>
+                      <IconButton
+                        aria-label="Remove address"
+                        icon={<DeleteIcon />}
+                        onClick={() => removeCandidate(addr)}
+                        variant="ghost"
+                      />
                     </HStack>
                   ))}
                 </List>
               </Box>
-              <Button w="100%" variant="outline" mt={4} onClick={() => handleAddVoters()}>
-                Add Candidates from Clipboard
-              </Button>
+
               <Box pb="1rem"></Box>
               <Divider backgroundColor="purple.500" />
               <Box pt="1rem" align="end">
                 {!isCreatedElection && (
                   <Button
                     mt={4}
+                    width="500px"
                     colorScheme="teal"
                     isLoading={isSubmitting || isConfirmingElection}
                     loadingText="Submitting"
                     type="submit"
+                    leftIcon={<CheckIcon />}
                   >
-                    Submit
+                    Submit Election
                   </Button>
                 )}
               </Box>
