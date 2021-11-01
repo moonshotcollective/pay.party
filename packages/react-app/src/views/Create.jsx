@@ -15,6 +15,15 @@ import {
   InputGroup,
   InputRightElement,
   List,
+  Table,
+  Thead,
+  Tbody,
+  Tfoot,
+  Tr,
+  Th,
+  Td,
+  Center,
+  TableCaption,
   ListItem,
   Tooltip,
   ListIcon,
@@ -30,6 +39,7 @@ import {
   Select,
   Spinner,
   IconButton,
+  Checkbox,
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import { fromWei, toWei, toBN } from "web3-utils";
@@ -412,7 +422,7 @@ const Create = ({
               <Divider backgroundColor="purple.500" />
               <Box pb="1rem"></Box>
               <FormControl isInvalid={newElection.candidates.length == 0}>
-                <FormLabel htmlFor="candidates">Candidates</FormLabel>
+                <FormLabel htmlFor="candidates">Participants</FormLabel>
                 <FormErrorMessage>{errors.votes && errors.votes.message}</FormErrorMessage>
               </FormControl>
               <HStack>
@@ -423,15 +433,19 @@ const Create = ({
                   onChange={setToAddress}
                 />
                 <InputGroup>
-                  <IconButton aria-label="Add address" icon={<AddIcon />} onClick={addVoter} variant="ghost" />
+                  <Tooltip label="Add Participant">
+                    <IconButton aria-label="Add address" icon={<AddIcon />} onClick={addVoter} variant="ghost" />
+                  </Tooltip>
                   // Sniff browser -- firefox does not support clipboard
                   {navigator.userAgent.indexOf("Firefox") < 0 && (
-                    <IconButton
-                      aria-label="Add from clipboard"
-                      icon={<MdContentPaste />}
-                      onClick={() => handleAddVoters()}
-                      variant="ghost"
-                    />
+                    <Tooltip label="Paste from clipboard">
+                      <IconButton
+                        aria-label="Paste from clipboard"
+                        icon={<MdContentPaste />}
+                        onClick={() => handleAddVoters()}
+                        variant="ghost"
+                      />
+                    </Tooltip>
                   )}
                 </InputGroup>
               </HStack>
@@ -440,28 +454,55 @@ const Create = ({
                 borderWidth="1px"
                 borderRadius="8px"
                 mt={4}
-                py="1rem"
-                px="2.5rem"
+                py="0rem"
+                px="0rem"
                 overflowY="scroll"
                 maxH="200px"
               >
-                <List spacing={3}>
-                  {newElection.candidates.map((addr, idx) => (
-                    <HStack key={idx} align="start" w="100%" spacing="24px">
-                      <AddressChakra
-                        address={addr}
-                        ensProvider={mainnetProvider}
-                        blockExplorer={blockExplorer}
-                      ></AddressChakra>
-                      <IconButton
-                        aria-label="Remove address"
-                        icon={<DeleteIcon />}
-                        onClick={() => removeCandidate(addr)}
-                        variant="ghost"
-                      />
-                    </HStack>
-                  ))}
-                </List>
+                <Table variant="simple" size="md">
+                  <TableCaption>:)</TableCaption>
+                  <Thead>
+                    <Tr>
+                      <Tooltip
+                        label="A candidate will be the participant who is being voted on."
+                        aria-label="A tooltip"
+                      >
+                        <Th>Candidate</Th>
+                      </Tooltip>
+                      <Tooltip label="A participant is who can vote in this election." aria-label="A tooltip">
+                        <Th>Participant</Th>
+                      </Tooltip>
+                      <Th></Th>
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {newElection.candidates.map((addr, idx) => (
+                      <Tr key={idx}>
+                        <Td w="0%">
+                          <Center w="70px" color="white">
+                            <Checkbox></Checkbox>
+                          </Center>
+                        </Td>
+                        <Td w="100%">
+                          <AddressChakra
+                            address={addr}
+                            ensProvider={mainnetProvider}
+                            blockExplorer={blockExplorer}
+                            fontSize={16}
+                          ></AddressChakra>
+                        </Td>
+                        <Td w="0%">
+                          <IconButton
+                            aria-label="Remove address"
+                            icon={<DeleteIcon />}
+                            onClick={() => removeCandidate(addr)}
+                            variant="ghost"
+                          />
+                        </Td>
+                      </Tr>
+                    ))}
+                  </Tbody>
+                </Table>
               </Box>
 
               <Box pb="1rem"></Box>
