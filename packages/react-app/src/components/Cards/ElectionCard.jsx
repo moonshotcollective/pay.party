@@ -2,6 +2,7 @@ import { Avatar, Box, Button, Heading, Text, Tag, HStack, VStack } from "@chakra
 import { useHistory } from "react-router-dom";
 import { Address } from "../index";
 import { blockExplorer } from "../../App";
+import { fromWei } from "web3-utils";
 
 import { CERAMIC_PREFIX } from "../../dips/helpers";
 

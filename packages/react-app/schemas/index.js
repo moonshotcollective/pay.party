@@ -77,6 +77,10 @@ const ElectionSchema = {
       type: "string",
       title: "fundAmount",
     },
+    fundAmountInWei: {
+      type: "string",
+      title: "fundAmountInWei",
+    },
     tokenAddress: {
       type: "string",
       maxLength: 42,

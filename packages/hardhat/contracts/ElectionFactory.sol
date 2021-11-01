@@ -38,26 +38,12 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract ElectionFactory is Distributor {
     event NewElection(string electionId, address sender);
-    event EndedElection(string electionId, address sender);
     event PaidElection(string electionId, address sender);
 
     string[] public elections;
-    mapping(string => mapping(address => bool)) isElectionAdmin;
-
-    modifier onlyElectionAdmin(string memory electionId) {
-        require(
-            !isElectionAdmin[electionId][msg.sender],
-            "Sender Not Election Admin!"
-        );
-        _;
-    }
 
     function _emitNewElection(string memory electionId) internal {
         emit NewElection(electionId, msg.sender);
-    }
-
-    function _emitEndedElection(string memory electionId) internal {
-        emit EndedElection(electionId, msg.sender);
     }
 
     function _emitPaidElection(string memory electionId) internal {
@@ -69,25 +55,16 @@ contract ElectionFactory is Distributor {
         returns (string memory)
     {
         elections.push(electionId);
-        isElectionAdmin[electionId][msg.sender] = true;
         _emitNewElection(electionId);
         return electionId;
     }
 
-    function _endElection(string memory electionId)
-        internal
-        onlyElectionAdmin(electionId)
-    {
-        _emitEndedElection(electionId);
-    }
-
-    // TODO: Implement Chainlink to check pay validity
     function _payElection(
         string memory electionId,
         address[] memory candidates,
         uint256[] memory shares,
         address token
-    ) internal onlyElectionAdmin(electionId) {
+    ) internal {
         // NOTE: Not Escrow Version
         if (token == address(0)) {
             _sharePayedETH(candidates, shares);

@@ -72,9 +72,10 @@ export default function AddressInputChakra(props) {
     <div>
       <InputGroup>
         <Input
+          w="400px"
           borderColor="purple.500"
           color="white"
-          placeholder="Enter ENS/ETH Address"
+          placeholder="Enter ENS/Address"
           autoComplete="off"
           onChange={e => {
             updateAddress(e.target.value);

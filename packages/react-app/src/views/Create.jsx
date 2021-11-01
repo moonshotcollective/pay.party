@@ -1,4 +1,5 @@
-import { ChevronLeftIcon } from "@chakra-ui/icons";
+import { ChevronLeftIcon, CopyIcon, AddIcon, DeleteIcon, CheckIcon } from "@chakra-ui/icons";
+import { MdContentPaste } from "react-icons/md";
 import {
   Box,
   Button,
@@ -15,6 +16,7 @@ import {
   InputRightElement,
   List,
   ListItem,
+  Tooltip,
   ListIcon,
   NumberDecrementStepper,
   NumberIncrementStepper,
@@ -26,6 +28,8 @@ import {
   useColorModeValue,
   Textarea,
   Select,
+  Spinner,
+  IconButton,
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import { fromWei, toWei, toBN } from "web3-utils";
@@ -38,7 +42,9 @@ import CenteredFrame from "../components/layout/CenteredFrame";
 import dips from "../dips";
 import AddressInputChakra from "../components/AddressInputChakra";
 import AddressChakra from "../components/AddressChakra";
+import ElectionCard from "../components/Cards/ElectionCard";
 import { blockExplorer } from "../App";
+import { ethers } from "ethers";
 
 import { CERAMIC_PREFIX } from "../dips/helpers";
 
@@ -83,12 +89,15 @@ const Create = ({
   const [isCreatedElection, setIsCreatedElection] = useState(false);
   const [electionId, setElectionId] = useState();
   const [title, setTitle] = useState("Configure Election");
+  const [createdElection, setCreatedElection] = useState({});
 
   const [newElection, setNewElection] = useState({
     name: "",
+    description: "",
     tokenSym: "ETH",
     tokenAdr: "0x0000000000000000000000000000000000000000",
     fundAmount: 0.1,
+    fundAmountInWei: toWei("0.1"),
     voteAllocation: 1,
     kind: "ceramic",
     candidates: [],
@@ -150,8 +159,9 @@ const Create = ({
     }
     setIsConfirmingElection(true);
     // Create a new election
-    console.log({ newElection });
-    newElection.fundAmount = toWei(Number(newElection.fundAmount).toFixed(18).toString());
+    // console.log({ newElection });
+    // NOTE: Avoid Weird rounding!
+    newElection.fundAmountInWei = toWei(newElection.fundAmount.toString());
     newElection.voteAllocation = parseInt(newElection.voteAllocation);
 
     let result = await qdipHandler.createElection(newElection, selectedQdip);
@@ -161,10 +171,16 @@ const Create = ({
       setIsConfirmingElection(false);
       setIsCreatedElection(true);
       setElectionId(result);
+      const electionState = await qdipHandler.getElectionStateById(result);
+      setCreatedElection(electionState);
+      // console.log({ electionState });
+      setTitle("Election Created!");
       setNewElection({
         name: "",
+        description: "",
         tokenSym: "ETH",
         fundAmount: 0.1,
+        fundAmountInWei: toWei("0.1"),
         voteAllocation: 1,
         tokenAdr: "0x0000000000000000000000000000000000000000",
         kind: "ceramic",
@@ -176,6 +192,13 @@ const Create = ({
     setNewElection(prevState => ({
       ...prevState,
       name: e.target.value,
+    }));
+  };
+
+  const updateDesc = e => {
+    setNewElection(prevState => ({
+      ...prevState,
+      description: e.target.value,
     }));
   };
 
@@ -212,7 +235,7 @@ const Create = ({
   };
 
   const updateVoteAllocation = e => {
-    console.log(e.target.value);
+    // console.log(e.target.value);
     setNewElection(prevState => ({
       ...prevState,
       voteAllocation: e.target.value,
@@ -247,6 +270,25 @@ const Create = ({
       }
     }
 
+    setToAddress("");
+  };
+
+  const handleAddVoters = async () => {
+    const text = await navigator.clipboard.readText();
+    const addresses = text.split(",");
+
+    addresses.forEach(voteAddress => {
+      try {
+        // console.log(voteAddress);
+        const voteAddressWithChecksum = ethers.utils.getAddress(voteAddress);
+        if (!newElection.candidates.includes(voteAddressWithChecksum)) {
+          newElection.candidates.push(voteAddressWithChecksum);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    });
+    setToAddress(" ");
     setToAddress("");
   };
 
@@ -285,20 +327,23 @@ const Create = ({
                 <FormErrorMessage>{errors.name && errors.name.message}</FormErrorMessage>
               </FormControl>
 
-              {/* <FormControl py="4">
-              <FormLabel htmlFor="description">Election description</FormLabel>
-              <Textarea
-                placeholder="Election description"
-                borderColor="purple.500"
-                {...register("description", {
-                  maxLength: {
-                    value: 150,
-                    message: "Maximum length should be 150",
-                  },
-                })}
-              />
-              <FormErrorMessage>{errors.description && errors.description.message}</FormErrorMessage>
-            </FormControl> */}
+              <FormControl py="4">
+                <FormLabel htmlFor="description">Election description</FormLabel>
+                <Textarea
+                  placeholder="Election description"
+                  borderColor="purple.500"
+                  value={newElection.description}
+                  {...register("description", {
+                    maxLength: {
+                      value: 150,
+                      message: "Maximum length should be 150",
+                    },
+                  })}
+                  autoComplete="off"
+                  onChange={updateDesc}
+                />
+                <FormErrorMessage>{errors.description && errors.description.message}</FormErrorMessage>
+              </FormControl>
 
               <FormControl py="4" isInvalid={errors.fundAmount || errors.funds}>
                 <FormLabel htmlFor="fundAmount">Fund Allocation (amount to be distributed)</FormLabel>
@@ -307,6 +352,7 @@ const Create = ({
                     <InputGroup w="300px">
                       <NumberInput max={50} min={0.001} defaultValue={newElection.fundAmount}>
                         <NumberInputField
+                          w="300px"
                           placeholder="fundAmount"
                           borderColor="purple.500"
                           {...register("fundAmount", {
@@ -315,10 +361,6 @@ const Create = ({
                           value={newElection.fundAmount}
                           onChange={updateFundAmount}
                         />
-                        {/* <NumberInputStepper>
-                        <NumberIncrementStepper onChange={updateFundAmount} />
-                        <NumberDecrementStepper onChange={updateFundAmount} />
-                      </NumberInputStepper> */}
                       </NumberInput>
                     </InputGroup>
                     <Select
@@ -331,6 +373,7 @@ const Create = ({
                       })}
                       value={newElection.tokenSym}
                       onChange={updateSelectedToken}
+                      w="200px"
                     >
                       <option value={CURRENCY}>{CURRENCY}</option>
                       <option value={TOKEN}>{TOKEN}</option>
@@ -365,43 +408,33 @@ const Create = ({
                 <FormErrorMessage>{errors.votes && errors.votes.message}</FormErrorMessage>
               </FormControl>
 
-              {/* <FormControl isInvalid={errors.kind} py="4">
-                <FormLabel htmlFor="kind">Diplomacy Type</FormLabel>
-                <Select
-                  {...register("kind", {
-                    required: "This is required",
-                    maxLength: {
-                      value: 10,
-                      message: "Maximum length should be 10",
-                    },
-                  })}
-                  value={newElection.kind}
-                  onChange={updateSelectedQdip}
-                >
-                  {DIP_TYPES.map(k => (
-                    <option key={k} value={k}>
-                      {dips[k].name}
-                    </option>
-                  ))}
-                </Select>
-              </FormControl> */}
               <Box pb="1rem"></Box>
               <Divider backgroundColor="purple.500" />
               <Box pb="1rem"></Box>
               <FormControl isInvalid={newElection.candidates.length == 0}>
                 <FormLabel htmlFor="candidates">Candidates</FormLabel>
+                <FormErrorMessage>{errors.votes && errors.votes.message}</FormErrorMessage>
+              </FormControl>
+              <HStack>
                 <AddressInputChakra
                   ensProvider={mainnetProvider}
                   placeholder="Enter ENS name"
                   value={toAddress}
                   onChange={setToAddress}
                 />
-                <FormErrorMessage>{errors.votes && errors.votes.message}</FormErrorMessage>
-              </FormControl>
-
-              <Button w="100%" variant="outline" mt={4} onClick={addVoter}>
-                + Add voter
-              </Button>
+                <InputGroup>
+                  <IconButton aria-label="Add address" icon={<AddIcon />} onClick={addVoter} variant="ghost" />
+                  // Sniff browser -- firefox does not support clipboard
+                  {navigator.userAgent.indexOf("Firefox") < 0 && (
+                    <IconButton
+                      aria-label="Add from clipboard"
+                      icon={<MdContentPaste />}
+                      onClick={() => handleAddVoters()}
+                      variant="ghost"
+                    />
+                  )}
+                </InputGroup>
+              </HStack>
               <Box
                 borderColor="purple.500"
                 borderWidth="1px"
@@ -420,35 +453,59 @@ const Create = ({
                         ensProvider={mainnetProvider}
                         blockExplorer={blockExplorer}
                       ></AddressChakra>
-                      <Button colorScheme="teal" size="sm" onClick={() => removeCandidate(addr)}>
-                        X
-                      </Button>
+                      <IconButton
+                        aria-label="Remove address"
+                        icon={<DeleteIcon />}
+                        onClick={() => removeCandidate(addr)}
+                        variant="ghost"
+                      />
                     </HStack>
                   ))}
                 </List>
               </Box>
+
               <Box pb="1rem"></Box>
               <Divider backgroundColor="purple.500" />
               <Box pt="1rem" align="end">
                 {!isCreatedElection && (
                   <Button
                     mt={4}
+                    width="500px"
                     colorScheme="teal"
                     isLoading={isSubmitting || isConfirmingElection}
                     loadingText="Submitting"
                     type="submit"
+                    leftIcon={<CheckIcon />}
                   >
-                    Submit
+                    Submit Election
                   </Button>
                 )}
               </Box>
             </form>
           )}
-          {isCreatedElection && (
-            <HStack justify="center" align="center" w="100%">
-              <Button mt={4} colorScheme="teal" onClick={viewElection}>
-                View Election
-              </Button>
+          {isCreatedElection && !createdElection.id && (
+            <CenteredFrame>
+              <Flex flexDirection="column" justifyContent="center" alignItems="center">
+                <Heading fontSize="1.5rem" color={headingColor}>
+                  Creating election...
+                </Heading>
+                <Spinner color="purple.700" size="xl" />
+              </Flex>
+            </CenteredFrame>
+          )}
+          {isCreatedElection && createdElection.id && (
+            <HStack justify="center" align="center" w="30%">
+              <ElectionCard
+                id={createdElection.id}
+                name={createdElection.name}
+                owner={createdElection.creator}
+                voted={`${createdElection.n_voted.n_voted} / ${createdElection.n_voted.outOf}`}
+                active={createdElection.active}
+                amount={createdElection.amtFromWei}
+                tokenSymbol={createdElection.tokenSymbol}
+                createdAt={createdElection.created_date}
+                mainnetProvider={mainnetProvider}
+              />
             </HStack>
           )}
         </Flex>

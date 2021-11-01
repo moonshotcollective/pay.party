@@ -39,7 +39,7 @@ function ElectionCard({
         {electionState.name}
       </Heading>
       <Text pb="1rem" fontSize="1rem">
-        This is an election description that is maximum 2 lines long
+        {electionState.description}
       </Text>
       <Text fontSize="1rem" color="violet.500">
         Admin
@@ -58,7 +58,7 @@ function ElectionCard({
         Total Funds
       </Text>
       <Text>
-        {electionState.amtFromWei} {electionState.tokenSymbol}
+        {fromWei(electionState.amtFromWei)} {electionState.tokenSymbol}
       </Text>
       <Text fontSize="1rem" color="violet.500" mb="0">
         Voters
@@ -92,8 +92,8 @@ function ElectionCard({
           appName="Quadratic Diplomacy"
           // tokenListHandler={tokens => setAvailableTokens(tokens)}
           callerAddress={address}
-          maxApproval={electionState.fundAmount}
-          amount={electionState.fundAmount}
+          maxApproval={electionState.fundAmountInWei}
+          amount={electionState.fundAmountInWei}
           spender={spender}
           yourLocalBalance={yourLocalBalance}
           readContracts={readContracts}
