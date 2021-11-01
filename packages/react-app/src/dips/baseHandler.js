@@ -83,7 +83,7 @@ export default function BaseHandler(tx, readContracts, writeContracts, mainnetPr
 
     for (let i = 0; i < ceramicElections.length; i++) {
       const serializedElection = await serializeCeramicElection(ceramicElections[i], address, ceramic, idx);
-      console.log(serializedElection.name, serializedElection.isAdmin, serializedElection.isCandidate);
+      // console.log(serializedElection.name, serializedElection.isAdmin, serializedElection.isCandidate);
       serializedElection.amtFromWei = serializedElection.fundAmountInWei || "0";
       newElectionsMap.set(ceramicElections[i], serializedElection);
     }

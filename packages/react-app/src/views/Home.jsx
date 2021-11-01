@@ -54,7 +54,7 @@ function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
 
   /***** Methods *****/
   const init = async () => {
-    console.log(address);
+    // console.log(address);
     if (address) {
       setQdipHandler(BaseHandler(tx, readContracts, writeContracts, mainnetProvider, address));
     }

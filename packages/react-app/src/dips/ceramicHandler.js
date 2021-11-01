@@ -40,6 +40,7 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
           name: name,
           description: description,
           candidates: candidates,
+          creator: address,
           kind: "ceramic",
           voteAllocation: voteAllocation,
           tokenAddress: tokenAdr,
@@ -100,13 +101,10 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
   };
 
   const castBallot = async (id, candidates, quad_scores) => {
-    console.log({ quad_scores });
     const { idx, ceramic, schemasCommitId } = await makeCeramicClient(address);
     const election = await serializeCeramicElection(id, address);
-    console.log({ election });
 
     const existingVotes = await idx.get("votes");
-    console.log({ existingVotes });
 
     // TODO: check if already voted for this election through another address linked to this did
     const previousVotes = existingVotes ? Object.values(existingVotes) : null;
@@ -180,7 +178,6 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
   const getFinalPayout = async id => {
     const { idx, ceramic } = await makeCeramicClient();
     const election = await serializeCeramicElection(id, address);
-    // console.log({ election });
     let payout = [];
     // console.log({ payout });
     let totalScoresSum = election.totalScores.reduce((sum, curr) => sum + curr, 0);
@@ -229,7 +226,7 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
         value: totalValueInWei,
       });
       const receipt = await transaction.wait();
-      // console.log({ receipt });
+      console.log({ receipt });
       const electionDoc = await TileDocument.load(ceramic, id);
       //   console.log(electionDoc.controllers[0], ceramic.did.id.toString());
       if (electionDoc.controllers[0] === ceramic.did.id.toString()) {

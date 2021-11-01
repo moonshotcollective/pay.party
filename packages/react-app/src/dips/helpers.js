@@ -31,7 +31,7 @@ export const getNetwork = async () => {
   const provider = new ethers.providers.Web3Provider(connection);
   const signer = provider.getSigner();
   let network = await provider.getNetwork();
-  console.log(network);
+  // console.log(network);
   if (network.chainId === 31337 || network.chainId === 1337) {
     network = { name: "localhost", chainId: 31337 };
   }
@@ -125,7 +125,7 @@ export const serializeCeramicElection = async (ceramicElectionId, address, ceram
   let totalScores = [];
   if (ballots.length > 0) {
     for (const candidateVotes of ballots) {
-      console.log({ candidateVotes });
+      // console.log({ candidateVotes });
       candidateVotes.forEach((voteScore, i) => {
         // console.log(voteScore);
         if (totalScores[i] !== 0 && !totalScores[i]) {

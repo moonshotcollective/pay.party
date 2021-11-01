@@ -16,6 +16,7 @@ import {
   InputRightElement,
   List,
   ListItem,
+  Tooltip,
   ListIcon,
   NumberDecrementStepper,
   NumberIncrementStepper,
@@ -158,7 +159,7 @@ const Create = ({
     }
     setIsConfirmingElection(true);
     // Create a new election
-    console.log({ newElection });
+    // console.log({ newElection });
     // NOTE: Avoid Weird rounding!
     newElection.fundAmountInWei = toWei(newElection.fundAmount.toString());
     newElection.voteAllocation = parseInt(newElection.voteAllocation);
@@ -172,7 +173,7 @@ const Create = ({
       setElectionId(result);
       const electionState = await qdipHandler.getElectionStateById(result);
       setCreatedElection(electionState);
-      console.log({ electionState });
+      // console.log({ electionState });
       setTitle("Election Created!");
       setNewElection({
         name: "",
@@ -234,7 +235,7 @@ const Create = ({
   };
 
   const updateVoteAllocation = e => {
-    console.log(e.target.value);
+    // console.log(e.target.value);
     setNewElection(prevState => ({
       ...prevState,
       voteAllocation: e.target.value,
@@ -278,7 +279,7 @@ const Create = ({
 
     addresses.forEach(voteAddress => {
       try {
-        console.log(voteAddress);
+        // console.log(voteAddress);
         const voteAddressWithChecksum = ethers.utils.getAddress(voteAddress);
         if (!newElection.candidates.includes(voteAddressWithChecksum)) {
           newElection.candidates.push(voteAddressWithChecksum);

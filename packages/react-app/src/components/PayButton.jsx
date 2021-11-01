@@ -41,7 +41,7 @@ export default function PayButton({
   const [status, setStatus] = useState(0); // loading | lowAllowance | approving | ready | distributing | noBalance
 
   const refreshETH = () => {
-    console.log(yourLocalBalance.toString(), ethers.utils.parseEther(amount).toString());
+    // console.log(yourLocalBalance.toString(), ethers.utils.parseEther(amount).toString());
     // let ylb = yourLocalBalance.gte(ethers.utils.parseEther(amount || "0")) ? 3 : 5;
 
     setStatus(3);

@@ -1,5 +1,5 @@
 import { useColorModeValue } from "@chakra-ui/color-mode";
-import { Avatar, Divider, Heading, Table, Tbody, Td, Text, Th, Thead, Tr, VStack } from "@chakra-ui/react";
+import { Avatar, Divider, Heading, Table, Tbody, Td, Text, Th, Thead, Tr, VStack, Tooltip } from "@chakra-ui/react";
 import { blockExplorer } from "../../App";
 import AddressChakra from "../AddressChakra";
 
@@ -54,9 +54,11 @@ function DistributionCard({ candidates, candidateMap, mainnetProvider, isPaid, t
                   <Text>{candidateMap && candidateMap.get(member).allocation}%</Text>
                 </Td>
                 <Td>
-                  <Text color="yellow.500">
-                    {candidateMap && candidateMap.get(member).payoutFromWei} {tokenSym}
-                  </Text>
+                  <Tooltip label={candidateMap && candidateMap.get(member).payoutFromWei} aria-label="A tooltip">
+                    <Text color="yellow.500">
+                      {candidateMap && Number.parseFloat(candidateMap.get(member).payoutFromWei).toFixed(4)} {tokenSym}
+                    </Text>
+                  </Tooltip>
                 </Td>
               </Tr>
             ))}
