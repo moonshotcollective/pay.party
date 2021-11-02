@@ -1,7 +1,7 @@
-import { Button } from "@chakra-ui/button";
-import { AddIcon } from "@chakra-ui/icons";
+import { Button, IconButton } from "@chakra-ui/button";
+import { AddIcon, DeleteIcon } from "@chakra-ui/icons";
 import { Box, Flex, Heading, HStack, SimpleGrid } from "@chakra-ui/layout";
-import { Divider, Tab, TabList, TabPanel, TabPanels, Spinner, Tabs, Text } from "@chakra-ui/react";
+import { Divider, Tab, TabList, TabPanel, TabPanels, Spinner, Tabs, Text, Center } from "@chakra-ui/react";
 import { useColorModeValue } from "@chakra-ui/color-mode";
 import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
@@ -87,8 +87,8 @@ function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
         <HStack w="full" justifyContent="space-between">
           <Tabs py="1rem" variant="unstyled">
             <TabList>
-              <TabListItem title="Elections I'm part of" />
-              <TabListItem title="My Elections" />
+              {/* <TabListItem title="" /> */}
+              {/* <TabListItem title="Manage" /> */}
             </TabList>
             <TabPanels>
               <TabPanel>
@@ -123,11 +123,21 @@ function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
                     px="2.5rem"
                     width="100%"
                   >
-                    <HStack spacing={4} justifyContent="space-between">
-                      <Heading fontSize="1.0rem" color="violet.50">
-                        You are not part of any elections.
-                      </Heading>
-                    </HStack>
+                    {/* <HStack spacing={4} justifyContent="space-between"> */}
+                    <Heading fontSize="1.0rem" color="violet.50">
+                      You are not part of any elections.
+                    </Heading>
+
+                    <Center>
+                      <IconButton
+                        aria-label="Create Election"
+                        icon={<AddIcon />}
+                        onClick={createElection}
+                        variant="ghost"
+                        size="lg"
+                      />
+                    </Center>
+                    {/* </HStack> */}
                   </Box>
                 )}
               </TabPanel>

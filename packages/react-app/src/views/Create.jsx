@@ -304,7 +304,7 @@ const Create = ({
 
   return (
     <CenteredFrame>
-      <HStack w="80vw" justifyContent="space-between">
+      <HStack w="40vw" justifyContent="space-between">
         <Flex flexDirection="column" justifyContent="space-between" alignItems="center" w="full">
           <Flex justifyContent="space-between" alignItems="center" w="full">
             <Text onClick={goBack} _hover={{ cursor: "pointer" }} pb="1rem">
@@ -509,17 +509,19 @@ const Create = ({
               <Divider backgroundColor="purple.500" />
               <Box pt="1rem" align="end">
                 {!isCreatedElection && (
-                  <Button
-                    mt={4}
-                    width="500px"
-                    colorScheme="teal"
-                    isLoading={isSubmitting || isConfirmingElection}
-                    loadingText="Submitting"
-                    type="submit"
-                    leftIcon={<CheckIcon />}
-                  >
-                    Submit Election
-                  </Button>
+                  <Center>
+                    <Button
+                      mt={4}
+                      width="30vw"
+                      colorScheme="teal"
+                      isLoading={isSubmitting || isConfirmingElection}
+                      loadingText="Submitting"
+                      type="submit"
+                      leftIcon={<CheckIcon />}
+                    >
+                      Submit Election
+                    </Button>
+                  </Center>
                 )}
               </Box>
             </form>

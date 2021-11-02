@@ -1,5 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { Box, Button, Grid, GridItem, Spinner, Text, useColorModeValue, Heading, Flex } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Grid,
+  GridItem,
+  Spinner,
+  Text,
+  useColorModeValue,
+  Heading,
+  Flex,
+  IconButton,
+} from "@chakra-ui/react";
+import {} from "@chakra-ui/icons";
 import { useHistory, useParams } from "react-router-dom";
 import qs from "query-string";
 import { fromWei, toWei, toBN, numberToHex } from "web3-utils";
