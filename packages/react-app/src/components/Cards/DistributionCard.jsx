@@ -27,7 +27,7 @@ function DistributionCard({ candidates, candidateMap, mainnetProvider, isPaid, t
           <Thead>
             <Tr>
               <Th>Voter</Th>
-              <Th>Voted</Th>
+              {/* <Th>Voted</Th> */}
               <Th>Quadratic Score</Th>
               <Th>Allocation</Th>
               <Th>Amount</Th>
@@ -43,10 +43,10 @@ function DistributionCard({ candidates, candidateMap, mainnetProvider, isPaid, t
                     blockExplorer={blockExplorer}
                   ></AddressChakra>
                 </Td>
-                <Td>
+                {/* <Td>
                   {candidateMap && candidateMap.get(member).voted && <Text color="green.600">Voted</Text>}{" "}
                   {candidateMap && !candidateMap.get(member).voted && isPaid && <Text color="red.600">Absent</Text>}
-                </Td>
+                </Td> */}
                 <Td>
                   <Text>{candidateMap && candidateMap.get(member).score}</Text>
                 </Td>

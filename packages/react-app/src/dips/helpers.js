@@ -153,7 +153,7 @@ export const serializeCeramicElection = async (ceramicElectionId, address, ceram
     return candidatesAddress;
   }, {});
 
-  const ballots = Object.values(candidatesSealedBallots);
+  const ballots = Object.values(voterSealedBallots);
   console.log(ballots);
   let totalScores = [];
   if (ballots.length > 0) {
@@ -191,7 +191,7 @@ export const serializeCeramicElection = async (ceramicElectionId, address, ceram
     status: electionDoc.content.isActive,
     isPaid: electionDoc.content.isPaid,
     voteAllocation: electionDoc.content.voteAllocation,
-    n_voted: { n_voted: nVoted, outOf: electionDoc.content.voters?.length },
+    n_voted: { n_voted: nVoted, outOf: electionDoc.content.voters?.length, addressVoted: [], addressOutOf: [] },
     votes: candidatesSealedBallots,
     totalScores,
     tags: tags,

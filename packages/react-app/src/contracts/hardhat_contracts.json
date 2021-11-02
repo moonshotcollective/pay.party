@@ -504,7 +504,7 @@
       "chainId": "4",
       "contracts": {
         "Diplomat": {
-          "address": "0x35A4107bf4bec949528acFF55001B48aBBB3eBAa",
+          "address": "0xC6Ee8EfF05a0555ebFaD0B69A6fA303D86d79fA2",
           "abi": [
             {
               "inputs": [],

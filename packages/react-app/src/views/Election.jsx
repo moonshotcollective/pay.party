@@ -186,7 +186,7 @@ export default function Election({
       const scores = [];
       let last = NaN;
       candidateMap.forEach(d => {
-        if (last !== d.score || !isNaN(last)) {
+        if (last !== d.score) {
           if (typeof d.score === "undefined") {
             d.score = "0.00";
           }
