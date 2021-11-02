@@ -110,6 +110,7 @@ const Create = ({
     fundAmountInWei: toWei("0.1"),
     voteAllocation: 1,
     kind: "ceramic",
+    voters: [],
     candidates: [],
   });
 
@@ -163,8 +164,12 @@ const Create = ({
   };
 
   const onSubmit = async values => {
+    if (newElection.voters.length == 0) {
+      setErrorMsg("Need to add at least 1 ENS/address");
+      return;
+    }
     if (newElection.candidates.length == 0) {
-      setErrorMsg("Need to add atleast 1 ENS/address");
+      setErrorMsg("Need to add at least 1 ENS/address candidate");
       return;
     }
     setIsConfirmingElection(true);
@@ -194,6 +199,7 @@ const Create = ({
         voteAllocation: 1,
         tokenAdr: "0x0000000000000000000000000000000000000000",
         kind: "ceramic",
+        votes: [],
         candidates: [],
       });
     }
@@ -210,6 +216,15 @@ const Create = ({
       ...prevState,
       description: e.target.value,
     }));
+  };
+
+  const updateCandidates = (checked, addr) => {
+    if (checked) {
+      newElection.candidates.push(addr);
+    } else {
+      newElection.candidates = newElection.candidates.filter(d => d !== addr);
+    }
+    console.log(newElection);
   };
 
   const updateSelectedQdip = e => {
@@ -252,11 +267,11 @@ const Create = ({
     }));
   };
 
-  const removeCandidate = cand => {
-    const newList = newElection.candidates.filter(item => item !== cand);
+  const removeVoter = cand => {
+    const newList = newElection.voters.filter(item => item !== cand);
     setNewElection(prevState => ({
       ...prevState,
-      candidates: newList,
+      voters: newList,
     }));
   };
 
@@ -275,8 +290,8 @@ const Create = ({
     if (toAddress.length != 42 || !toAddress.startsWith("0x")) {
       setToAddress("");
     } else {
-      if (!newElection.candidates.includes(toAddress)) {
-        newElection.candidates.push(toAddress);
+      if (!newElection.voters.includes(toAddress)) {
+        newElection.voters.push(toAddress);
       }
     }
 
@@ -291,8 +306,8 @@ const Create = ({
       try {
         // console.log(voteAddress);
         const voteAddressWithChecksum = ethers.utils.getAddress(voteAddress);
-        if (!newElection.candidates.includes(voteAddressWithChecksum)) {
-          newElection.candidates.push(voteAddressWithChecksum);
+        if (!newElection.voters.includes(voteAddressWithChecksum)) {
+          newElection.voters.push(voteAddressWithChecksum);
         }
       } catch (error) {
         console.log(error);
@@ -300,6 +315,12 @@ const Create = ({
     });
     setToAddress(" ");
     setToAddress("");
+  };
+
+  const addCandidates = async () => {
+    if (!newElection.candidates.includes(toAddress)) {
+      newElection.candidates.push(toAddress);
+    }
   };
 
   return (
@@ -421,8 +442,8 @@ const Create = ({
               <Box pb="1rem"></Box>
               <Divider backgroundColor="purple.500" />
               <Box pb="1rem"></Box>
-              <FormControl isInvalid={newElection.candidates.length == 0}>
-                <FormLabel htmlFor="candidates">Participants</FormLabel>
+              <FormControl isInvalid={newElection.voters.length == 0}>
+                <FormLabel htmlFor="voters">Participants</FormLabel>
                 <FormErrorMessage>{errors.votes && errors.votes.message}</FormErrorMessage>
               </FormControl>
               <HStack>
@@ -476,11 +497,16 @@ const Create = ({
                     </Tr>
                   </Thead>
                   <Tbody>
-                    {newElection.candidates.map((addr, idx) => (
+                    {newElection.voters.map((addr, idx) => (
                       <Tr key={idx}>
                         <Td w="0%">
                           <Center w="70px" color="white">
-                            <Checkbox></Checkbox>
+                            <Checkbox
+                              onChange={e => {
+                                console.log(e.target.checked, addr);
+                                updateCandidates(e.target.checked, addr);
+                              }}
+                            ></Checkbox>
                           </Center>
                         </Td>
                         <Td w="100%">
@@ -495,7 +521,7 @@ const Create = ({
                           <IconButton
                             aria-label="Remove address"
                             icon={<DeleteIcon />}
-                            onClick={() => removeCandidate(addr)}
+                            onClick={() => removeVoter(addr)}
                             variant="ghost"
                           />
                         </Td>
@@ -512,6 +538,7 @@ const Create = ({
                   <Center>
                     <Button
                       mt={4}
+                      mb={4}
                       width="30vw"
                       colorScheme="teal"
                       isLoading={isSubmitting || isConfirmingElection}
@@ -537,7 +564,7 @@ const Create = ({
             </CenteredFrame>
           )}
           {isCreatedElection && createdElection.id && (
-            <HStack justify="center" align="center" w="30%">
+            <HStack justify="center" align="center" w="80%">
               <ElectionCard
                 id={createdElection.id}
                 name={createdElection.name}

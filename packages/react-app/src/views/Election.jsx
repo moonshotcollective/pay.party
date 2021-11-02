@@ -182,7 +182,7 @@ export default function Election({
       setIsVoting(true);
       // FIX THIS
       const candidates = Array.from(candidateMap.keys());
-      // console.log({ candidates });
+      console.log({ candidates });
       const scores = [];
       let last = NaN;
       candidateMap.forEach(d => {
@@ -194,18 +194,17 @@ export default function Election({
         }
         last = d.score;
       });
-      // console.log({ scores });
+      console.log({ scores });
       let result = await qdipHandler.castBallot(id, candidates, scores, userSigner);
-      // console.log(totalScores);
       if (result) {
-        // console.log(result);
+        console.log(result);
         let res = await loadElectionState();
         if (res == "success") {
           setIsVoting(false);
           handleConfetti();
         }
       } else {
-        // console.log("could not cast ballot");
+        console.log("could not cast ballot");
         setIsVoting(false);
       }
     }

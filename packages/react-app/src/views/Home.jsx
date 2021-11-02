@@ -92,13 +92,13 @@ function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
             </TabList>
             <TabPanels>
               <TabPanel>
-                {Array.from(electionsMap.values()).some(election => election.tags.includes("candidate")) ? (
+                {Array.from(electionsMap.values()).some(election => election.tags.includes("voter")) ? (
                   <SimpleGrid columns={3} spacing={10} justifyItems="center">
                     {Array.from(electionsMap.values())
                       .reverse()
                       .map(
                         (election, idx) =>
-                          election.tags.includes("candidate") && (
+                          election.tags.includes("voter") && (
                             <ElectionCard
                               id={election.id}
                               key={idx}
