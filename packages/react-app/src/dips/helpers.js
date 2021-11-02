@@ -55,6 +55,7 @@ export const serializeCeramicElection = async (ceramicElectionId, address, ceram
   //   const { idx, ceramic } = await makeCeramicClient();
 
   const electionDoc = await ceramic.loadStream(id);
+  console.log(electionDoc.content);
   const creatorDid = electionDoc.controllers[0];
   let creatorMainAddress = creatorDid;
   const creatorAccounts = await idx.get("cryptoAccounts", creatorDid);
@@ -78,6 +79,9 @@ export const serializeCeramicElection = async (ceramicElectionId, address, ceram
     }
     if (electionDoc.content.candidates.includes(address)) {
       tags.push("candidate");
+    }
+    if (electionDoc.content.voters.includes(address)) {
+      tags.push("voter");
     }
   }
 
@@ -112,7 +116,36 @@ export const serializeCeramicElection = async (ceramicElectionId, address, ceram
     }
   }
 
-  const nVoted = Object.keys(candidatesSealedBallots) ? Object.keys(candidatesSealedBallots).length : 0;
+  const voterDids = await Promise.all(
+    electionDoc.content.voters.map(async voterAddress => {
+      const caip10 = await Caip10Link.fromAccount(ceramic, `${voterAddress}@eip155:${network.chainId}`);
+      return caip10.did;
+    }),
+  );
+  const voterSealedBallots = {};
+  for (let i = 0; i < voterDids.length; i++) {
+    const voterDid = voterDids[i];
+    const voterVotes = await idx.get("votes", voterDid);
+    if (voterVotes) {
+      const foundElectionBallots = Object.values(voterVotes).find(vote => {
+        return toCeramicId(vote.electionId) === id;
+      });
+      if (foundElectionBallots) {
+        // load the stream
+        const voterBallotDoc = await TileDocument.load(ceramic, foundElectionBallots.id);
+        // get the first commitId which immutable
+        const { allCommitIds } = voterBallotDoc;
+
+        const sealedVote = allCommitIds[0];
+        // load the first commit
+        const sealedVoteDoc = await TileDocument.load(ceramic, sealedVote);
+        // console.log(sealedVoteDoc.content);
+        voterSealedBallots[electionDoc.content.voters[i]] = sealedVoteDoc.content.map(vote => vote.voteAttribution);
+      }
+    }
+  }
+
+  const nVoted = Object.keys(voterSealedBallots) ? Object.keys(voterSealedBallots).length : 0;
 
   //  TODO: payout & total scores
   const defaultValues = electionDoc.content.candidates.reduce((candidatesAddress, addr) => {
@@ -121,7 +154,7 @@ export const serializeCeramicElection = async (ceramicElectionId, address, ceram
   }, {});
 
   const ballots = Object.values(candidatesSealedBallots);
-  //   console.log(ballots);
+  console.log(ballots);
   let totalScores = [];
   if (ballots.length > 0) {
     for (const candidateVotes of ballots) {
@@ -139,12 +172,13 @@ export const serializeCeramicElection = async (ceramicElectionId, address, ceram
   if (electionDoc.content.tokenAddress == TOKEN_ADR) {
     tokenSymbol = TOKEN;
   }
-  //   console.log({ content: electionDoc.content });
+  console.log({ content: electionDoc.content, tags });
   const serializedElection = {
     id,
     name: electionDoc.content.name,
+    voters: electionDoc.content.voters,
     candidates: electionDoc.content.candidates,
-    canVote: electionDoc.content.isActive && !hasVoted && tags.includes("candidate"),
+    canVote: electionDoc.content.isActive && tags.includes("voter") && !tags.includes("voted"),
     description: electionDoc.content.description,
     hasVoted,
     created_date: new Date(electionDoc.content.createdAt).toLocaleDateString(),
@@ -157,10 +191,11 @@ export const serializeCeramicElection = async (ceramicElectionId, address, ceram
     status: electionDoc.content.isActive,
     isPaid: electionDoc.content.isPaid,
     voteAllocation: electionDoc.content.voteAllocation,
-    n_voted: { n_voted: nVoted, outOf: electionDoc.content.candidates.length },
+    n_voted: { n_voted: nVoted, outOf: electionDoc.content.voters?.length },
     votes: candidatesSealedBallots,
     totalScores,
     tags: tags,
+    isVoter: tags.includes("voter"),
     isCandidate: tags.includes("candidate"),
     isAdmin: tags.includes("admin"),
     active: electionDoc.content.isActive,

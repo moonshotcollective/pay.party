@@ -15,6 +15,7 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
   const createElection = async ({
     name,
     description,
+    voters,
     candidates,
     fundAmount,
     fundAmountInWei,
@@ -39,6 +40,7 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
         {
           name: name,
           description: description,
+          voters: voters,
           candidates: candidates,
           creator: address,
           kind: "ceramic",
@@ -104,6 +106,7 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
     const { idx, ceramic, schemasCommitId } = await makeCeramicClient(address);
     const election = await serializeCeramicElection(id, address);
 
+    console.log({ election });
     const existingVotes = await idx.get("votes");
 
     // TODO: check if already voted for this election through another address linked to this did
@@ -114,14 +117,14 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
       return election.totalScores;
     }
 
-    // console.log({ quad_scores });
+    console.log({ quad_scores });
 
     const voteAttribution = quad_scores.map((voteAttributionCount, i) => ({
       address: election.candidates[i],
       voteAttribution: voteAttributionCount,
     }));
 
-    // console.log({ voteAttribution });
+    console.log({ voteAttribution });
 
     if (ceramic?.did?.id) {
       const ballotDoc = await TileDocument.create(ceramic, voteAttribution, {
@@ -147,6 +150,7 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
     }
 
     const electionResults = await serializeCeramicElection(id, address);
+    console.log({ election });
     return electionResults.totalScores;
   };
 
