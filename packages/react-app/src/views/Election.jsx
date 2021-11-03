@@ -136,7 +136,7 @@ export default function Election({
 
   const loadElectionState = async () => {
     let electionState = await qdipHandler.getElectionStateById(id);
-    // console.log({ electionState });
+    console.log({ electionState });
     electionState.amtFromWei = electionState.fundAmountInWei || "0";
     setElectionState(electionState);
     updateCandidateMap(electionState);
@@ -180,22 +180,15 @@ export default function Election({
       }
       setErrorMsg(null);
       setIsVoting(true);
-      // FIX THIS
       const candidates = Array.from(candidateMap.keys());
-      console.log({ candidates });
+      console.log({ candidateMap, candidates });
       const scores = [];
-      let last = NaN;
       candidateMap.forEach(d => {
-        if (last !== d.score) {
-          if (typeof d.score === "undefined") {
-            d.score = "0.00";
-          }
-          scores.push(Number(d.score));
-        }
-        last = d.score;
+        console.log({ d });
+        scores.push(Number(d.score));
       });
       console.log({ scores });
-      let result = await qdipHandler.castBallot(id, candidates, scores, userSigner);
+      let result = await qdipHandler.castBallot(id, candidates, scores);
       if (result) {
         console.log(result);
         let res = await loadElectionState();
@@ -207,6 +200,33 @@ export default function Election({
         console.log("could not cast ballot");
         setIsVoting(false);
       }
+      // FIX THIS
+      // const candidates = Array.from(candidateMap.keys());
+      // console.log({ candidates });
+      // const scores = [];
+      // let last = NaN;
+      // candidateMap.forEach(d => {
+      //   if (last !== d.score) {
+      //     if (typeof d.score === "undefined") {
+      //       d.score = "0.00";
+      //     }
+      //     scores.push(Number(d.score));
+      //   }
+      //   last = d.score;
+      // });
+      // console.log({ scores });
+      // let result = await qdipHandler.castBallot(id, candidates, scores, userSigner);
+      // if (result) {
+      //   console.log(result);
+      //   let res = await loadElectionState();
+      //   if (res == "success") {
+      //     setIsVoting(false);
+      //     handleConfetti();
+      //   }
+      // } else {
+      //   console.log("could not cast ballot");
+      //   setIsVoting(false);
+      // }
     }
   };
 
@@ -218,19 +238,20 @@ export default function Election({
     }
 
     let totalScores = await qdipHandler.getCandidatesScores(id);
-    // console.log({ totalScores });
+    console.log({ totalScores });
     let totalScoresSum = totalScores.reduce((sum, curr) => sum + curr, 0);
     // console.log({ totalScoresSum });
     let mapping = new Map();
-    if (candidateMap) {
-      mapping = candidateMap;
-    } else {
-      for (let i = 0; i < electionState.candidates.length; i++) {
-        mapping.set(electionState.candidates[i], { votes: 0, score: 0 });
-      }
+    // if (candidateMap) {
+    //   mapping = candidateMap;
+    // } else {
+    for (let i = 0; i < electionState.candidates.length; i++) {
+      mapping.set(electionState.candidates[i], { votes: 0, score: 0 });
     }
+    setCandidateMap(mapping);
+    // }
     // Score Updating and Quadratic Calculation
-    candidates.forEach((addr, idx) => {
+    const candidateArr = candidates.map((addr, idx) => {
       const candidate = mapping.get(addr);
       let votedAddrs = Object.keys(electionState.votes);
       candidate.voted = votedAddrs.includes(addr);
@@ -246,8 +267,14 @@ export default function Election({
       } else {
         candidate.payoutFromWei = "0";
       }
-      setCandidateMap(new Map(mapping.set(addr, candidate)));
+      // return candidate;
+      // Compute the scores from everyone
+      // return new Map(mapping.set(addr, candidate));
+      return [addr, candidate];
     });
+    const candidateMapping = new Map(candidateArr);
+    setCandidateMap(candidateMapping);
+    console.log({ candidateMapping });
   };
 
   const updateFinalPayout = async () => {

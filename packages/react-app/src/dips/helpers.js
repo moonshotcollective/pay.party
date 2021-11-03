@@ -139,11 +139,12 @@ export const serializeCeramicElection = async (ceramicElectionId, address, ceram
         const sealedVote = allCommitIds[0];
         // load the first commit
         const sealedVoteDoc = await TileDocument.load(ceramic, sealedVote);
-        // console.log(sealedVoteDoc.content);
-        voterSealedBallots[electionDoc.content.voters[i]] = sealedVoteDoc.content.map(vote => vote.voteAttribution);
+        console.log(sealedVoteDoc.content);
+        voterSealedBallots[electionDoc.content.candidates[i]] = sealedVoteDoc.content.map(vote => vote.voteAttribution);
       }
     }
   }
+  console.log({ voterSealedBallots });
 
   const nVoted = Object.keys(voterSealedBallots) ? Object.keys(voterSealedBallots).length : 0;
 
