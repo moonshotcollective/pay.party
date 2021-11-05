@@ -19,7 +19,7 @@ function VoteCard({
   return (
     <VStack align="left" w="100%" spacing="0.5rem">
       <Heading fontSize="1.5rem" color={headingColor}>
-        Vote
+        Cast Ballot
       </Heading>
       <Text pb="2rem" fontSize="1rem">
         Vote each member based on their contributions.

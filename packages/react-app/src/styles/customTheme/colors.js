@@ -59,11 +59,6 @@ const colors = {
 
 export default {
   colors: colors,
-  // fonts: {
-  //   body: "system-ui, sans-serif",
-  //   heading: "Georgia, serif",
-  //   mono: "Menlo, monospace",
-  // },
   fontSizes: {
     xs: "0.75rem",
     sm: "0.875rem",
