@@ -127,7 +127,7 @@ export default function Election({
     console.log({ candidates: candidates, scores: scores });
     let result = await handler.castBallot(id, candidates, scores);
     console.log({ result });
-    setIsBusy(false);
+    // setIsBusy(false);
     handleConfetti();
     init(id);
   };
@@ -138,7 +138,7 @@ export default function Election({
     console.log({ result });
     init(id);
     handleConfetti();
-    setIsBusyEnding(false);
+    // setIsBusyEnding(false);
   };
 
   const ethPayHandler = async () => {
@@ -165,7 +165,8 @@ export default function Election({
     });
     // TODO: catch exceptions
     handleConfetti();
-    setIsBusy(false);
+    // setIsBusy(false);
+    init(id);
   };
 
   const tokenPayHandler = async opts => {
@@ -180,7 +181,8 @@ export default function Election({
       tokenAddress: electionState.tokenAdr,
     });
     handleConfetti();
-    setIsBusy(false);
+    // setIsBusy(false);
+    init(id);
   };
 
   const distribute = async () => {
