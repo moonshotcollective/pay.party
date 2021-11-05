@@ -421,7 +421,7 @@ const Create = ({
                   Vote Allocation (number of votes for each voter)
                   <br />
                 </FormLabel>
-                <NumberInput max={50} min={1} defaultValue={newElection.voteAllocation}>
+                <NumberInput max={1000} min={1} defaultValue={newElection.voteAllocation}>
                   <NumberInputField
                     placeholder="Vote allocation"
                     borderColor="purple.500"
@@ -431,10 +431,6 @@ const Create = ({
                     value={newElection.voteAllocation}
                     onChange={updateVoteAllocation}
                   />
-                  <NumberInputStepper>
-                    <NumberIncrementStepper />
-                    <NumberDecrementStepper />
-                  </NumberInputStepper>
                 </NumberInput>
                 <FormErrorMessage>{errors.votes && errors.votes.message}</FormErrorMessage>
               </FormControl>

@@ -11,7 +11,7 @@ import {
   Flex,
   IconButton,
 } from "@chakra-ui/react";
-import {} from "@chakra-ui/icons";
+import {LockIcon} from "@chakra-ui/icons";
 import { useHistory, useParams } from "react-router-dom";
 import qs from "query-string";
 import { fromWei, toWei, toBN, numberToHex } from "web3-utils";
@@ -21,8 +21,10 @@ import Container from "../components/layout/Container";
 import SideCard from "../components/Cards/SideCard";
 import VoteCard from "../components/Cards/VoterCards/VoteCard";
 import dips from "../dips";
+import CeramicHandler from "../dips/ceramicHandler";
 import CenteredFrame from "../components/layout/CenteredFrame";
 import Confetti from "react-confetti";
+import { PayButton } from "../components";
 
 export default function Election({
   address,
@@ -35,340 +37,170 @@ export default function Election({
   writeContracts,
   yourLocalBalance,
 }) {
-  /***** Routes *****/
-  const routeHistory = useHistory();
+  // /***** Routes *****/
+  // const routeHistory = useHistory();
   let { id } = useParams();
-
-  /***** States *****/
-  const [selectedQdip, setSelectedQdip] = useState("onChain");
-  const [qdipHandler, setQdipHandler] = useState();
-
+  const [handler, setHandler] = useState();
   const [electionState, setElectionState] = useState({});
-  const [votesLeft, setVotesLeft] = useState(0);
-  const [tableSrc, setTableSrc] = useState([]);
-  //   const [tableCols, setTableCols] = useState([]);
-  const [errorMsg, setErrorMsg] = useState("");
-  const [isElectionEnding, setIsElectionEnding] = useState(false);
-  const [isVoting, setIsVoting] = useState(false);
-  const [candidateMap, setCandidateMap] = useState();
-  const [candidateScores, setCandidateScores] = useState([]);
-
-  //Payout
-  const [finalPayout, setFinalPayout] = useState({
-    scores: [],
-    payout: [],
-    scoreSum: 0,
-  });
-  const [token, setToken] = useState("ETH");
   const [spender, setSpender] = useState("");
-  const [availableTokens, setAvailableTokens] = useState([]);
-  const [isPaying, setIsPaying] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
-  const headingColor = useColorModeValue("yellow.600", "yellow.500");
+  const [voteMap, setVoteMap] = useState();
+  const [candidates, setCandidates] = useState([]);
+  const [canVote, setCanVote] = useState(false);
+  const [totalScores, setTotalScores] = useState([]);
+  const [percentDist, setPercentDist] = useState([]);
+  const [allocations, setAllocations] = useState([]);
+  const [isBusy, setIsBusy] = useState(false);
+  const [isBusyEnding, setIsBusyEnding] = useState(false);
   const [numberOfConfettiPieces, setNumberOfConfettiPieces] = useState(0);
+  const [distButtonText, setDistButtonText] = useState("Distribute");
 
-  const handleConfetti = e => {
-    setNumberOfConfettiPieces(200);
-    setTimeout(() => {
-      setNumberOfConfettiPieces(0);
-    }, 4000);
-  };
 
   /***** Effects *****/
   useEffect(() => {
     if (readContracts) {
       if (readContracts.Diplomat) {
         (async () => {
-          setIsLoading(true);
-          await init();
-          setIsLoading(false);
+          await init(id);
         })();
       }
     }
-  }, [readContracts, address]);
+  }, [readContracts, address, id]);
+  
+  const init = async id => {
+    // Set Handler to Ceramic
+    const handle = await CeramicHandler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner)
+    // Load the election state
+    const state = await handle.getElectionStateById(id);
+    
 
-  useEffect(() => {
-    if (qdipHandler) {
-      (async () => {
-        setIsLoading(true);
-        await loadElectionState();
-        setIsLoading(false);
-      })();
+    const voteMapping = new Map();
+    state.candidates.forEach(addr => {
+      voteMapping.set(addr, 0);
+    });
+
+    setVoteMap(voteMapping)
+    setElectionState(state)
+    setHandler(handle)
+    setSpender(readContracts?.Diplomat?.address)
+    setCandidates(state.candidates)
+    setCanVote(state.canVote);
+    setTotalScores(state.totalScores);
+    
+    if (!state.canVote && state.voters.includes(address)) { // Has voted -> Show stats
+      const totalScoreSum = state.totalScores.length > 0 ? state.totalScores.reduce((x, y) => x + y) : 0; 
+      const pdist = state.totalScores.map(score => (score/totalScoreSum).toFixed(12));
+      console.log({pdist})
+
+      // TODO: Write a test to make sure its always an int -> string
+      const alloc = pdist.map(p => String(p * state.fundAmountInWei));
+      console.log({alloc})    
+      setPercentDist(pdist)
+      setAllocations(alloc)
     }
-  }, [qdipHandler]);
 
-  useEffect(async () => {
-    if (candidateMap) {
-      if (electionState.isActive) {
-        // updateCandidateScore();
-      } else {
-        // updateFinalPayout();
-      }
-    }
-  }, [candidateMap]);
+    console.log({state: state, handle:handle, spender: spender})
 
-  useEffect(() => {
-    if (electionState && electionState.name) {
-      // updateTableSrc();
-      //   console.log({ electionState });
-      setVotesLeft(electionState.voteAllocation);
-    }
-  }, [electionState, address]);
+  }
 
-  /***** Methods *****/
-
-  const init = async () => {
-    const { kind } = qs.parse(location.search);
-    setQdipHandler(dips[kind].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner));
-    setSpender(readContracts?.Diplomat?.address);
-  };
-
-  const loadERC20List = async () => {
-    const erc20List = Object.keys(readContracts).reduce((acc, contract) => {
-      // console.log(contract);
-      if (typeof readContracts[contract].decimals !== "undefined") {
-        acc.push(contract);
-      }
-      return acc;
-    }, []);
-  };
-
-  const loadElectionState = async () => {
-    let electionState = await qdipHandler.getElectionStateById(id);
-    console.log({ electionState });
-    electionState.amtFromWei = electionState.fundAmountInWei || "0";
-    setElectionState(electionState);
-    updateCandidateMap(electionState);
-    return "success";
-  };
-
-  const minusVote = addr => {
-    if (typeof candidateMap !== "undefined") {
-      const candidate = candidateMap.get(addr);
-      if (candidate.votes > 0) {
-        candidate.votes = candidate.votes - 1;
-        candidate.score = (candidate.votes ** 0.5).toFixed(2);
-        candidateMap.set(addr, candidate);
-        setVotesLeft(votesLeft + 1);
-        setErrorMsg(null);
-      }
-    }
-    // console.log(candidate);
-  };
-
-  const addVote = addr => {
-    if (typeof candidateMap !== "undefined") {
-      const candidate = candidateMap.get(addr);
-      // console.log(candidate);
-      if (candidate.votes < electionState.voteAllocation && votesLeft > 0) {
-        candidate.votes = candidate.votes + 1;
-        candidate.score = (candidate.votes ** 0.5).toFixed(2);
-        candidateMap.set(addr, candidate);
-        setVotesLeft(votesLeft - 1);
-        setErrorMsg(null);
-      }
-    }
+  const handleConfetti = () => {
+    setNumberOfConfettiPieces(200);
+    setTimeout(() => {
+      setNumberOfConfettiPieces(0);
+    }, 4000);
   };
 
   const castBallot = async () => {
-    if (typeof candidateMap !== "undefined") {
-      console.log("casting ballot ", votesLeft);
-      if (votesLeft > 0) {
-        setErrorMsg("All remaining votes need to be distributed");
-        return;
-      }
-      setErrorMsg(null);
-      setIsVoting(true);
-      const candidates = Array.from(candidateMap.keys());
-      console.log({ candidateMap, candidates });
-      const scores = [];
-      candidateMap.forEach(d => {
-        console.log({ d });
-        scores.push(Number(d.score));
-      });
-      console.log({ scores });
-      let result = await qdipHandler.castBallot(id, candidates, scores);
-      if (result) {
-        console.log(result);
-        let res = await loadElectionState();
-        if (res == "success") {
-          setIsVoting(false);
-          handleConfetti();
-        }
-      } else {
-        console.log("could not cast ballot");
-        setIsVoting(false);
-      }
-      // FIX THIS
-      // const candidates = Array.from(candidateMap.keys());
-      // console.log({ candidates });
-      // const scores = [];
-      // let last = NaN;
-      // candidateMap.forEach(d => {
-      //   if (last !== d.score) {
-      //     if (typeof d.score === "undefined") {
-      //       d.score = "0.00";
-      //     }
-      //     scores.push(Number(d.score));
-      //   }
-      //   last = d.score;
-      // });
-      // console.log({ scores });
-      // let result = await qdipHandler.castBallot(id, candidates, scores, userSigner);
-      // if (result) {
-      //   console.log(result);
-      //   let res = await loadElectionState();
-      //   if (res == "success") {
-      //     setIsVoting(false);
-      //     handleConfetti();
-      //   }
-      // } else {
-      //   console.log("could not cast ballot");
-      //   setIsVoting(false);
-      // }
-    }
-  };
-
-  const updateCandidateMap = async electionState => {
-    const candidates = electionState.candidates;
-    if (!candidates) {
-      console.log("no candidates found");
-      return;
-    }
-
-    let totalScores = await qdipHandler.getCandidatesScores(id);
-    console.log({ totalScores });
-    let totalScoresSum = totalScores.reduce((sum, curr) => sum + curr, 0);
-    // console.log({ totalScoresSum });
-    let mapping = new Map();
-    // if (candidateMap) {
-    //   mapping = candidateMap;
-    // } else {
-    for (let i = 0; i < electionState.candidates.length; i++) {
-      mapping.set(electionState.candidates[i], { votes: 0, score: 0 });
-    }
-    setCandidateMap(mapping);
-    // }
-    // Score Updating and Quadratic Calculation
-    const candidateArr = candidates.map((addr, idx) => {
-      const candidate = mapping.get(addr);
-      let votedAddrs = Object.keys(electionState.votes);
-      candidate.voted = votedAddrs.includes(addr);
-      candidate.score = totalScores[idx];
-      candidate.allocation = (totalScores[idx] / totalScoresSum) * 100;
-      candidate.allocation = candidate.allocation.toFixed(2);
-      // console.log({ electionState });
-
-      const candidatePay = (totalScores[idx] / totalScoresSum) * electionState.fundAmount;
-      // console.log({ candidatePay });
-      if (!isNaN(candidatePay)) {
-        candidate.payoutFromWei = candidatePay.toString();
-      } else {
-        candidate.payoutFromWei = "0";
-      }
-      // return candidate;
-      // Compute the scores from everyone
-      // return new Map(mapping.set(addr, candidate));
-      return [addr, candidate];
-    });
-    const candidateMapping = new Map(candidateArr);
-    setCandidateMap(candidateMapping);
-    console.log({ candidateMapping });
-  };
-
-  const updateFinalPayout = async () => {
-    setFinalPayout(await qdipHandler.getFinalPayout(id));
-  };
+    setIsBusy(true);
+    const scores = []; 
+    const candidates = [];
+    voteMap.forEach((votes, addr) => {
+      scores.push(votes ** 0.5);
+      candidates.push(addr);
+    })
+    console.log({candidates: candidates, scores: scores})
+    let result = await handler.castBallot(id, candidates, scores);
+    console.log({result})
+    setIsBusy(false);
+    handleConfetti();
+    init(id);
+  }
 
   const endElection = async () => {
-    // console.log("endElection");
-    setIsElectionEnding(true);
-    let result = await qdipHandler.endElection(electionState.id);
-    if (result) {
-      // console.log(result);
-      let res = await loadElectionState();
-      if (res == "success") {
-        setIsElectionEnding(false);
-      }
-    } else {
-      console.log("could not end election");
-      setIsElectionEnding(false);
-    }
-  };
+    setIsBusyEnding(true);
+    let result = await handler.endElection(id);
+    console.log({result})
+    init(id);
+    handleConfetti();
+    setIsBusyEnding(false);
+  }
 
   const ethPayHandler = async () => {
-    if (typeof candidateMap !== "undefined") {
-      // console.log({ electionState, finalPayout });
-      const totalValueInWei = electionState.fundAmountInWei;
-      //convert payout to wei
-      let payoutInWei = [];
-      electionState.candidates.forEach((addr, idx) => {
-        const candidate = candidateMap.get(addr);
-        // console.log({ candidate });
-        payoutInWei.push(toWei(Number.parseFloat(candidate.payoutFromWei).toFixed(18).toString()));
-      });
-      // console.log({ payoutInWei });
-      const result = await qdipHandler.distributeEth({
-        id,
-        candidates: electionState.candidates,
-        payoutInWei,
-        totalValueInWei,
-        tokenAddress: electionState.tokenAdr,
-      });
-      // console.log(result);
-      if (result) {
-        let res = await loadElectionState();
-        if (res == "success") {
-          handleConfetti();
-          return result;
-        }
-      }
+
+    setIsBusy(true);
+    console.log("ether pay handler")
+    console.log({allocations: allocations, candidates: candidates})
+
+    const totalAllocation = allocations.reduce((x, y) => String(Number(x) + Number(y)), 0);
+
+    // check if total allocation is right and if not, default to less expensive
+    if (totalAllocation !== electionState.fundAmountInWei) { 
+      console.log("The expected allocation differs from the set allocation!")
     }
-  };
+
+
+    console.log({totalAllocation})
+
+    console.log({id: id, candidates:candidates, allocations: allocations})
+    const result = await handler.distributeEth({
+      id: id,
+      candidates: candidates,
+      payoutInWei: allocations,
+      totalValueInWei: electionState.fundAmountInWei,
+      tokenAddress: electionState.tokenAdr,
+    });
+    // TODO: catch exceptions
+    handleConfetti();
+    setIsBusy(false);
+  }
 
   const tokenPayHandler = async opts => {
-    if (typeof candidateMap !== "undefined") {
-      //convert payout to wei
-      let payoutInWei = [];
-      electionState.candidates.forEach((addr, idx) => {
-        const candidate = candidateMap.get(addr);
-        payoutInWei.push(toWei(candidate.payoutFromWei));
-      });
-      const result = await qdipHandler.distributeTokens({
-        id,
-        candidates: electionState.candidates,
-        payoutInWei,
-        tokenAddress: electionState.tokenAdr,
-      });
-      if (result) {
-        let res = await loadElectionState();
-        if (res == "success") {
-          handleConfetti();
-          return result;
-        }
-      }
+    setIsBusy(true);
+    console.log("token pay handler")
+    console.log({allocations: allocations, candidates: candidates})
+    console.log({id: id, candidates:candidates, allocations: allocations})
+    const result = await handler.distributeTokens({
+      id: id,
+      candidates: candidates,
+      payoutInWei: allocations,
+      tokenAddress: electionState.tokenAdr,
+    });
+    handleConfetti();
+    setIsBusy(false);
+  }
+
+  const distribute = async () => {
+    if (electionState.tokenAdr === "0x0000000000000000000000000000000000000000") {
+      ethPayHandler()
+    } else {
+      tokenPayHandler()
     }
-  };
-  return isLoading || !electionState.n_voted ? (
-    <CenteredFrame>
-      <Flex flexDirection="column" justifyContent="center" alignItems="center">
-        <Heading fontSize="1.5rem" color={headingColor}>
-          Loading election...
-        </Heading>
-        <Spinner color="purple.700" size="xl" />
-      </Flex>
-    </CenteredFrame>
-  ) : (
+  }
+
+  
+  return (
     <Container>
       <Confetti recycle={true} run={true} numberOfPieces={numberOfConfettiPieces} tweenDuration={3000} />
-      <Grid w="full" templateColumns="repeat(3, 1fr)" gap={6}>
+      <Grid 
+        w="full"
+        templateColumns="repeat(3, 1fr)"
+        gap={6}
+      >
         <GridItem colSpan={1}>
           <SideCard
             electionState={electionState}
             mainnetProvider={mainnetProvider}
             endElection={endElection}
-            isEndingElection={isElectionEnding}
+            isEndingElection={false}
             address={address}
             spender={spender}
             yourLocalBalance={yourLocalBalance}
@@ -377,6 +209,38 @@ export default function Election({
             ethPayHandler={ethPayHandler}
             tokenPayHandler={tokenPayHandler}
           />
+
+          { !electionState.isPaid && !electionState.active && electionState.isAdmin && (
+            <PayButton
+              token={electionState.tokenSymbol}
+              tokenAddr={electionState.tokenAdr}
+              appName="Quadratic Diplomacy"
+              // tokenListHandler={tokens => setAvailableTokens(tokens)}
+              callerAddress={address}
+              maxApproval={electionState.fundAmountInWei}
+              amount={electionState.fundAmountInWei}
+              spender={address}
+              yourLocalBalance={yourLocalBalance}
+              readContracts={readContracts}
+              writeContracts={writeContracts}
+              ethPayHandler={ethPayHandler}
+              tokenPayHandler={tokenPayHandler}
+            />
+
+          )}
+          { electionState.active && electionState.isAdmin && (
+            <Button
+              leftIcon={<LockIcon />}
+              isLoading={isBusyEnding}
+              loadingText="Ending Election..."
+              onClick={()=>{
+                console.log("end election"); 
+                endElection()
+              }}
+            >
+              End Election
+            </Button>
+          )}
         </GridItem>
         <GridItem colSpan={2}>
           <Box
@@ -389,47 +253,49 @@ export default function Election({
             py="3rem"
             px="2.5rem"
           >
-            {electionState.canVote ? (
+
+          {canVote ? (
               <>
-                <VoteCard
-                  candidates={electionState.candidates}
-                  candidateMap={candidateMap}
-                  voteAllocation={electionState.voteAllocation}
-                  votesLeft={votesLeft}
-                  addVote={addVote}
-                  minusVote={minusVote}
-                  mainnetProvider={mainnetProvider}
-                />
-                <Box w="full" pt="1rem" align="end">
-                  <Text fontSize="1rem" color="red.400">
-                    {errorMsg}
-                  </Text>
-                  <Button
-                    ml="0.5rem"
-                    onClick={castBallot}
-                    px="1.25rem"
-                    fontSize="md"
-                    isLoading={isVoting}
-                    loadingText="Voting"
-                  >
-                    Submit
-                  </Button>
-                </Box>
-              </>
-            ) : (
-              <>
-                <DistributionCard
-                  candidates={electionState.candidates}
-                  candidateMap={candidateMap}
-                  mainnetProvider={mainnetProvider}
-                  isPaid={electionState.isPaid}
-                  tokenSym={electionState.tokenSymbol}
-                />
-              </>
-            )}
+              <VoteCard
+                candidates={candidates}
+                voteMap={voteMap}
+                voteAllocation={electionState.voteAllocation}
+                mainnetProvider={mainnetProvider}
+              />
+              <Box w="full" pt="1rem" align="end">
+                <Button
+                  ml="0.5rem"
+                  onClick={castBallot}
+                  px="1.25rem"
+                  fontSize="md"
+                  isLoading={isBusy}
+                  loadingText="Voting"
+                >
+                  Submit
+                </Button>
+              </Box>
+            </>
+          ) : (
+            <>
+            <DistributionCard
+              candidates={candidates}
+              scores={totalScores}
+              percent={percentDist}
+              allocations={allocations}
+              fundAllocation={1}
+              candidateMap={{}}
+              mainnetProvider={mainnetProvider}
+              isPaid={electionState.isPaid}
+              tokenSym={electionState.tokenSymbol}
+            />
+          </>
+          )}
+
           </Box>
         </GridItem>
-      </Grid>
+      </Grid> 
+
     </Container>
   );
+
 }

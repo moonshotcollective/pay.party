@@ -2,9 +2,15 @@ import { useColorModeValue } from "@chakra-ui/color-mode";
 import { Avatar, Divider, Heading, Table, Tbody, Td, Text, Th, Thead, Tr, VStack, Tooltip } from "@chakra-ui/react";
 import { blockExplorer } from "../../App";
 import AddressChakra from "../AddressChakra";
+import { fromWei, toWei, toBN, numberToHex } from "web3-utils";
 
-function DistributionCard({ candidates, candidateMap, mainnetProvider, isPaid, tokenSym }) {
+function DistributionCard({ candidates, scores, percent, allocations, fundAllocation, candidateMap, mainnetProvider, isPaid, tokenSym }) {
   const headingColor = useColorModeValue("yellow.600", "yellow.500");
+
+  // const calcPercentAllocation = score => {
+  //   const total = scores.reduce((x, y) => x + y); 
+  //   return score/total;
+  // }
 
   return (
     <VStack align="start" w="100%" spacing="0.5rem">
@@ -34,7 +40,7 @@ function DistributionCard({ candidates, candidateMap, mainnetProvider, isPaid, t
             </Tr>
           </Thead>
           <Tbody>
-            {candidates.map(member => (
+            {candidates.map((member, i) => (
               <Tr key={member}>
                 <Td>
                   <AddressChakra
@@ -48,15 +54,18 @@ function DistributionCard({ candidates, candidateMap, mainnetProvider, isPaid, t
                   {candidateMap && !candidateMap.get(member).voted && isPaid && <Text color="red.600">Absent</Text>}
                 </Td> */}
                 <Td>
-                  <Text>{candidateMap && candidateMap.get(member).score}</Text>
+                  <Text>{scores[i]}</Text>
                 </Td>
                 <Td>
-                  <Text>{candidateMap && candidateMap.get(member).allocation}%</Text>
+                  <Text>{percent[i]}%</Text>
                 </Td>
                 <Td>
-                  <Tooltip label={candidateMap && candidateMap.get(member).payoutFromWei} aria-label="A tooltip">
+                  <Tooltip label={ allocations[i]} aria-label="Amount">
                     <Text color="yellow.500">
-                      {candidateMap && Number.parseFloat(candidateMap.get(member).payoutFromWei).toFixed(4)} {tokenSym}
+                      {/* {Number.parseFloat(allocations[i]).toFixed(4)} */}
+                      {Number.parseFloat(allocations[i]).toFixed(4)}
+                      {/* {calcPercentAllocation(scores[i]) * fundAllocation} */}
+                      {/* {candidateMap && Number.parseFloat(calcPercentAllocation(scores[i]) * fundAllocation).toFixed(4)} {tokenSym} */}
                     </Text>
                   </Tooltip>
                 </Td>

@@ -38,6 +38,9 @@ export const getNetwork = async () => {
   if (network.name === "homestead") {
     network = { name: "mainnet", chainId: 1 };
   }
+  if (network.chainId === 137 ) {
+    network = { name: "polygon", chainId: 137 };
+  }
   return { network, signer, provider };
 };
 

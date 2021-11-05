@@ -224,7 +224,7 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
       signer,
     );
 
-    // console.log({ id, candidates, tokenAddress, totalValueInWei, payoutInWei });
+    console.log({ id, candidates, tokenAddress, totalValueInWei, payoutInWei });
     try {
       const transaction = await contract.payElection(id, candidates, payoutInWei, tokenAddress, {
         value: totalValueInWei,
@@ -238,7 +238,7 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
       }
       return receipt;
     } catch (e) {
-      console.log("error in handler");
+      console.log("error in distribute eth handler");
       return null;
     }
   };

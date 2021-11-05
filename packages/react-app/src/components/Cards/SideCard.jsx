@@ -58,12 +58,15 @@ function ElectionCard({
         Total Funds
       </Text>
       <Text>
-        {fromWei(electionState.amtFromWei)} {electionState.tokenSymbol}
+        {/* {fromWei(electionState.amtFromWei)} {electionState.tokenSymbol} */}
       </Text>
       <Text fontSize="1rem" color="violet.500" mb="0">
         Voters
       </Text>
-      <Text>{`${electionState.n_voted.n_voted} / ${electionState.n_voted.outOf}`} Voted</Text>
+      <Text>
+        {/* {`${electionState.n_voted.n_voted} / ${electionState.n_voted.outOf}`}  */}
+        Voted
+      </Text>
       <Text fontSize="1rem" color="violet.500" mb="0">
         Status
       </Text>
@@ -72,40 +75,7 @@ function ElectionCard({
         Created on
       </Text>
       <Text pb="2rem">{electionState.created_date}</Text>
-      {electionState.isAdmin && electionState.active && (
-        <Button
-          mb="1rem"
-          w="full"
-          variant="solid"
-          bgColor="red.400"
-          onClick={endElection}
-          isLoading={isEndingElection}
-          loadingText="Ending"
-        >
-          End Election
-        </Button>
-      )}
-      {electionState && !electionState.active && electionState.isAdmin && !electionState.isPaid && (
-        <PayButton
-          token={electionState.tokenSymbol}
-          tokenAddr={electionState.tokenAdr}
-          appName="Quadratic Diplomacy"
-          // tokenListHandler={tokens => setAvailableTokens(tokens)}
-          callerAddress={address}
-          maxApproval={electionState.fundAmountInWei}
-          amount={electionState.fundAmountInWei}
-          spender={spender}
-          yourLocalBalance={yourLocalBalance}
-          readContracts={readContracts}
-          writeContracts={writeContracts}
-          ethPayHandler={ethPayHandler}
-          tokenPayHandler={tokenPayHandler}
-        />
-      )}
-
-      {/* <Button w="full" variant="outline">
-        Configure Election
-      </Button> */}
+     
     </Box>
   );
 }
