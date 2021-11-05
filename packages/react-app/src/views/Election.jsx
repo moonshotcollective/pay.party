@@ -78,10 +78,10 @@ export default function Election({
       voteMapping.set(addr, 0);
     });
 
-    setVoteMap(voteMapping)
-    setElectionState(state)
-    setHandler(handle)
-    setSpender(readContracts?.Diplomat?.address)
+    setVoteMap(voteMapping);
+    setElectionState(state);
+    setHandler(handle);
+    setSpender(readContracts?.Diplomat?.address); 
     setCandidates(state.candidates)
     setCanVote(state.canVote);
     setTotalScores(state.totalScores);
@@ -94,8 +94,8 @@ export default function Election({
       // TODO: Write a test to make sure its always an int -> string
       const alloc = pdist.map(p => String(p * state.fundAmountInWei));
       console.log({alloc})    
-      setPercentDist(pdist)
-      setAllocations(alloc)
+      setPercentDist(pdist); 
+      setAllocations(alloc);
     }
 
     console.log({state: state, handle:handle, spender: spender})
@@ -219,7 +219,7 @@ export default function Election({
               callerAddress={address}
               maxApproval={electionState.fundAmountInWei}
               amount={electionState.fundAmountInWei}
-              spender={address}
+              spender={spender}
               yourLocalBalance={yourLocalBalance}
               readContracts={readContracts}
               writeContracts={writeContracts}
