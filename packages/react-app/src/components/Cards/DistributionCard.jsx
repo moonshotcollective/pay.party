@@ -7,11 +7,6 @@ import { fromWei, toWei, toBN, numberToHex } from "web3-utils";
 function DistributionCard({ candidates, scores, percent, allocations, fundAllocation, candidateMap, mainnetProvider, isPaid, tokenSym }) {
   const headingColor = useColorModeValue("yellow.600", "yellow.500");
 
-  // const calcPercentAllocation = score => {
-  //   const total = scores.reduce((x, y) => x + y); 
-  //   return score/total;
-  // }
-
   return (
     <VStack align="start" w="100%" spacing="0.5rem">
       {!isPaid && (
@@ -33,7 +28,6 @@ function DistributionCard({ candidates, scores, percent, allocations, fundAlloca
           <Thead>
             <Tr>
               <Th>Voter</Th>
-              {/* <Th>Voted</Th> */}
               <Th>Quadratic Score</Th>
               <Th>Allocation</Th>
               <Th>Amount</Th>
@@ -49,23 +43,16 @@ function DistributionCard({ candidates, scores, percent, allocations, fundAlloca
                     blockExplorer={blockExplorer}
                   ></AddressChakra>
                 </Td>
-                {/* <Td>
-                  {candidateMap && candidateMap.get(member).voted && <Text color="green.600">Voted</Text>}{" "}
-                  {candidateMap && !candidateMap.get(member).voted && isPaid && <Text color="red.600">Absent</Text>}
-                </Td> */}
                 <Td>
-                  <Text>{scores[i]}</Text>
+                  <Text>{scores[i] ? Number.parseFloat(scores[i]).toFixed(2) : "0"}</Text>
                 </Td>
                 <Td>
-                  <Text>{percent[i]}%</Text>
+                  <Text>{Number.parseFloat(percent[i] * 100).toFixed(2)}%</Text>
                 </Td>
                 <Td>
-                  <Tooltip label={ allocations[i]} aria-label="Amount">
+                  <Tooltip label={ allocations[i] ? allocations[i] + " (wei)": "Loading..."} aria-label="Amount">
                     <Text color="yellow.500">
-                      {/* {Number.parseFloat(allocations[i]).toFixed(4)} */}
-                      {Number.parseFloat(allocations[i]).toFixed(4)}
-                      {/* {calcPercentAllocation(scores[i]) * fundAllocation} */}
-                      {/* {candidateMap && Number.parseFloat(calcPercentAllocation(scores[i]) * fundAllocation).toFixed(4)} {tokenSym} */}
+                      {allocations[i] ? `${Number.parseFloat(fromWei(String(allocations[i]), "ether")).toFixed(4)} ${tokenSym}` : "Loading..."}
                     </Text>
                   </Tooltip>
                 </Td>
