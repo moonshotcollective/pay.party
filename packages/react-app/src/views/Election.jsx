@@ -282,7 +282,7 @@ export default function Election({
               scores={totalScores}
               percent={percentDist}
               allocations={allocations}
-              fundAllocation={1}
+              fundAllocation={electionState.fundAllocation}
               candidateMap={{}}
               mainnetProvider={mainnetProvider}
               isPaid={electionState.isPaid}

@@ -58,14 +58,13 @@ function ElectionCard({
         Total Funds
       </Text>
       <Text>
-        {/* {fromWei(electionState.amtFromWei)} {electionState.tokenSymbol} */}
+        {electionState.fundAmount ? `${electionState.fundAmount} ${electionState.tokenSymbol}` : "Loading..."}
       </Text>
       <Text fontSize="1rem" color="violet.500" mb="0">
         Voters
       </Text>
       <Text>
-        {/* {`${electionState.n_voted.n_voted} / ${electionState.n_voted.outOf}`}  */}
-        Voted
+        {electionState.n_voted ? `${electionState.n_voted.n_voted} / ${electionState.n_voted.outOf} Voted` : "Loading..."} 
       </Text>
       <Text fontSize="1rem" color="violet.500" mb="0">
         Status

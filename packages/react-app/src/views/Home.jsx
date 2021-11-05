@@ -14,6 +14,7 @@ import ElectionCard from "../components/Cards/ElectionCard";
 import BaseHandler from "../dips/baseHandler";
 import { fromWei, toBN } from "web3-utils";
 import CenteredFrame from "../components/layout/CenteredFrame";
+import { getAllCeramicElections, newSerializeCeramicElection } from "../dips/helpers";
 
 function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
   /***** Routes *****/
@@ -44,8 +45,20 @@ function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
         console.log("rerendered ");
         setIsLoading(true);
         let { idx, ceramic } = await qdipHandler.makeCeramic();
-        let electionsMap = await qdipHandler.getElections(ceramic, idx);
-        // console.log({ electionsMap });
+        // let electionsMap = await qdipHandler.getElections(ceramic, idx);
+        // // console.log({ electionsMap });
+        // setElectionsMap(electionsMap);
+        // setIsLoading(false);
+        // const { ceramic, idx } = await makeCeramicClient();
+        const elections = await getAllCeramicElections(readContracts.Diplomat, ceramic);
+        const sElecs = await Promise.all(
+          Object.entries(elections).map(([id, elec]) =>
+            newSerializeCeramicElection({ id, electionDoc: elec, address, ceramic, idx }),
+          ),
+        );
+        const electionsMap = new Map();
+        sElecs.forEach(elec => electionsMap.set(elec.id, elec));
+        console.log({ electionsMap });
         setElectionsMap(electionsMap);
         setIsLoading(false);
       }
@@ -67,7 +80,7 @@ function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
         <Heading fontSize="1.5rem" color={headingColor}>
           Elections
         </Heading>
-        <Box>
+        <Box pr={40}>
           <Button onClick={createElection} rightIcon={<AddIcon />}>
             Create Election
           </Button>
@@ -106,7 +119,7 @@ function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
                               owner={election.creator}
                               voted={`${election.n_voted.n_voted} / ${election.n_voted.outOf}`}
                               active={election.active}
-                              amount={fromWei(election.amtFromWei || "0")}
+                              amount={fromWei(election.fundAmountInWei || "0")}
                               tokenSymbol={election.tokenSymbol}
                               createdAt={election.created_date}
                               mainnetProvider={mainnetProvider}
@@ -158,7 +171,7 @@ function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
                                 tokenSymbol={election.tokenSymbol}
                                 voted={`${election.n_voted.n_voted} / ${election.n_voted.outOf}`}
                                 active={election.active}
-                                amount={fromWei(election.amtFromWei)}
+                                amount={fromWei(election.fundAmountInWei)}
                                 createdAt={election.created_date}
                               />
                             ),
