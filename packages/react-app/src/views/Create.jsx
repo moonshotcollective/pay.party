@@ -71,9 +71,11 @@ const Create = ({
   userSigner,
   yourLocalBalance,
   price,
+  signer,
   tx,
   readContracts,
   writeContracts,
+  targetNetwork,
 }) => {
   /***** Routes *****/
   const routeHistory = useHistory();
@@ -131,12 +133,12 @@ const Create = ({
   /***** Effects *****/
 
   useEffect(() => {
-    if (readContracts && writeContracts) {
-      if (readContracts.Diplomat) {
-        init();
+    if (readContracts) {
+      if (readContracts.Diplomat && targetNetwork) {
+        return init();
       }
     }
-  }, [writeContracts, readContracts, address]);
+  }, [readContracts, targetNetwork]);
 
   useEffect(async () => {
     if (qdipHandler) {
@@ -145,8 +147,18 @@ const Create = ({
 
   useEffect(() => {
     // console.log(selectedQdip);
-    setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner));
-  }, [selectedQdip]);
+    setQdipHandler(
+      dips[selectedQdip].handler(
+        tx,
+        readContracts,
+        writeContracts,
+        mainnetProvider,
+        address,
+        userSigner,
+        targetNetwork,
+      ),
+    );
+  }, [selectedQdip, targetNetwork]);
 
   useEffect(() => {
     append("");
@@ -159,8 +171,18 @@ const Create = ({
     routeHistory.push("/");
   };
 
-  const init = async () => {
-    setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner));
+  const init = () => {
+    setQdipHandler(
+      dips[selectedQdip].handler(
+        tx,
+        readContracts,
+        writeContracts,
+        mainnetProvider,
+        address,
+        userSigner,
+        targetNetwork,
+      ),
+    );
   };
 
   const onSubmit = async values => {
@@ -234,7 +256,15 @@ const Create = ({
       kind: e.target.value,
     }));
     setQdipHandler(
-      dips[e.target.value].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner),
+      dips[e.target.value].handler(
+        tx,
+        readContracts,
+        writeContracts,
+        mainnetProvider,
+        address,
+        userSigner,
+        targetNetwork,
+      ),
     );
   };
 

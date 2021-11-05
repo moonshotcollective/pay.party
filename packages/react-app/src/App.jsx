@@ -23,6 +23,8 @@ import Fortmatic from "fortmatic";
 import Authereum from "authereum";
 
 import { Box, Text, Heading, VStack, HStack, Divider, Button as ChakraButton } from "@chakra-ui/react";
+import NotConnectedCard from "./components/Cards/NotConnectedCard";
+import CenteredFrame from "./components/layout/CenteredFrame";
 
 const { ethers } = require("ethers");
 /*
@@ -453,55 +455,64 @@ function App(props) {
           />
         </div>
         <Header />
-        <BrowserRouter>
-          <Switch>
-            <Route exact path="/">
-              <Home
-                address={address}
-                tx={tx}
-                readContracts={readContracts}
-                writeContracts={writeContracts}
-                mainnetProvider={mainnetProvider}
-              />
-            </Route>
-            <Route path="/create">
-              <Create
-                address={address}
-                userSigner={userSigner}
-                mainnetProvider={mainnetProvider}
-                localProvider={localProvider}
-                yourLocalBalance={yourLocalBalance}
-                price={price}
-                tx={tx}
-                writeContracts={writeContracts}
-                readContracts={readContracts}
-              />
-            </Route>
-            <Route path="/election/:id">
-              <Election
-                address={address}
-                userSigner={userSigner}
-                mainnetProvider={mainnetProvider}
-                localProvider={localProvider}
-                yourLocalBalance={lb}
-                price={price}
-                tx={tx}
-                writeContracts={writeContracts}
-                readContracts={readContracts}
-              />
-            </Route>
-            <Route exact path="/debug">
-              <Contract
-                name="Diplomat"
-                signer={userSigner}
-                provider={localProvider}
-                address={address}
-                blockExplorer={blockExplorer}
-                contractConfig={contractConfig}
-              />
-            </Route>
-          </Switch>
-        </BrowserRouter>
+        {address && address !== "" ? (
+          <BrowserRouter>
+            <Switch>
+              <Route exact path="/">
+                <Home
+                  address={address}
+                  tx={tx}
+                  targetNetwork={targetNetwork}
+                  readContracts={readContracts}
+                  writeContracts={writeContracts}
+                  mainnetProvider={mainnetProvider}
+                />
+              </Route>
+              <Route path="/create">
+                <Create
+                  address={address}
+                  userSigner={userSigner}
+                  mainnetProvider={mainnetProvider}
+                  localProvider={localProvider}
+                  yourLocalBalance={yourLocalBalance}
+                  price={price}
+                  tx={tx}
+                  targetNetwork={targetNetwork}
+                  writeContracts={writeContracts}
+                  readContracts={readContracts}
+                />
+              </Route>
+              <Route path="/election/:id">
+                <Election
+                  address={address}
+                  userSigner={userSigner}
+                  targetNetwork={targetNetwork}
+                  mainnetProvider={mainnetProvider}
+                  localProvider={localProvider}
+                  yourLocalBalance={lb}
+                  price={price}
+                  tx={tx}
+                  writeContracts={writeContracts}
+                  readContracts={readContracts}
+                />
+              </Route>
+              <Route exact path="/debug">
+                <Contract
+                  name="Diplomat"
+                  signer={userSigner}
+                  provider={localProvider}
+                  address={address}
+                  blockExplorer={blockExplorer}
+                  contractConfig={contractConfig}
+                />
+              </Route>
+            </Switch>
+          </BrowserRouter>
+        ) : (
+          <CenteredFrame>
+            <NotConnectedCard />
+          </CenteredFrame>
+        )}
         <Footer />
       </Box>
     </div>

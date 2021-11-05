@@ -120,7 +120,9 @@ export default function Election_deprecated({
 
   const init = async () => {
     const { kind } = qs.parse(location.search);
-    setQdipHandler(dips[kind].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner));
+    setQdipHandler(
+      dips[kind].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner, targetNetwork),
+    );
     setSpender(readContracts?.Diplomat?.address);
   };
 
@@ -185,12 +187,12 @@ export default function Election_deprecated({
       // console.log({ candidateMap, candidates });
       const scores = [];
       const candidates = [];
-      candidateMap.forEach( (data, addr) => {
-        console.log(data)
-        scores.push(data.score); 
+      candidateMap.forEach((data, addr) => {
+        console.log(data);
+        scores.push(data.score);
         candidates.push(addr);
       });
-      console.log(candidates, scores)
+      console.log(candidates, scores);
       // let result = await qdipHandler.castBallot(id, candidates, scores);
       //       if (result) {
       //   console.log(result);
@@ -216,7 +218,7 @@ export default function Election_deprecated({
       //   // scores.push(Number(data.scores))
       //   // scoreMap.set(addr, (data.scores))
       // })
-      // // scoreMap.set(candidates, scores); 
+      // // scoreMap.set(candidates, scores);
       // console.log({scoreMap})
       // setIsVoting(false)
       // const scores = [];

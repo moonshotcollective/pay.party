@@ -12,6 +12,7 @@ import App from "./App";
 import "./index.css";
 import createEmotionCache from "./styles/createEmotionCache";
 import customTheme from "./styles/customTheme";
+import { Web3Provider } from "./helpers/Web3Context";
 
 const themes = {
   dark: `${process.env.PUBLIC_URL}/dark-theme.css`,

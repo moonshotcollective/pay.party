@@ -3,7 +3,7 @@ import { AddIcon, DeleteIcon } from "@chakra-ui/icons";
 import { Box, Flex, Heading, HStack, SimpleGrid } from "@chakra-ui/layout";
 import { Divider, Tab, TabList, TabPanel, TabPanels, Spinner, Tabs, Text, Center } from "@chakra-ui/react";
 import { useColorModeValue } from "@chakra-ui/color-mode";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 import axios from "axios";
 
@@ -15,8 +15,23 @@ import BaseHandler from "../dips/baseHandler";
 import { fromWei, toBN } from "web3-utils";
 import CenteredFrame from "../components/layout/CenteredFrame";
 import { getAllCeramicElections, newSerializeCeramicElection } from "../dips/helpers";
+import { Web3Context } from "../helpers/Web3Context";
 
-function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
+function Home({
+  address,
+  mainnetProvider,
+  localProvider,
+  mainnetContracts,
+  userSigner,
+  yourLocalBalance,
+  price,
+  tx,
+  signer,
+  readContracts,
+  writeContracts,
+  targetNetwork,
+  contract,
+}) {
   /***** Routes *****/
   const routeHistory = useHistory();
 
@@ -32,12 +47,13 @@ function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
   };
   /***** Effects *****/
   useEffect(() => {
-    if (readContracts && readContracts.Diplomat) {
+    if (readContracts && readContracts.Diplomat && targetNetwork) {
       (async () => {
+        console.log("INIT HOME");
         await init();
       })();
     }
-  }, [readContracts, address]);
+  }, [readContracts, address, targetNetwork]);
 
   useEffect(() => {
     (async () => {
@@ -53,7 +69,7 @@ function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
         const elections = await getAllCeramicElections(readContracts.Diplomat, ceramic);
         const sElecs = await Promise.all(
           Object.entries(elections).map(([id, elec]) =>
-            newSerializeCeramicElection({ id, electionDoc: elec, address, ceramic, idx }),
+            newSerializeCeramicElection({ id, electionDoc: elec, address, ceramic, idx, targetNetwork }),
           ),
         );
         const electionsMap = new Map();
@@ -69,7 +85,9 @@ function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
   const init = async () => {
     // console.log(address);
     if (address) {
-      setQdipHandler(BaseHandler(tx, readContracts, writeContracts, mainnetProvider, address));
+      setQdipHandler(
+        BaseHandler(tx, readContracts, writeContracts, mainnetProvider, address, undefined, targetNetwork),
+      );
     }
   };
   const headingColor = useColorModeValue("yellow.600", "yellow.500");
