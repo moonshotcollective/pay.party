@@ -32,11 +32,16 @@ function ElectionCard({
       </Text>
       {electionState && !electionState.active && electionState.isPaid && (
         <Text fontSize="1rem" color="green.500" mb="0">
-          PAID
+          Paid
+        </Text>
+      )}
+      {electionState && electionState.isVoter && (
+        <Text fontSize="1rem" color="blue.500" mb="0">
+          Voter
         </Text>
       )}
       <Heading fontSize="1.5rem" color="violet.50">
-        {electionState.name}
+        {electionState.name ? electionState.name : "Loading..."}
       </Heading>
       <Text pb="1rem" fontSize="1rem">
         {electionState.description}
