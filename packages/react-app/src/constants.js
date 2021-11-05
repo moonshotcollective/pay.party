@@ -64,6 +64,16 @@ export const NETWORKS = {
     faucet: "https://xdai-faucet.top/",
     blockExplorer: "https://blockscout.com/poa/xdai/",
   },
+  polygon: {
+    name: "polygon",
+    color: "#2bbdf7",
+    chainId: 137,
+    price: 1,
+    gasPrice: 1000000000,
+    rpcUrl: "https://polygon-rpc.com/",
+    faucet: "https://faucet.matic.network/",
+    blockExplorer: "https://polygonscan.com/",
+  },
   matic: {
     name: "matic",
     color: "#2bbdf7",
