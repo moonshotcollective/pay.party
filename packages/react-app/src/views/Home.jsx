@@ -189,6 +189,7 @@ function Home({
                                 tokenSymbol={election.tokenSymbol}
                                 voted={`${election.n_voted.n_voted} / ${election.n_voted.outOf}`}
                                 active={election.active}
+                                isPaid={election.isPaid}
                                 amount={fromWei(election.fundAmountInWei)}
                                 createdAt={election.created_date}
                               />

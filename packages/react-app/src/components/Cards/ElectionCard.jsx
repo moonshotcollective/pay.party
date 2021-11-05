@@ -7,7 +7,7 @@ import { Address } from "../index";
 import { CERAMIC_PREFIX } from "../../dips/helpers";
 import { Web3Context } from "../../helpers/Web3Context";
 
-function ElectionCard({ id, name, owner, voted, active, createdAt, amount, tokenSymbol, election, mainnetProvider }) {
+function ElectionCard({ id, name, owner, voted, active, isPaid, createdAt, amount, tokenSymbol, election, mainnetProvider }) {
   const { blockExplorer } = useContext(Web3Context);
   const routeHistory = useHistory();
 
@@ -25,19 +25,22 @@ function ElectionCard({ id, name, owner, voted, active, createdAt, amount, token
         </Heading>
       </HStack>
       <HStack spacing={2} pb={4}>
-        <Tag size="sm" variant="solid" colorScheme={active ? "green" : "red"}>
+        <Tag size="sm" variant="solid" colorScheme={active ? "green" : "gray"}>
           {active ? "Active" : "Inactive"}
+        </Tag>
+        {/* <Tag size="sm" variant="solid" colorScheme={isPaid ? "gray" : "green"}>
+          {isPaid ? "" : "Paid"}
         </Tag>
         <Tag size="sm" variant="solid" colorScheme="purple">
           {voted} voted
-        </Tag>
+        </Tag> */}
       </HStack>
       <Address address={owner} fontSize="14pt" ensProvider={mainnetProvider} blockExplorer={blockExplorer} />
       <Text py="2rem" fontSize="1rem">
         {/* This is an election description that is maximum 2 lines long */}
       </Text>
       <Text color="violet.50" fontSize="1rem">
-        {amount} {tokenSymbol || "ETH"}
+        Fund: {amount} {tokenSymbol || "ETH"}
       </Text>
       <Text color="violet.50" pb="2rem" fontSize="1rem">
         Created on {createdAt}

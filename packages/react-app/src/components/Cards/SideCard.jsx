@@ -1,5 +1,5 @@
 import { ChevronLeftIcon } from "@chakra-ui/icons";
-import { Avatar, Box, Button, Heading, Text } from "@chakra-ui/react";
+import { Avatar, Box, Button, Heading, Text, Tag, HStack } from "@chakra-ui/react";
 import { useHistory } from "react-router-dom";
 import { blockExplorer } from "../../App";
 import AddressChakra from "../AddressChakra";
@@ -33,17 +33,19 @@ function ElectionCard({
         <ChevronLeftIcon />
         Back
       </Text>
+      <HStack>
       {electionState && !electionState.active && electionState.isPaid && (
-        <Text fontSize="1rem" color="green.500" mb="0">
+        <Tag fontSize="1rem" color="green.500" mb="0">
           Paid
-        </Text>
+        </Tag>
       )}
       {electionState && electionState.isVoter && (
-        <Text fontSize="1rem" color="blue.500" mb="0">
+        <Tag fontSize="1rem" color="blue.500" mb="0">
           Voter
-        </Text>
+        </Tag>
       )}
-      <Heading fontSize="1.5rem" color="violet.50">
+      </HStack>
+      <Heading fontSize="1.5rem" color="violet.50" pt={4}>
         {electionState.name ? electionState.name : "Loading..."}
       </Heading>
       <Text pb="1rem" fontSize="1rem">
