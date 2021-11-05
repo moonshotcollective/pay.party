@@ -5,6 +5,8 @@ import { blockExplorer } from "../../App";
 import AddressChakra from "../AddressChakra";
 import { PayButton } from "../../components";
 import { fromWei } from "web3-utils";
+import { useContext } from "react";
+import { Web3Context } from "../../helpers/Web3Context";
 
 function ElectionCard({
   electionState,
@@ -19,6 +21,7 @@ function ElectionCard({
   ethPayHandler,
   tokenPayHandler,
 }) {
+  const { blockExplorer } = useContext(Web3Context);
   const routeHistory = useHistory();
   function goBack() {
     routeHistory.push("/");
@@ -69,7 +72,9 @@ function ElectionCard({
         Voters
       </Text>
       <Text>
-        {electionState.n_voted ? `${electionState.n_voted.n_voted} / ${electionState.n_voted.outOf} Voted` : "Loading..."} 
+        {electionState.n_voted
+          ? `${electionState.n_voted.n_voted} / ${electionState.n_voted.outOf} Voted`
+          : "Loading..."}
       </Text>
       <Text fontSize="1rem" color="violet.500" mb="0">
         Status
@@ -79,7 +84,6 @@ function ElectionCard({
         Created on
       </Text>
       <Text pb="2rem">{electionState.created_date}</Text>
-     
     </Box>
   );
 }

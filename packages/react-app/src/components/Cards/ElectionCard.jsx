@@ -1,12 +1,14 @@
 import { Avatar, Box, Button, Heading, Text, Tag, HStack, VStack } from "@chakra-ui/react";
 import { useHistory } from "react-router-dom";
-import { Address } from "../index";
-import { blockExplorer } from "../../App";
+import { useContext } from "react";
 import { fromWei } from "web3-utils";
 
+import { Address } from "../index";
 import { CERAMIC_PREFIX } from "../../dips/helpers";
+import { Web3Context } from "../../helpers/Web3Context";
 
 function ElectionCard({ id, name, owner, voted, active, createdAt, amount, tokenSymbol, election, mainnetProvider }) {
+  const { blockExplorer } = useContext(Web3Context);
   const routeHistory = useHistory();
 
   function viewElection() {

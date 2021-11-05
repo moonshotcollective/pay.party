@@ -11,26 +11,24 @@ const CURRENCY = "ETH";
 const TOKEN = process.env.REACT_APP_TOKEN_SYMBOL;
 const TOKEN_ADR = process.env.REACT_APP_TOKEN_ADDRESS;
 
-
 //// PASTE HERE
 export const getAllCeramicElections = async (contract, ceramic) => {
   console.time("getCeramicElectionIds");
   const electionIds = await getCeramicElectionIds(contract);
   console.timeEnd("getCeramicElectionIds");
- 
+
   console.time("multiElec");
   const elections = await ceramic.multiQuery(electionIds.map(streamId => ({ streamId })));
   console.timeEnd("multiElec");
   return elections;
 };
- 
-export const newSerializeCeramicElection = async ({ id, electionDoc, address, ceramic, idx }) => {
+
+export const newSerializeCeramicElection = async ({ id, electionDoc, address, ceramic, idx, targetNetwork }) => {
   const creatorDid = electionDoc.controllers[0];
   let creatorMainAddress = creatorDid;
   const creatorAccounts = await idx.get("cryptoAccounts", creatorDid);
   const tags = [];
-  const { network } = await getNetwork();
-  const caip10 = await Caip10Link.fromAccount(ceramic, `${address}@eip155:${network.chainId}`);
+  const caip10 = await Caip10Link.fromAccount(ceramic, `${address}@eip155:${targetNetwork.chainId}`);
   const existingVotes = await idx.get("votes", caip10.did);
   // TODO: check if already voted for this election through another address
   const previousVotes = existingVotes ? Object.values(existingVotes) : null;
@@ -53,10 +51,10 @@ export const newSerializeCeramicElection = async ({ id, electionDoc, address, ce
       tags.push("voter");
     }
   }
- 
+
   const candidateDids = await Promise.all(
     electionDoc.content.candidates.map(async candidateAddress => {
-      const caip10 = await Caip10Link.fromAccount(ceramic, `${candidateAddress}@eip155:${network.chainId}`);
+      const caip10 = await Caip10Link.fromAccount(ceramic, `${candidateAddress}@eip155:${targetNetwork.chainId}`);
       return caip10.did;
     }),
   );
@@ -73,7 +71,7 @@ export const newSerializeCeramicElection = async ({ id, electionDoc, address, ce
         const candidateBallotDoc = await TileDocument.load(ceramic, foundElectionBallots.id);
         // get the first commitId which immutable
         const { allCommitIds } = candidateBallotDoc;
- 
+
         const sealedVote = allCommitIds[0];
         // load the first commit
         const sealedVoteDoc = await TileDocument.load(ceramic, sealedVote);
@@ -84,10 +82,10 @@ export const newSerializeCeramicElection = async ({ id, electionDoc, address, ce
       }
     }
   }
- 
+
   const voterDids = await Promise.all(
     electionDoc.content.voters.map(async voterAddress => {
-      const caip10 = await Caip10Link.fromAccount(ceramic, `${voterAddress}@eip155:${network.chainId}`);
+      const caip10 = await Caip10Link.fromAccount(ceramic, `${voterAddress}@eip155:${targetNetwork.chainId}`);
       return caip10.did;
     }),
   );
@@ -104,7 +102,7 @@ export const newSerializeCeramicElection = async ({ id, electionDoc, address, ce
         const voterBallotDoc = await TileDocument.load(ceramic, foundElectionBallots.id);
         // get the first commitId which immutable
         const { allCommitIds } = voterBallotDoc;
- 
+
         const sealedVote = allCommitIds[0];
         // load the first commit
         const sealedVoteDoc = await TileDocument.load(ceramic, sealedVote);
@@ -113,14 +111,14 @@ export const newSerializeCeramicElection = async ({ id, electionDoc, address, ce
       }
     }
   }
- 
+
   const nVoted = Object.keys(voterSealedBallots) ? Object.keys(voterSealedBallots).length : 0;
- 
+
   const defaultValues = electionDoc.content.candidates.reduce((candidatesAddress, addr) => {
     candidatesAddress[addr] = 0;
     return candidatesAddress;
   }, {});
- 
+
   const ballots = Object.values(voterSealedBallots);
   console.log(ballots);
   let totalScores = [];
@@ -186,28 +184,28 @@ export const getCeramicElectionIds = async diplomatContract => {
   return elections;
 };
 
-export const getNetwork = async () => {
-  const web3Modal = new Web3Modal();
-  const connection = await web3Modal.connect();
-  const provider = new ethers.providers.Web3Provider(connection);
-  const signer = provider.getSigner();
-  let network = await provider.getNetwork();
-  // console.log(network);
-  if (network.chainId === 31337 || network.chainId === 1337) {
-    network = { name: "localhost", chainId: 31337 };
-  }
-  if (network.name === "homestead") {
-    network = { name: "mainnet", chainId: 1 };
-  }
-  if (network.chainId === 137 ) {
-    network = { name: "polygon", chainId: 137 };
-  }
-  return { network, signer, provider };
-};
+// export const getNetwork = async () => {
+//   const web3Modal = new Web3Modal();
+//   const connection = await web3Modal.connect();
+//   const provider = new ethers.providers.Web3Provider(connection);
+//   const signer = provider.getSigner();
+//   let network = await provider.getNetwork();
+//   // console.log(network);
+//   if (network.chainId === 31337 || network.chainId === 1337) {
+//     network = { name: "localhost", chainId: 31337 };
+//   }
+//   if (network.name === "homestead") {
+//     network = { name: "mainnet", chainId: 1 };
+//   }
+//   if (network.chainId === 137) {
+//     network = { name: "polygon", chainId: 137 };
+//   }
+//   return { network, signer, provider };
+// };
 
 export const toCeramicId = id => (id.startsWith(CERAMIC_PREFIX) ? id : CERAMIC_PREFIX + id);
 
-export const serializeCeramicElection = async (ceramicElectionId, address, ceramic, idx) => {
+export const serializeCeramicElection = async (ceramicElectionId, address, ceramic, idx, targetNetwork) => {
   console.log("serializeCeramicElection");
   const id = toCeramicId(ceramicElectionId);
   if (!idx || !ceramic) {
@@ -224,8 +222,7 @@ export const serializeCeramicElection = async (ceramicElectionId, address, ceram
   let creatorMainAddress = creatorDid;
   const creatorAccounts = await idx.get("cryptoAccounts", creatorDid);
   const tags = [];
-  const { network } = await getNetwork();
-  const caip10 = await Caip10Link.fromAccount(ceramic, `${address}@eip155:${network.chainId}`);
+  const caip10 = await Caip10Link.fromAccount(ceramic, `${address}@eip155:${targetNetwork.chainId}`);
   const existingVotes = await idx.get("votes", caip10.did);
   // TODO: check if already voted for this election through another address
   const previousVotes = existingVotes ? Object.values(existingVotes) : null;
@@ -251,7 +248,7 @@ export const serializeCeramicElection = async (ceramicElectionId, address, ceram
 
   const candidateDids = await Promise.all(
     electionDoc.content.candidates.map(async candidateAddress => {
-      const caip10 = await Caip10Link.fromAccount(ceramic, `${candidateAddress}@eip155:${network.chainId}`);
+      const caip10 = await Caip10Link.fromAccount(ceramic, `${candidateAddress}@eip155:${targetNetwork.chainId}`);
       return caip10.did;
     }),
   );
@@ -282,7 +279,7 @@ export const serializeCeramicElection = async (ceramicElectionId, address, ceram
 
   const voterDids = await Promise.all(
     electionDoc.content.voters.map(async voterAddress => {
-      const caip10 = await Caip10Link.fromAccount(ceramic, `${voterAddress}@eip155:${network.chainId}`);
+      const caip10 = await Caip10Link.fromAccount(ceramic, `${voterAddress}@eip155:${targetNetwork.chainId}`);
       return caip10.did;
     }),
   );

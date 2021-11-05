@@ -7,7 +7,15 @@ import { fromWei, toWei, toBN, numberToHex } from "web3-utils";
 var Map = require("collections/map");
 
 export const serverUrl = process.env.REACT_APP_API_URL || "http://localhost:45622/";
-export default function BaseHandler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner) {
+export default function BaseHandler(
+  tx,
+  readContracts,
+  writeContracts,
+  mainnetProvider,
+  address,
+  userSigner,
+  targetNetwork,
+) {
   //   console.log("BaseHandler()");
 
   const makeCeramic = async () => {
@@ -82,7 +90,13 @@ export default function BaseHandler(tx, readContracts, writeContracts, mainnetPr
     }
 
     for (let i = 0; i < ceramicElections.length; i++) {
-      const serializedElection = await serializeCeramicElection(ceramicElections[i], address, ceramic, idx);
+      const serializedElection = await serializeCeramicElection(
+        ceramicElections[i],
+        address,
+        ceramic,
+        idx,
+        targetNetwork,
+      );
       // console.log(serializedElection.name, serializedElection.isAdmin, serializedElection.isCandidate);
       serializedElection.amtFromWei = serializedElection.fundAmountInWei || "0";
       newElectionsMap.set(ceramicElections[i], serializedElection);

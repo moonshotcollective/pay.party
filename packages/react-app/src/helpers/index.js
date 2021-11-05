@@ -7,8 +7,21 @@ import { Ed25519Provider } from "key-did-provider-ed25519";
 import { fromString, toString } from "uint8arrays";
 import { randomBytes } from "@stablelib/random";
 import { DID } from "dids";
+import { ethers } from "ethers";
 import ceramicConfig from "./../config.json";
+import Diplomat from "../contracts/hardhat_contracts.json";
+
 export { default as Transactor } from "./Transactor";
+
+export const loadDiplomatContract = (targetNetwork, signer) => {
+  const contract = new ethers.Contract(
+    Diplomat[targetNetwork.chainId][targetNetwork.name].contracts.Diplomat.address,
+    Diplomat[targetNetwork.chainId][targetNetwork.name].contracts.Diplomat.abi,
+    signer,
+  );
+  return contract;
+};
+
 export const makeCeramicClient = async address => {
   const ceramic = new Ceramic(process.env.CERAMIC_NODE_URL || "https://ceramic-clay.3boxlabs.com");
   if (address) {
