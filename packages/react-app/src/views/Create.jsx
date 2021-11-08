@@ -242,9 +242,15 @@ const Create = ({
 
   const updateCandidates = (checked, addr) => {
     if (checked) {
-      newElection.candidates.push(addr);
+      setNewElection(prevState => ({
+        ...prevState,
+        candidates: [...prevState.candidates, addr],
+      }));
     } else {
-      newElection.candidates = newElection.candidates.filter(d => d !== addr);
+      setNewElection(prevState => ({
+        ...prevState,
+        candidates: newElection.candidates.filter(d => d !== addr),
+      }));
     }
     console.log(newElection);
   };
@@ -570,6 +576,7 @@ const Create = ({
                       isLoading={isSubmitting || isConfirmingElection}
                       loadingText="Submitting"
                       type="submit"
+                      disabled={newElection.candidates.length === 0}
                       leftIcon={<CheckIcon />}
                     >
                       Submit Election
