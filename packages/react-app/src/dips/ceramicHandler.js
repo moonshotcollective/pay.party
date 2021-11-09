@@ -11,10 +11,19 @@ import { makeCeramicClient } from "../helpers";
 import { getCeramicElectionIds, getNetwork, serializeCeramicElection, toCeramicId } from "./helpers";
 import { serverUrl } from "./baseHandler";
 
-export default function CeramicHandler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner) {
+export default function CeramicHandler(
+  tx,
+  readContracts,
+  writeContracts,
+  mainnetProvider,
+  address,
+  userSigner,
+  targetNetwork,
+) {
   const createElection = async ({
     name,
     description,
+    voters,
     candidates,
     fundAmount,
     fundAmountInWei,
@@ -22,8 +31,8 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
     voteAllocation,
     kind,
   }) => {
-    console.log("createElection");
-    const { network, signer } = await getNetwork();
+    console.log("createElection", targetNetwork);
+    console.log({ targetNetwork });
     /* CREATE CERAMIC ELECTION */
     const { ceramic, idx, schemasCommitId } = await makeCeramicClient(address);
     // current users' existing elections
@@ -31,14 +40,15 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
     const previousElections = existingElections ? Object.values(existingElections) : null;
 
     // make sure the user is Authenticated
-    if (ceramic?.did?.id) {
-      // console.log({ kind });
+    if (ceramic?.did?.id && targetNetwork) {
+      console.log({ targetNetwork });
       // create the election document on Ceramic
       const electionDoc = await TileDocument.create(
         ceramic,
         {
           name: name,
           description: description,
+          voters: voters,
           candidates: candidates,
           creator: address,
           kind: "ceramic",
@@ -65,12 +75,12 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
 
       /* CREATE ELECTION ON-CHAIN (push the ceramic commitId to elections array) */
       let contract = new ethers.Contract(
-        Diplomat[network.chainId][network.name].contracts.Diplomat.address,
-        Diplomat[network.chainId][network.name].contracts.Diplomat.abi,
-        signer,
+        Diplomat[targetNetwork.chainId][targetNetwork.name].contracts.Diplomat.address,
+        Diplomat[targetNetwork.chainId][targetNetwork.name].contracts.Diplomat.abi,
+        userSigner,
       );
 
-      return await contract
+      return contract
         .createElection(electionId)
         .then(async tx => {
           // console.log({ tx });
@@ -102,8 +112,9 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
 
   const castBallot = async (id, candidates, quad_scores) => {
     const { idx, ceramic, schemasCommitId } = await makeCeramicClient(address);
-    const election = await serializeCeramicElection(id, address);
+    const election = await serializeCeramicElection(id, address, ceramic, idx, targetNetwork);
 
+    console.log({ election });
     const existingVotes = await idx.get("votes");
 
     // TODO: check if already voted for this election through another address linked to this did
@@ -114,14 +125,14 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
       return election.totalScores;
     }
 
-    // console.log({ quad_scores });
+    console.log({ quad_scores });
 
     const voteAttribution = quad_scores.map((voteAttributionCount, i) => ({
       address: election.candidates[i],
       voteAttribution: voteAttributionCount,
     }));
 
-    // console.log({ voteAttribution });
+    console.log({ voteAttribution });
 
     if (ceramic?.did?.id) {
       const ballotDoc = await TileDocument.create(ceramic, voteAttribution, {
@@ -146,7 +157,8 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
       console.log("ceramic did not found");
     }
 
-    const electionResults = await serializeCeramicElection(id, address);
+    const electionResults = await serializeCeramicElection(id, address, ceramic, idx, targetNetwork);
+    console.log({ election });
     return electionResults.totalScores;
   };
 
@@ -157,7 +169,7 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
     const { idx, ceramic } = await makeCeramicClient();
 
     for (let i = 0; i < elections.length; i++) {
-      const election = await serializeCeramicElection(elections[i], address);
+      const election = await serializeCeramicElection(elections[i], address, ceramic, idx, targetNetwork);
       newElectionsMap.set(elections[i], election);
     }
     return newElectionsMap;
@@ -165,19 +177,19 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
 
   const getElectionStateById = async id => {
     const { idx, ceramic } = await makeCeramicClient();
-    const election = await serializeCeramicElection(id, address);
+    const election = await serializeCeramicElection(id, address, ceramic, idx, targetNetwork);
     return election;
   };
 
   const getCandidatesScores = async id => {
     const { idx, ceramic } = await makeCeramicClient();
-    const election = await serializeCeramicElection(id, address);
+    const election = await serializeCeramicElection(id, address, ceramic, idx, targetNetwork);
     return election.totalScores;
   };
 
   const getFinalPayout = async id => {
     const { idx, ceramic } = await makeCeramicClient();
-    const election = await serializeCeramicElection(id, address);
+    const election = await serializeCeramicElection(id, address, ceramic, idx, targetNetwork);
     let payout = [];
     // console.log({ payout });
     let totalScoresSum = election.totalScores.reduce((sum, curr) => sum + curr, 0);
@@ -212,15 +224,13 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
 
   const distributeEth = async ({ id, candidates, payoutInWei, totalValueInWei, tokenAddress }) => {
     const { ceramic } = await makeCeramicClient(address);
-    const { network, signer } = await getNetwork();
-    // console.log({ signer });
     const contract = new ethers.Contract(
-      Diplomat[network.chainId][network.name].contracts.Diplomat.address,
-      Diplomat[network.chainId][network.name].contracts.Diplomat.abi,
-      signer,
+      Diplomat[targetNetwork.chainId][targetNetwork.name].contracts.Diplomat.address,
+      Diplomat[targetNetwork.chainId][targetNetwork.name].contracts.Diplomat.abi,
+      userSigner,
     );
 
-    // console.log({ id, candidates, tokenAddress, totalValueInWei, payoutInWei });
+    console.log({ id, candidates, tokenAddress, totalValueInWei, payoutInWei });
     try {
       const transaction = await contract.payElection(id, candidates, payoutInWei, tokenAddress, {
         value: totalValueInWei,
@@ -234,19 +244,17 @@ export default function CeramicHandler(tx, readContracts, writeContracts, mainne
       }
       return receipt;
     } catch (e) {
-      console.log("error in handler");
+      console.log("error in distribute eth handler");
       return null;
     }
   };
 
   const distributeTokens = async ({ id, candidates, payoutInWei, tokenAddress }) => {
     const { ceramic } = await makeCeramicClient(address);
-    const { network, signer } = await getNetwork();
-    // console.log({ signer });
     const contract = new ethers.Contract(
-      Diplomat[network.chainId][network.name].contracts.Diplomat.address,
-      Diplomat[network.chainId][network.name].contracts.Diplomat.abi,
-      signer,
+      Diplomat[targetNetwork.chainId][targetNetwork.name].contracts.Diplomat.address,
+      Diplomat[targetNetwork.chainId][targetNetwork.name].contracts.Diplomat.abi,
+      userSigner,
     );
 
     // console.log({ id, candidates, tokenAddress, payoutInWei });

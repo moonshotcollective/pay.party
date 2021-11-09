@@ -59,6 +59,20 @@ const ElectionSchema = {
       format: "date-time",
       maxLength: 30,
     },
+    candidates: {
+      type: "array",
+      items: {
+        type: "string",
+        maxLength: 42,
+      },
+    },
+    voters: {
+      type: "array",
+      items: {
+        type: "string",
+        maxLength: 42,
+      },
+    },
     description: {
       type: "string",
       title: "description",
@@ -118,6 +132,13 @@ const ElectionsListSchema = {
             maxLength: 150,
           },
           candidates: {
+            type: "array",
+            items: {
+              type: "string",
+              maxLength: 42,
+            },
+          },
+          voters: {
             type: "array",
             items: {
               type: "string",

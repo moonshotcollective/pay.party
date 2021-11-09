@@ -1,27 +1,29 @@
-import { Button } from "@chakra-ui/button";
+import { Button, IconButton } from "@chakra-ui/button";
 import { AddIcon } from "@chakra-ui/icons";
 import { Box, Flex, Heading, HStack, SimpleGrid } from "@chakra-ui/layout";
-import { Divider, Tab, TabList, TabPanel, TabPanels, Spinner, Tabs, Text } from "@chakra-ui/react";
+import { TabList, TabPanel, TabPanels, Spinner, Tabs, Text, Center } from "@chakra-ui/react";
 import { useColorModeValue } from "@chakra-ui/color-mode";
 import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
-import axios from "axios";
-
 import Container from "../components/layout/Container";
-import TabListItem from "../components/Tabs/TabListItem";
 import ElectionCard from "../components/Cards/ElectionCard";
-
 import BaseHandler from "../dips/baseHandler";
-import { fromWei, toBN } from "web3-utils";
+import { fromWei } from "web3-utils";
 import CenteredFrame from "../components/layout/CenteredFrame";
+import { getAllCeramicElections, newSerializeCeramicElection } from "../dips/helpers";
 
-function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
+function Home({
+  address,
+  mainnetProvider,
+  tx,
+  readContracts,
+  writeContracts,
+  targetNetwork,
+}) {
   /***** Routes *****/
   const routeHistory = useHistory();
 
   /***** States *****/
-  const [selectedQdip, setSelectedQdip] = useState("base");
-  const [ceramic, setCeramic] = useState();
   const [qdipHandler, setQdipHandler] = useState();
   const [electionsMap, setElectionsMap] = useState();
   const [isLoading, setIsLoading] = useState(false);
@@ -31,20 +33,28 @@ function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
   };
   /***** Effects *****/
   useEffect(() => {
-    if (readContracts && readContracts.Diplomat) {
+    if (readContracts && readContracts.Diplomat && targetNetwork) {
       (async () => {
+        // console.log("INIT HOME");
         await init();
       })();
     }
-  }, [readContracts, address]);
+  }, [readContracts, address, targetNetwork]);
 
   useEffect(() => {
     (async () => {
       if (qdipHandler) {
-        console.log("rerendered ");
+        // console.log("rerendered ");
         setIsLoading(true);
         let { idx, ceramic } = await qdipHandler.makeCeramic();
-        let electionsMap = await qdipHandler.getElections(ceramic, idx);
+        const elections = await getAllCeramicElections(readContracts.Diplomat, ceramic);
+        const sElecs = await Promise.all(
+          Object.entries(elections).map(([id, elec]) =>
+            newSerializeCeramicElection({ id, electionDoc: elec, address, ceramic, idx, targetNetwork }),
+          ),
+        );
+        const electionsMap = new Map();
+        sElecs.forEach(elec => electionsMap.set(elec.id, elec));
         // console.log({ electionsMap });
         setElectionsMap(electionsMap);
         setIsLoading(false);
@@ -56,7 +66,9 @@ function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
   const init = async () => {
     // console.log(address);
     if (address) {
-      setQdipHandler(BaseHandler(tx, readContracts, writeContracts, mainnetProvider, address));
+      setQdipHandler(
+        BaseHandler(tx, readContracts, writeContracts, mainnetProvider, address, undefined, targetNetwork),
+      );
     }
   };
   const headingColor = useColorModeValue("yellow.600", "yellow.500");
@@ -67,7 +79,7 @@ function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
         <Heading fontSize="1.5rem" color={headingColor}>
           Elections
         </Heading>
-        <Box>
+        <Box pr={40}>
           <Button onClick={createElection} rightIcon={<AddIcon />}>
             Create Election
           </Button>
@@ -87,18 +99,18 @@ function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
         <HStack w="full" justifyContent="space-between">
           <Tabs py="1rem" variant="unstyled">
             <TabList>
-              <TabListItem title="Elections I'm part of" />
-              <TabListItem title="My Elections" />
+              {/* <TabListItem title="" /> */}
+              {/* <TabListItem title="Manage" /> */}
             </TabList>
             <TabPanels>
               <TabPanel>
-                {Array.from(electionsMap.values()).some(election => election.tags.includes("candidate")) ? (
+                {Array.from(electionsMap.values()).some(election => election.tags.includes("voter")) ? (
                   <SimpleGrid columns={3} spacing={10} justifyItems="center">
                     {Array.from(electionsMap.values())
                       .reverse()
                       .map(
                         (election, idx) =>
-                          election.tags.includes("candidate") && (
+                          election.tags.includes("voter") && (
                             <ElectionCard
                               id={election.id}
                               key={idx}
@@ -106,7 +118,7 @@ function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
                               owner={election.creator}
                               voted={`${election.n_voted.n_voted} / ${election.n_voted.outOf}`}
                               active={election.active}
-                              amount={fromWei(election.amtFromWei || "0")}
+                              amount={fromWei(election.fundAmountInWei || "0")}
                               tokenSymbol={election.tokenSymbol}
                               createdAt={election.created_date}
                               mainnetProvider={mainnetProvider}
@@ -123,11 +135,21 @@ function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
                     px="2.5rem"
                     width="100%"
                   >
-                    <HStack spacing={4} justifyContent="space-between">
-                      <Heading fontSize="1.0rem" color="violet.50">
-                        You are not part of any elections.
-                      </Heading>
-                    </HStack>
+                    {/* <HStack spacing={4} justifyContent="space-between"> */}
+                    <Heading fontSize="1.0rem" color="violet.50">
+                      You are not part of any elections.
+                    </Heading>
+
+                    <Center>
+                      <IconButton
+                        aria-label="Create Election"
+                        icon={<AddIcon />}
+                        onClick={createElection}
+                        variant="ghost"
+                        size="lg"
+                      />
+                    </Center>
+                    {/* </HStack> */}
                   </Box>
                 )}
               </TabPanel>
@@ -148,7 +170,8 @@ function Home({ tx, readContracts, writeContracts, mainnetProvider, address }) {
                                 tokenSymbol={election.tokenSymbol}
                                 voted={`${election.n_voted.n_voted} / ${election.n_voted.outOf}`}
                                 active={election.active}
-                                amount={fromWei(election.amtFromWei)}
+                                isPaid={election.isPaid}
+                                amount={fromWei(election.fundAmountInWei)}
                                 createdAt={election.created_date}
                               />
                             ),

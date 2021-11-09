@@ -1,9 +1,22 @@
 import { useColorModeValue } from "@chakra-ui/color-mode";
 import { Avatar, Divider, Heading, Table, Tbody, Td, Text, Th, Thead, Tr, VStack, Tooltip } from "@chakra-ui/react";
-import { blockExplorer } from "../../App";
 import AddressChakra from "../AddressChakra";
+import { fromWei, toWei, toBN, numberToHex } from "web3-utils";
+import { useContext } from "react";
+import { Web3Context } from "../../helpers/Web3Context";
 
-function DistributionCard({ candidates, candidateMap, mainnetProvider, isPaid, tokenSym }) {
+function DistributionCard({
+  candidates,
+  scores,
+  percent,
+  allocations,
+  fundAllocation,
+  candidateMap,
+  mainnetProvider,
+  isPaid,
+  tokenSym,
+}) {
+  const { blockExplorer } = useContext(Web3Context);
   const headingColor = useColorModeValue("yellow.600", "yellow.500");
 
   return (
@@ -27,14 +40,13 @@ function DistributionCard({ candidates, candidateMap, mainnetProvider, isPaid, t
           <Thead>
             <Tr>
               <Th>Voter</Th>
-              <Th>Voted</Th>
               <Th>Quadratic Score</Th>
               <Th>Allocation</Th>
               <Th>Amount</Th>
             </Tr>
           </Thead>
           <Tbody>
-            {candidates.map(member => (
+            {candidates.map((member, i) => (
               <Tr key={member}>
                 <Td>
                   <AddressChakra
@@ -44,19 +56,17 @@ function DistributionCard({ candidates, candidateMap, mainnetProvider, isPaid, t
                   ></AddressChakra>
                 </Td>
                 <Td>
-                  {candidateMap && candidateMap.get(member).voted && <Text color="green.600">Voted</Text>}{" "}
-                  {candidateMap && !candidateMap.get(member).voted && isPaid && <Text color="red.600">Absent</Text>}
+                  <Text>{scores[i] ? Number.parseFloat(scores[i]).toFixed(2) : "0"}</Text>
                 </Td>
                 <Td>
-                  <Text>{candidateMap && candidateMap.get(member).score}</Text>
+                  <Text>{Number.parseFloat(percent[i] * 100).toFixed(2)}%</Text>
                 </Td>
                 <Td>
-                  <Text>{candidateMap && candidateMap.get(member).allocation}%</Text>
-                </Td>
-                <Td>
-                  <Tooltip label={candidateMap && candidateMap.get(member).payoutFromWei} aria-label="A tooltip">
+                  <Tooltip label={allocations[i] ? allocations[i] + " (wei)" : "Loading..."} aria-label="Amount">
                     <Text color="yellow.500">
-                      {candidateMap && Number.parseFloat(candidateMap.get(member).payoutFromWei).toFixed(4)} {tokenSym}
+                      {allocations[i]
+                        ? `${Number.parseFloat(fromWei(String(allocations[i]), "ether")).toFixed(4)} ${tokenSym}`
+                        : "Loading..."}
                     </Text>
                   </Tooltip>
                 </Td>

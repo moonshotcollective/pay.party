@@ -237,7 +237,7 @@ export default function Vote({
     let payoutInWei = finalPayout.payout.map(p => toWei(p));
     tx(
       writeContracts.Diplomat.payElection(id, adrs, payoutInWei, {
-        gasLimit: 12450000,
+        gasLimit: 12450000, // Hmmm....
       }),
       async update => {
         if (update) {

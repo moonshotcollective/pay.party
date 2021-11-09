@@ -1,10 +1,12 @@
 import { ChevronLeftIcon } from "@chakra-ui/icons";
-import { Avatar, Box, Button, Heading, Text } from "@chakra-ui/react";
+import { Avatar, Box, Button, Heading, Text, Tag, HStack } from "@chakra-ui/react";
 import { useHistory } from "react-router-dom";
 import { blockExplorer } from "../../App";
 import AddressChakra from "../AddressChakra";
 import { PayButton } from "../../components";
 import { fromWei } from "web3-utils";
+import { useContext } from "react";
+import { Web3Context } from "../../helpers/Web3Context";
 
 function ElectionCard({
   electionState,
@@ -19,6 +21,7 @@ function ElectionCard({
   ethPayHandler,
   tokenPayHandler,
 }) {
+  const { blockExplorer } = useContext(Web3Context);
   const routeHistory = useHistory();
   function goBack() {
     routeHistory.push("/");
@@ -30,13 +33,20 @@ function ElectionCard({
         <ChevronLeftIcon />
         Back
       </Text>
+      <HStack>
       {electionState && !electionState.active && electionState.isPaid && (
-        <Text fontSize="1rem" color="green.500" mb="0">
-          PAID
-        </Text>
+        <Tag fontSize="1rem" color="green.500" mb="0">
+          Paid
+        </Tag>
       )}
-      <Heading fontSize="1.5rem" color="violet.50">
-        {electionState.name}
+      {electionState && electionState.isVoter && (
+        <Tag fontSize="1rem" color="blue.500" mb="0">
+          Voter
+        </Tag>
+      )}
+      </HStack>
+      <Heading fontSize="1.5rem" color="violet.50" pt={4}>
+        {electionState.name ? electionState.name : "Loading..."}
       </Heading>
       <Text pb="1rem" fontSize="1rem">
         {electionState.description}
@@ -58,12 +68,16 @@ function ElectionCard({
         Total Funds
       </Text>
       <Text>
-        {fromWei(electionState.amtFromWei)} {electionState.tokenSymbol}
+        {electionState.fundAmount ? `${electionState.fundAmount} ${electionState.tokenSymbol}` : "Loading..."}
       </Text>
       <Text fontSize="1rem" color="violet.500" mb="0">
         Voters
       </Text>
-      <Text>{`${electionState.n_voted.n_voted} / ${electionState.n_voted.outOf}`} Voted</Text>
+      <Text>
+        {electionState.n_voted
+          ? `${electionState.n_voted.n_voted} / ${electionState.n_voted.outOf} Voted`
+          : "Loading..."}
+      </Text>
       <Text fontSize="1rem" color="violet.500" mb="0">
         Status
       </Text>
@@ -72,40 +86,6 @@ function ElectionCard({
         Created on
       </Text>
       <Text pb="2rem">{electionState.created_date}</Text>
-      {electionState.isAdmin && electionState.active && (
-        <Button
-          mb="1rem"
-          w="full"
-          variant="solid"
-          bgColor="red.400"
-          onClick={endElection}
-          isLoading={isEndingElection}
-          loadingText="Ending"
-        >
-          End Election
-        </Button>
-      )}
-      {electionState && !electionState.active && electionState.isAdmin && !electionState.isPaid && (
-        <PayButton
-          token={electionState.tokenSymbol}
-          tokenAddr={electionState.tokenAdr}
-          appName="Quadratic Diplomacy"
-          // tokenListHandler={tokens => setAvailableTokens(tokens)}
-          callerAddress={address}
-          maxApproval={electionState.fundAmountInWei}
-          amount={electionState.fundAmountInWei}
-          spender={spender}
-          yourLocalBalance={yourLocalBalance}
-          readContracts={readContracts}
-          writeContracts={writeContracts}
-          ethPayHandler={ethPayHandler}
-          tokenPayHandler={tokenPayHandler}
-        />
-      )}
-
-      {/* <Button w="full" variant="outline">
-        Configure Election
-      </Button> */}
     </Box>
   );
 }

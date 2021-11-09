@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useContext } from "react";
 import axios from "axios";
 import { useHistory } from "react-router-dom";
 import { useEventListener } from "../../hooks";
@@ -43,23 +43,26 @@ import dips from "../../dips";
 import { serverUrl } from "../../dips/offChain";
 import { ethers } from "ethers";
 import { CERAMIC_PREFIX } from "../../dips/helpers";
+import { Web3Context } from "../../helpers/Web3Context";
 
 const CURRENCY = "ETH";
 const TOKEN = process.env.REACT_APP_TOKEN_SYMBOL;
 const DIP_TYPES = Object.keys(dips);
 
-export default function Create({
-  address,
-  mainnetProvider,
-  localProvider,
-  mainnetContracts,
-  userSigner,
-  yourLocalBalance,
-  price,
-  tx,
-  readContracts,
-  writeContracts,
-}) {
+export default function Create() {
+  const {
+    address,
+    mainnetProvider,
+    localProvider,
+    mainnetContracts,
+    userSigner,
+    yourLocalBalance,
+    price,
+    tx,
+    readContracts,
+    writeContracts,
+    targetNetwork,
+  } = useContext(Web3Context);
   /***** Routes *****/
   const routeHistory = useHistory();
 
@@ -132,7 +135,9 @@ export default function Create({
   }, [qdipHandler]);
 
   useEffect(() => {
-    setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address));
+    setQdipHandler(
+      dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address, targetNetwork),
+    );
   }, [selectedQdip]);
 
   /***** Methods *****/

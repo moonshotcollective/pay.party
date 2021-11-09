@@ -1,30 +1,20 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Text, Box, Heading, VStack, HStack, Divider, Avatar } from "@chakra-ui/react";
 import { useColorModeValue } from "@chakra-ui/color-mode";
 import VoteInput from "../../Inputs/VoteInput";
-import { blockExplorer } from "../../../App";
 import AddressChakra from "../../AddressChakra";
+import { Web3Context } from "../../../helpers/Web3Context";
 
-function VoteCard({
-  candidates,
-  candidateMap,
-  voteAllocation,
-  votesLeft,
-  addVote,
-  minusVote,
-  mainnetProvider,
-  isVoting,
-}) {
+function VoteCard({ candidates, voteMap, voteAllocation, mainnetProvider }) {
+  const { blockExplorer } = useContext(Web3Context);
   const headingColor = useColorModeValue("yellow.600", "yellow.500");
 
-  useEffect(() => {
-    // console.log({ candidateMap });
-  }, [candidateMap]);
+  const [votesLeft, setVotesLeft] = useState(voteAllocation);
 
   return (
     <VStack align="left" w="100%" spacing="0.5rem">
       <Heading fontSize="1.5rem" color={headingColor}>
-        Vote
+        Cast Ballot
       </Heading>
       <Text pb="2rem" fontSize="1rem">
         Vote each member based on their contributions.
@@ -40,9 +30,23 @@ function VoteCard({
                 blockExplorer={blockExplorer}
               ></AddressChakra>
               <VoteInput
-                addVote={() => addVote(member)}
-                minusVote={() => minusVote(member)}
-                votes={candidateMap && candidateMap.get(member).votes}
+                addVote={() => {
+                  const currentVotes = voteMap.get(member);
+                  if (votesLeft > 0) {
+                    setVotesLeft(votesLeft - 1);
+                    voteMap.set(member, currentVotes + 1);
+                    console.log(voteMap);
+                  }
+                }}
+                minusVote={() => {
+                  const currentVotes = voteMap.get(member);
+                  if (votesLeft < voteAllocation && currentVotes > 0) {
+                    setVotesLeft(votesLeft + 1);
+                    voteMap.set(member, currentVotes - 1);
+                    console.log(voteMap);
+                  }
+                }}
+                votes={voteMap.get(member)}
               />
             </HStack>
             <Divider />

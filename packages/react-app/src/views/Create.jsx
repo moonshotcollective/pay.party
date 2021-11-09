@@ -10,34 +10,31 @@ import {
   Flex,
   Heading,
   HStack,
-  Icon,
   Input,
   InputGroup,
-  InputRightElement,
-  List,
-  ListItem,
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
+  Center,
+  TableCaption,
   Tooltip,
-  ListIcon,
-  NumberDecrementStepper,
-  NumberIncrementStepper,
   NumberInput,
   NumberInputField,
-  NumberInputStepper,
-  Stack,
   Text,
   useColorModeValue,
   Textarea,
   Select,
   Spinner,
   IconButton,
+  Checkbox,
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
-import { fromWei, toWei, toBN } from "web3-utils";
+import { toWei } from "web3-utils";
 import { useFieldArray, useForm } from "react-hook-form";
-import { FiX } from "react-icons/fi";
 import { useHistory } from "react-router-dom";
-import QRCodeIcon from "../components/Icons/QRCodeIcon";
-import { ControllerPlus } from "../components/Inputs/ControllerPlus";
 import CenteredFrame from "../components/layout/CenteredFrame";
 import dips from "../dips";
 import AddressInputChakra from "../components/AddressInputChakra";
@@ -51,35 +48,19 @@ import { CERAMIC_PREFIX } from "../dips/helpers";
 const CURRENCY = "ETH";
 const TOKEN = process.env.REACT_APP_TOKEN_SYMBOL;
 const TOKEN_ADR = process.env.REACT_APP_TOKEN_ADDRESS;
-const DIP_TYPES = Object.keys(dips);
 
 const Create = ({
   address,
   mainnetProvider,
-  localProvider,
-  mainnetContracts,
   userSigner,
-  yourLocalBalance,
-  price,
   tx,
   readContracts,
   writeContracts,
+  targetNetwork,
 }) => {
   /***** Routes *****/
   const routeHistory = useHistory();
 
-  const viewElection = async () => {
-    if (electionId) {
-      const isCeramicRecord = electionId.startsWith(CERAMIC_PREFIX);
-      const id = isCeramicRecord ? electionId.split(CERAMIC_PREFIX)[1] : electionId;
-      routeHistory.push("/election/" + id + `?kind=${isCeramicRecord ? "ceramic" : "offChain"}`);
-    }
-  };
-
-  const createAnotherElection = () => {
-    setIsCreatedElection(false);
-    setIsConfirmingElection(false);
-  };
 
   /***** States *****/
   const [selectedQdip, setSelectedQdip] = useState("ceramic");
@@ -100,6 +81,7 @@ const Create = ({
     fundAmountInWei: toWei("0.1"),
     voteAllocation: 1,
     kind: "ceramic",
+    voters: [],
     candidates: [],
   });
 
@@ -120,12 +102,12 @@ const Create = ({
   /***** Effects *****/
 
   useEffect(() => {
-    if (readContracts && writeContracts) {
-      if (readContracts.Diplomat) {
-        init();
+    if (readContracts) {
+      if (readContracts.Diplomat && targetNetwork) {
+        return init();
       }
     }
-  }, [writeContracts, readContracts, address]);
+  }, [readContracts, targetNetwork]);
 
   useEffect(async () => {
     if (qdipHandler) {
@@ -134,8 +116,18 @@ const Create = ({
 
   useEffect(() => {
     // console.log(selectedQdip);
-    setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner));
-  }, [selectedQdip]);
+    setQdipHandler(
+      dips[selectedQdip].handler(
+        tx,
+        readContracts,
+        writeContracts,
+        mainnetProvider,
+        address,
+        userSigner,
+        targetNetwork,
+      ),
+    );
+  }, [selectedQdip, targetNetwork]);
 
   useEffect(() => {
     append("");
@@ -148,13 +140,27 @@ const Create = ({
     routeHistory.push("/");
   };
 
-  const init = async () => {
-    setQdipHandler(dips[selectedQdip].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner));
+  const init = () => {
+    setQdipHandler(
+      dips[selectedQdip].handler(
+        tx,
+        readContracts,
+        writeContracts,
+        mainnetProvider,
+        address,
+        userSigner,
+        targetNetwork,
+      ),
+    );
   };
 
   const onSubmit = async values => {
+    if (newElection.voters.length == 0) {
+      setErrorMsg("Need to add at least 1 ENS/address");
+      return;
+    }
     if (newElection.candidates.length == 0) {
-      setErrorMsg("Need to add atleast 1 ENS/address");
+      setErrorMsg("Need to add at least 1 ENS/address candidate");
       return;
     }
     setIsConfirmingElection(true);
@@ -184,6 +190,7 @@ const Create = ({
         voteAllocation: 1,
         tokenAdr: "0x0000000000000000000000000000000000000000",
         kind: "ceramic",
+        votes: [],
         candidates: [],
       });
     }
@@ -202,15 +209,19 @@ const Create = ({
     }));
   };
 
-  const updateSelectedQdip = e => {
-    console.log("updated qdip handler ", e.target.value);
-    setNewElection(prevState => ({
-      ...prevState,
-      kind: e.target.value,
-    }));
-    setQdipHandler(
-      dips[e.target.value].handler(tx, readContracts, writeContracts, mainnetProvider, address, userSigner),
-    );
+  const updateCandidates = (checked, addr) => {
+    if (checked) {
+      setNewElection(prevState => ({
+        ...prevState,
+        candidates: [...prevState.candidates, addr],
+      }));
+    } else {
+      setNewElection(prevState => ({
+        ...prevState,
+        candidates: newElection.candidates.filter(d => d !== addr),
+      }));
+    }
+    // console.log(newElection);
   };
 
   const updateSelectedToken = e => {
@@ -242,11 +253,11 @@ const Create = ({
     }));
   };
 
-  const removeCandidate = cand => {
-    const newList = newElection.candidates.filter(item => item !== cand);
+  const removeVoter = cand => {
+    const newList = newElection.voters.filter(item => item !== cand);
     setNewElection(prevState => ({
       ...prevState,
-      candidates: newList,
+      voters: newList,
     }));
   };
 
@@ -265,8 +276,8 @@ const Create = ({
     if (toAddress.length != 42 || !toAddress.startsWith("0x")) {
       setToAddress("");
     } else {
-      if (!newElection.candidates.includes(toAddress)) {
-        newElection.candidates.push(toAddress);
+      if (!newElection.voters.includes(toAddress)) {
+        newElection.voters.push(toAddress);
       }
     }
 
@@ -281,8 +292,8 @@ const Create = ({
       try {
         // console.log(voteAddress);
         const voteAddressWithChecksum = ethers.utils.getAddress(voteAddress);
-        if (!newElection.candidates.includes(voteAddressWithChecksum)) {
-          newElection.candidates.push(voteAddressWithChecksum);
+        if (!newElection.voters.includes(voteAddressWithChecksum)) {
+          newElection.voters.push(voteAddressWithChecksum);
         }
       } catch (error) {
         console.log(error);
@@ -292,9 +303,15 @@ const Create = ({
     setToAddress("");
   };
 
+  const addCandidates = async () => {
+    if (!newElection.candidates.includes(toAddress)) {
+      newElection.candidates.push(toAddress);
+    }
+  };
+
   return (
     <CenteredFrame>
-      <HStack w="80vw" justifyContent="space-between">
+      <HStack w="40vw" justifyContent="space-between">
         <Flex flexDirection="column" justifyContent="space-between" alignItems="center" w="full">
           <Flex justifyContent="space-between" alignItems="center" w="full">
             <Text onClick={goBack} _hover={{ cursor: "pointer" }} pb="1rem">
@@ -390,7 +407,7 @@ const Create = ({
                   Vote Allocation (number of votes for each voter)
                   <br />
                 </FormLabel>
-                <NumberInput max={50} min={1} defaultValue={newElection.voteAllocation}>
+                <NumberInput max={1000} min={1} defaultValue={newElection.voteAllocation}>
                   <NumberInputField
                     placeholder="Vote allocation"
                     borderColor="purple.500"
@@ -400,10 +417,6 @@ const Create = ({
                     value={newElection.voteAllocation}
                     onChange={updateVoteAllocation}
                   />
-                  <NumberInputStepper>
-                    <NumberIncrementStepper />
-                    <NumberDecrementStepper />
-                  </NumberInputStepper>
                 </NumberInput>
                 <FormErrorMessage>{errors.votes && errors.votes.message}</FormErrorMessage>
               </FormControl>
@@ -411,8 +424,8 @@ const Create = ({
               <Box pb="1rem"></Box>
               <Divider backgroundColor="purple.500" />
               <Box pb="1rem"></Box>
-              <FormControl isInvalid={newElection.candidates.length == 0}>
-                <FormLabel htmlFor="candidates">Candidates</FormLabel>
+              <FormControl isInvalid={newElection.voters.length == 0}>
+                <FormLabel htmlFor="voters">Add Participants</FormLabel>
                 <FormErrorMessage>{errors.votes && errors.votes.message}</FormErrorMessage>
               </FormControl>
               <HStack>
@@ -423,15 +436,19 @@ const Create = ({
                   onChange={setToAddress}
                 />
                 <InputGroup>
-                  <IconButton aria-label="Add address" icon={<AddIcon />} onClick={addVoter} variant="ghost" />
-                  // Sniff browser -- firefox does not support clipboard
+                  <Tooltip label="Add Participant">
+                    <IconButton aria-label="Add address" icon={<AddIcon />} onClick={addVoter} variant="ghost" />
+                  </Tooltip>
+                  // Sniff browser -- TODO: add firefox support
                   {navigator.userAgent.indexOf("Firefox") < 0 && (
-                    <IconButton
-                      aria-label="Add from clipboard"
-                      icon={<MdContentPaste />}
-                      onClick={() => handleAddVoters()}
-                      variant="ghost"
-                    />
+                    <Tooltip label="Paste from clipboard">
+                      <IconButton
+                        aria-label="Paste from clipboard"
+                        icon={<MdContentPaste />}
+                        onClick={() => handleAddVoters()}
+                        variant="ghost"
+                      />
+                    </Tooltip>
                   )}
                 </InputGroup>
               </HStack>
@@ -440,45 +457,81 @@ const Create = ({
                 borderWidth="1px"
                 borderRadius="8px"
                 mt={4}
-                py="1rem"
-                px="2.5rem"
+                py="0rem"
+                px="0rem"
                 overflowY="scroll"
                 maxH="200px"
               >
-                <List spacing={3}>
-                  {newElection.candidates.map((addr, idx) => (
-                    <HStack key={idx} align="start" w="100%" spacing="24px">
-                      <AddressChakra
-                        address={addr}
-                        ensProvider={mainnetProvider}
-                        blockExplorer={blockExplorer}
-                      ></AddressChakra>
-                      <IconButton
-                        aria-label="Remove address"
-                        icon={<DeleteIcon />}
-                        onClick={() => removeCandidate(addr)}
-                        variant="ghost"
-                      />
-                    </HStack>
-                  ))}
-                </List>
+                <Table variant="simple" size="md">
+                  <TableCaption>:)</TableCaption>
+                  <Thead>
+                    <Tr>
+                      <Tooltip
+                        label="A candidate will be the participant who is being voted on."
+                        aria-label="A tooltip"
+                      >
+                        <Th>Candidate</Th>
+                      </Tooltip>
+                      <Tooltip label="A participant is who can vote in this election." aria-label="A tooltip">
+                        <Th>Participant</Th>
+                      </Tooltip>
+                      <Th></Th>
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {newElection.voters.map((addr, idx) => (
+                      <Tr key={idx}>
+                        <Td w="0%">
+                          <Center w="70px" color="white">
+                            <Checkbox
+                              onChange={e => {
+                                // console.log(e.target.checked, addr);
+                                updateCandidates(e.target.checked, addr);
+                              }}
+                            ></Checkbox>
+                          </Center>
+                        </Td>
+                        <Td w="100%">
+                          <AddressChakra
+                            address={addr}
+                            ensProvider={mainnetProvider}
+                            blockExplorer={blockExplorer}
+                            fontSize={16}
+                          ></AddressChakra>
+                        </Td>
+                        <Td w="0%">
+                          <IconButton
+                            aria-label="Remove address"
+                            icon={<DeleteIcon />}
+                            onClick={() => removeVoter(addr)}
+                            variant="ghost"
+                          />
+                        </Td>
+                      </Tr>
+                    ))}
+                  </Tbody>
+                </Table>
               </Box>
 
               <Box pb="1rem"></Box>
               <Divider backgroundColor="purple.500" />
               <Box pt="1rem" align="end">
                 {!isCreatedElection && (
-                  <Button
-                    mt={4}
-                    width="500px"
-                    colorScheme="teal"
-                    isLoading={isSubmitting || isConfirmingElection}
-                    loadingText="Submitting"
-                    type="submit"
-                    leftIcon={<CheckIcon />}
-                  >
-                    Submit Election
-                  </Button>
+                  <Center>
+                    <Button
+                      mt={4}
+                      mb={4}
+                      width="30vw"
+                      colorScheme="teal"
+                      isLoading={isSubmitting || isConfirmingElection}
+                      loadingText="Submitting"
+                      type="submit"
+                      disabled={newElection.candidates.length === 0}
+                      leftIcon={<CheckIcon />}
+                    >
+                      Submit Election
+                    </Button>
+                  </Center>
                 )}
               </Box>
             </form>
@@ -494,7 +547,7 @@ const Create = ({
             </CenteredFrame>
           )}
           {isCreatedElection && createdElection.id && (
-            <HStack justify="center" align="center" w="30%">
+            <HStack justify="center" align="center" w="80%">
               <ElectionCard
                 id={createdElection.id}
                 name={createdElection.name}
