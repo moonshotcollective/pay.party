@@ -49,18 +49,9 @@ const CURRENCY = "ETH";
 const TOKEN = process.env.REACT_APP_TOKEN_SYMBOL;
 const TOKEN_ADR = process.env.REACT_APP_TOKEN_ADDRESS;
 
-const Create = ({
-  address,
-  mainnetProvider,
-  userSigner,
-  tx,
-  readContracts,
-  writeContracts,
-  targetNetwork,
-}) => {
+const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, writeContracts, targetNetwork }) => {
   /***** Routes *****/
   const routeHistory = useHistory();
-
 
   /***** States *****/
   const [selectedQdip, setSelectedQdip] = useState("ceramic");
