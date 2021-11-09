@@ -10,29 +10,19 @@ import {
   Flex,
   Heading,
   HStack,
-  Icon,
   Input,
   InputGroup,
-  InputRightElement,
-  List,
   Table,
   Thead,
   Tbody,
-  Tfoot,
   Tr,
   Th,
   Td,
   Center,
   TableCaption,
-  ListItem,
   Tooltip,
-  ListIcon,
-  NumberDecrementStepper,
-  NumberIncrementStepper,
   NumberInput,
   NumberInputField,
-  NumberInputStepper,
-  Stack,
   Text,
   useColorModeValue,
   Textarea,
@@ -42,12 +32,9 @@ import {
   Checkbox,
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
-import { fromWei, toWei, toBN } from "web3-utils";
+import { toWei } from "web3-utils";
 import { useFieldArray, useForm } from "react-hook-form";
-import { FiX } from "react-icons/fi";
 import { useHistory } from "react-router-dom";
-import QRCodeIcon from "../components/Icons/QRCodeIcon";
-import { ControllerPlus } from "../components/Inputs/ControllerPlus";
 import CenteredFrame from "../components/layout/CenteredFrame";
 import dips from "../dips";
 import AddressInputChakra from "../components/AddressInputChakra";
@@ -61,17 +48,11 @@ import { CERAMIC_PREFIX } from "../dips/helpers";
 const CURRENCY = "ETH";
 const TOKEN = process.env.REACT_APP_TOKEN_SYMBOL;
 const TOKEN_ADR = process.env.REACT_APP_TOKEN_ADDRESS;
-const DIP_TYPES = Object.keys(dips);
 
 const Create = ({
   address,
   mainnetProvider,
-  localProvider,
-  mainnetContracts,
   userSigner,
-  yourLocalBalance,
-  price,
-  signer,
   tx,
   readContracts,
   writeContracts,
@@ -80,18 +61,6 @@ const Create = ({
   /***** Routes *****/
   const routeHistory = useHistory();
 
-  const viewElection = async () => {
-    if (electionId) {
-      const isCeramicRecord = electionId.startsWith(CERAMIC_PREFIX);
-      const id = isCeramicRecord ? electionId.split(CERAMIC_PREFIX)[1] : electionId;
-      routeHistory.push("/election/" + id + `?kind=${isCeramicRecord ? "ceramic" : "offChain"}`);
-    }
-  };
-
-  const createAnotherElection = () => {
-    setIsCreatedElection(false);
-    setIsConfirmingElection(false);
-  };
 
   /***** States *****/
   const [selectedQdip, setSelectedQdip] = useState("ceramic");
@@ -253,25 +222,6 @@ const Create = ({
       }));
     }
     // console.log(newElection);
-  };
-
-  const updateSelectedQdip = e => {
-    console.log("updated qdip handler ", e.target.value);
-    setNewElection(prevState => ({
-      ...prevState,
-      kind: e.target.value,
-    }));
-    setQdipHandler(
-      dips[e.target.value].handler(
-        tx,
-        readContracts,
-        writeContracts,
-        mainnetProvider,
-        address,
-        userSigner,
-        targetNetwork,
-      ),
-    );
   };
 
   const updateSelectedToken = e => {

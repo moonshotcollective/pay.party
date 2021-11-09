@@ -1,36 +1,19 @@
 import React, { useEffect, useState } from "react";
-import {
-  Box,
-  Button,
-  Grid,
-  GridItem,
-  Spinner,
-  Text,
-  useColorModeValue,
-  Heading,
-  Flex,
-  IconButton,
-} from "@chakra-ui/react";
+import { Box, Button, Grid, GridItem } from "@chakra-ui/react";
 import { LockIcon } from "@chakra-ui/icons";
-import { useHistory, useParams } from "react-router-dom";
-import qs from "query-string";
-import { fromWei, toWei, toBN, numberToHex } from "web3-utils";
+import { useParams } from "react-router-dom";
 
 import DistributionCard from "../components/Cards/DistributionCard";
 import Container from "../components/layout/Container";
 import SideCard from "../components/Cards/SideCard";
 import VoteCard from "../components/Cards/VoterCards/VoteCard";
-import dips from "../dips";
 import CeramicHandler from "../dips/ceramicHandler";
-import CenteredFrame from "../components/layout/CenteredFrame";
 import Confetti from "react-confetti";
 import { PayButton } from "../components";
 
 export default function Election({
   address,
   mainnetProvider,
-  blockExplorer,
-  localProvider,
   userSigner,
   targetNetwork,
   tx,
@@ -53,7 +36,6 @@ export default function Election({
   const [isBusy, setIsBusy] = useState(false);
   const [isBusyEnding, setIsBusyEnding] = useState(false);
   const [numberOfConfettiPieces, setNumberOfConfettiPieces] = useState(0);
-  const [distButtonText, setDistButtonText] = useState("Distribute");
 
   /***** Effects *****/
   useEffect(() => {

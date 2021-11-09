@@ -1,43 +1,29 @@
 import { Button, IconButton } from "@chakra-ui/button";
-import { AddIcon, DeleteIcon } from "@chakra-ui/icons";
+import { AddIcon } from "@chakra-ui/icons";
 import { Box, Flex, Heading, HStack, SimpleGrid } from "@chakra-ui/layout";
-import { Divider, Tab, TabList, TabPanel, TabPanels, Spinner, Tabs, Text, Center } from "@chakra-ui/react";
+import { TabList, TabPanel, TabPanels, Spinner, Tabs, Text, Center } from "@chakra-ui/react";
 import { useColorModeValue } from "@chakra-ui/color-mode";
-import React, { useContext, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
-import axios from "axios";
-
 import Container from "../components/layout/Container";
-import TabListItem from "../components/Tabs/TabListItem";
 import ElectionCard from "../components/Cards/ElectionCard";
-
 import BaseHandler from "../dips/baseHandler";
-import { fromWei, toBN } from "web3-utils";
+import { fromWei } from "web3-utils";
 import CenteredFrame from "../components/layout/CenteredFrame";
 import { getAllCeramicElections, newSerializeCeramicElection } from "../dips/helpers";
-import { Web3Context } from "../helpers/Web3Context";
 
 function Home({
   address,
   mainnetProvider,
-  localProvider,
-  mainnetContracts,
-  userSigner,
-  yourLocalBalance,
-  price,
   tx,
-  signer,
   readContracts,
   writeContracts,
   targetNetwork,
-  contract,
 }) {
   /***** Routes *****/
   const routeHistory = useHistory();
 
   /***** States *****/
-  const [selectedQdip, setSelectedQdip] = useState("base");
-  const [ceramic, setCeramic] = useState();
   const [qdipHandler, setQdipHandler] = useState();
   const [electionsMap, setElectionsMap] = useState();
   const [isLoading, setIsLoading] = useState(false);
