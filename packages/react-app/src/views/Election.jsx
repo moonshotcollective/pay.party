@@ -97,16 +97,16 @@ export default function Election({
       // Has voted -> Show stats
       const totalScoreSum = state.totalScores.length > 0 ? state.totalScores.reduce((x, y) => x + y) : 0;
       const pdist = state.totalScores.map(score => (score / totalScoreSum).toFixed(12));
-      console.log({ pdist });
+      // console.log({ pdist });
 
       // TODO: Write a test to make sure its always an int -> string
       const alloc = pdist.map(p => String(p * state.fundAmountInWei));
-      console.log({ alloc });
+      // console.log({ alloc });
       setPercentDist(pdist);
       setAllocations(alloc);
     }
 
-    console.log({ state: state, handle: handle, spender: spender });
+    // console.log({ state: state, handle: handle, spender: spender });
   };
 
   const handleConfetti = () => {
@@ -124,9 +124,9 @@ export default function Election({
       scores.push(votes ** 0.5);
       candidates.push(addr);
     });
-    console.log({ candidates: candidates, scores: scores });
+    // console.log({ candidates: candidates, scores: scores });
     let result = await handler.castBallot(id, candidates, scores);
-    console.log({ result });
+    // console.log({ result });
     // setIsBusy(false);
     handleConfetti();
     init(id);
@@ -135,7 +135,7 @@ export default function Election({
   const endElection = async () => {
     setIsBusyEnding(true);
     let result = await handler.endElection(id);
-    console.log({ result });
+    //  console.log({ result });
     init(id);
     handleConfetti();
     // setIsBusyEnding(false);
@@ -143,8 +143,8 @@ export default function Election({
 
   const ethPayHandler = async () => {
     setIsBusy(true);
-    console.log("ether pay handler");
-    console.log({ allocations: allocations, candidates: candidates });
+    // console.log("ether pay handler");
+    // console.log({ allocations: allocations, candidates: candidates });
 
     const totalAllocation = allocations.reduce((x, y) => String(Number(x) + Number(y)), 0);
 
@@ -153,9 +153,9 @@ export default function Election({
       console.log("The expected allocation differs from the set allocation!");
     }
 
-    console.log({ totalAllocation });
+    // console.log({ totalAllocation });
 
-    console.log({ id: id, candidates: candidates, allocations: allocations });
+    // console.log({ id: id, candidates: candidates, allocations: allocations });
     const result = await handler.distributeEth({
       id: id,
       candidates: candidates,
@@ -171,9 +171,9 @@ export default function Election({
 
   const tokenPayHandler = async opts => {
     setIsBusy(true);
-    console.log("token pay handler");
-    console.log({ allocations: allocations, candidates: candidates });
-    console.log({ id: id, candidates: candidates, allocations: allocations });
+    // console.log("token pay handler");
+    // console.log({ allocations: allocations, candidates: candidates });
+    // console.log({ id: id, candidates: candidates, allocations: allocations });
     const result = await handler.distributeTokens({
       id: id,
       candidates: candidates,

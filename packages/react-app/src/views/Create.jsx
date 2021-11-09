@@ -252,7 +252,7 @@ const Create = ({
         candidates: newElection.candidates.filter(d => d !== addr),
       }));
     }
-    console.log(newElection);
+    // console.log(newElection);
   };
 
   const updateSelectedQdip = e => {
@@ -475,7 +475,7 @@ const Create = ({
               <Divider backgroundColor="purple.500" />
               <Box pb="1rem"></Box>
               <FormControl isInvalid={newElection.voters.length == 0}>
-                <FormLabel htmlFor="voters">Participants</FormLabel>
+                <FormLabel htmlFor="voters">Add Participants</FormLabel>
                 <FormErrorMessage>{errors.votes && errors.votes.message}</FormErrorMessage>
               </FormControl>
               <HStack>
@@ -489,7 +489,7 @@ const Create = ({
                   <Tooltip label="Add Participant">
                     <IconButton aria-label="Add address" icon={<AddIcon />} onClick={addVoter} variant="ghost" />
                   </Tooltip>
-                  // Sniff browser -- firefox does not support clipboard
+                  // Sniff browser -- TODO: add firefox support
                   {navigator.userAgent.indexOf("Firefox") < 0 && (
                     <Tooltip label="Paste from clipboard">
                       <IconButton
@@ -535,7 +535,7 @@ const Create = ({
                           <Center w="70px" color="white">
                             <Checkbox
                               onChange={e => {
-                                console.log(e.target.checked, addr);
+                                // console.log(e.target.checked, addr);
                                 updateCandidates(e.target.checked, addr);
                               }}
                             ></Checkbox>

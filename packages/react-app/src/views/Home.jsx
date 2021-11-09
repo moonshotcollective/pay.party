@@ -49,7 +49,7 @@ function Home({
   useEffect(() => {
     if (readContracts && readContracts.Diplomat && targetNetwork) {
       (async () => {
-        console.log("INIT HOME");
+        // console.log("INIT HOME");
         await init();
       })();
     }
@@ -58,14 +58,9 @@ function Home({
   useEffect(() => {
     (async () => {
       if (qdipHandler) {
-        console.log("rerendered ");
+        // console.log("rerendered ");
         setIsLoading(true);
         let { idx, ceramic } = await qdipHandler.makeCeramic();
-        // let electionsMap = await qdipHandler.getElections(ceramic, idx);
-        // // console.log({ electionsMap });
-        // setElectionsMap(electionsMap);
-        // setIsLoading(false);
-        // const { ceramic, idx } = await makeCeramicClient();
         const elections = await getAllCeramicElections(readContracts.Diplomat, ceramic);
         const sElecs = await Promise.all(
           Object.entries(elections).map(([id, elec]) =>
@@ -74,7 +69,7 @@ function Home({
         );
         const electionsMap = new Map();
         sElecs.forEach(elec => electionsMap.set(elec.id, elec));
-        console.log({ electionsMap });
+        // console.log({ electionsMap });
         setElectionsMap(electionsMap);
         setIsLoading(false);
       }
