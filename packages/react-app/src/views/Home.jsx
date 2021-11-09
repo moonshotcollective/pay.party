@@ -12,14 +12,7 @@ import { fromWei } from "web3-utils";
 import CenteredFrame from "../components/layout/CenteredFrame";
 import { getAllCeramicElections, newSerializeCeramicElection } from "../dips/helpers";
 
-function Home({
-  address,
-  mainnetProvider,
-  tx,
-  readContracts,
-  writeContracts,
-  targetNetwork,
-}) {
+function Home({ address, mainnetProvider, tx, readContracts, writeContracts, targetNetwork }) {
   /***** Routes *****/
   const routeHistory = useHistory();
 
