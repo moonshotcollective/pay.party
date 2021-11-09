@@ -1,8 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { Box, Button, Grid, GridItem } from "@chakra-ui/react";
+import {
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
+  CloseButton,
+  Box,
+  Button,
+  Grid,
+  GridItem,
+} from "@chakra-ui/react";
 import { LockIcon } from "@chakra-ui/icons";
 import { useParams } from "react-router-dom";
-
 import DistributionCard from "../components/Cards/DistributionCard";
 import Container from "../components/layout/Container";
 import SideCard from "../components/Cards/SideCard";
@@ -36,6 +45,7 @@ export default function Election({
   const [isBusy, setIsBusy] = useState(false);
   const [isBusyEnding, setIsBusyEnding] = useState(false);
   const [numberOfConfettiPieces, setNumberOfConfettiPieces] = useState(0);
+  const [error, setError] = useState(false);
 
   /***** Effects *****/
   useEffect(() => {
@@ -145,8 +155,12 @@ export default function Election({
       totalValueInWei: electionState.fundAmountInWei,
       tokenAddress: electionState.tokenAdr,
     });
-    // TODO: catch exceptions
-    handleConfetti();
+
+    if (result === "error") {
+      setError(true);
+    } else {
+      handleConfetti();
+    }
     // setIsBusy(false);
     init(id);
   };
@@ -193,6 +207,21 @@ export default function Election({
             ethPayHandler={ethPayHandler}
             tokenPayHandler={tokenPayHandler}
           />
+
+          {error && (
+            <Alert status="error">
+              <AlertIcon />
+              <AlertTitle mr={2}>An Error has occured!</AlertTitle>
+              <CloseButton
+                onClick={() => {
+                  setError(false);
+                }}
+                position="absolute"
+                right="8px"
+                top="8px"
+              />
+            </Alert>
+          )}
 
           {!electionState.isPaid && !electionState.active && electionState.isAdmin && (
             <PayButton

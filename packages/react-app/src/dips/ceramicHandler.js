@@ -31,8 +31,8 @@ export default function CeramicHandler(
     voteAllocation,
     kind,
   }) => {
-    console.log("createElection", targetNetwork);
-    console.log({ targetNetwork });
+    // console.log("createElection", targetNetwork);
+    // console.log({ targetNetwork });
     /* CREATE CERAMIC ELECTION */
     const { ceramic, idx, schemasCommitId } = await makeCeramicClient(address);
     // current users' existing elections
@@ -41,7 +41,7 @@ export default function CeramicHandler(
 
     // make sure the user is Authenticated
     if (ceramic?.did?.id && targetNetwork) {
-      console.log({ targetNetwork });
+      // console.log({ targetNetwork });
       // create the election document on Ceramic
       const electionDoc = await TileDocument.create(
         ceramic,
@@ -103,7 +103,7 @@ export default function CeramicHandler(
     if (electionDoc.controllers[0] === ceramic.did.id.toString()) {
       // console.log(electionDoc.content);
       await electionDoc.update({ ...electionDoc.content, isActive: false });
-      console.log("updated");
+      // console.log("updated");
       return "success";
     } else {
       return null;
@@ -114,7 +114,7 @@ export default function CeramicHandler(
     const { idx, ceramic, schemasCommitId } = await makeCeramicClient(address);
     const election = await serializeCeramicElection(id, address, ceramic, idx, targetNetwork);
 
-    console.log({ election });
+    // console.log({ election });
     const existingVotes = await idx.get("votes");
 
     // TODO: check if already voted for this election through another address linked to this did
@@ -125,14 +125,14 @@ export default function CeramicHandler(
       return election.totalScores;
     }
 
-    console.log({ quad_scores });
+    // console.log({ quad_scores });
 
     const voteAttribution = quad_scores.map((voteAttributionCount, i) => ({
       address: election.candidates[i],
       voteAttribution: voteAttributionCount,
     }));
 
-    console.log({ voteAttribution });
+    // console.log({ voteAttribution });
 
     if (ceramic?.did?.id) {
       const ballotDoc = await TileDocument.create(ceramic, voteAttribution, {
@@ -158,7 +158,7 @@ export default function CeramicHandler(
     }
 
     const electionResults = await serializeCeramicElection(id, address, ceramic, idx, targetNetwork);
-    console.log({ election });
+    // console.log({ election });
     return electionResults.totalScores;
   };
 
@@ -230,13 +230,13 @@ export default function CeramicHandler(
       userSigner,
     );
 
-    console.log({ id, candidates, tokenAddress, totalValueInWei, payoutInWei });
+    // console.log({ id, candidates, tokenAddress, totalValueInWei, payoutInWei });
     try {
       const transaction = await contract.payElection(id, candidates, payoutInWei, tokenAddress, {
         value: totalValueInWei,
       });
       const receipt = await transaction.wait();
-      console.log({ receipt });
+      // console.log({ receipt });
       const electionDoc = await TileDocument.load(ceramic, id);
       //   console.log(electionDoc.controllers[0], ceramic.did.id.toString());
       if (electionDoc.controllers[0] === ceramic.did.id.toString()) {
@@ -245,7 +245,7 @@ export default function CeramicHandler(
       return receipt;
     } catch (e) {
       console.log("error in distribute eth handler");
-      return null;
+      return "error";
     }
   };
 
