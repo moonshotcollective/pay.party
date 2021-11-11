@@ -238,10 +238,10 @@ export const serializeCeramicElection = async (ceramicElectionId, address, ceram
     if (Object.keys(creatorAccounts).some(creatorAddress => address === creatorAddress.split("@")[0])) {
       tags.push("admin");
     }
-    if (electionDoc.content.candidates.includes(address)) {
+    if (electionDoc.content.voters && electionDoc.content.candidates.includes(address)) {
       tags.push("candidate");
     }
-    if (electionDoc.content.voters.includes(address)) {
+    if (electionDoc.content.voters && electionDoc.content.voters.includes(address)) {
       tags.push("voter");
     }
   }
