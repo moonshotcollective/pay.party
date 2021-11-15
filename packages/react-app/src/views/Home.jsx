@@ -47,7 +47,7 @@ function Home({ address, mainnetProvider, tx, readContracts, writeContracts, tar
           ),
         );
         const electionsMap = new Map();
-        serializedElecs.filter(el => el.id).forEach(elec => electionsMap.set(elec.id, elec));
+        serializedElecs.filter(el => el).forEach(elec => electionsMap.set(elec.id, elec));
         // console.log({ electionsMap });
         setElectionsMap(electionsMap);
         setIsLoading(false);
