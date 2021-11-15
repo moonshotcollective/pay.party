@@ -24,6 +24,9 @@ export const getAllCeramicElections = async (contract, ceramic) => {
 };
 
 export const newSerializeCeramicElection = async ({ id, electionDoc, address, ceramic, idx, targetNetwork }) => {
+  if (!electionDoc.content.voters) {
+    return null;
+  }
   const creatorDid = electionDoc.controllers[0];
   let creatorMainAddress = creatorDid;
   const creatorAccounts = await idx.get("cryptoAccounts", creatorDid);
