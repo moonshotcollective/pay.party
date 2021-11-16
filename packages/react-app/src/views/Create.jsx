@@ -1,5 +1,5 @@
 import { ChevronLeftIcon, CopyIcon, AddIcon, DeleteIcon, CheckIcon } from "@chakra-ui/icons";
-import { MdContentPaste } from "react-icons/md";
+import { MdContentPaste, MdFilePresent } from "react-icons/md";
 import {
   Box,
   Button,
@@ -29,6 +29,7 @@ import {
   Select,
   Spinner,
   IconButton,
+  Icon,
   Checkbox,
 } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
@@ -303,6 +304,37 @@ const Create = ({
     setToAddress("");
   };
 
+  const handleAddVotersFromCsv = async event => {
+    if (event.target.files.length > 0) {
+      const file = event.target.files[0];
+      if (file.type != "text/csv") {
+        return;
+      }
+
+      let reader = new FileReader();
+
+      reader.onload = function (e) {
+        const addresses = e.target.result.split(",");
+
+        addresses.forEach(voteAddress => {
+          try {
+            const voteAddressWithChecksum = ethers.utils.getAddress(voteAddress);
+            if (!newElection.voters.includes(voteAddressWithChecksum)) {
+              newElection.voters.push(voteAddressWithChecksum);
+            }
+          } catch (error) {
+            console.log(error);
+          }
+        });
+
+        setToAddress(" ");
+        setToAddress("");
+      };
+
+      reader.readAsText(file);
+    }
+  };
+
   const addCandidates = async () => {
     if (!newElection.candidates.includes(toAddress)) {
       newElection.candidates.push(toAddress);
@@ -450,6 +482,23 @@ const Create = ({
                       />
                     </Tooltip>
                   )}
+                  <Tooltip label="Add from CSV file">
+                    <label for="csvFile" style={{ display: "inline-flex", paddingTop: 10, cursor: "pointer" }}>
+                      <Icon
+                        aria-label="Add from CSV file"
+                        as={MdFilePresent}
+                        variant="ghost"
+                        style={{ width: 18, height: 18 }}
+                      />
+                    </label>
+                  </Tooltip>
+                  <input
+                    type="file"
+                    id="csvFile"
+                    name="csvFile"
+                    style={{ display: "none" }}
+                    onChange={(evt) => handleAddVotersFromCsv(evt)}
+                  />
                 </InputGroup>
               </HStack>
               <Box
