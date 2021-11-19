@@ -474,12 +474,13 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
                     </Tooltip>
                   )}
                   <Tooltip label="Add from CSV file">
-                    <label for="csvFile" style={{ display: "inline-flex", paddingTop: 10, cursor: "pointer" }}>
-                      <Icon
+                    <label for="csvFile" style={{ display: "inline-flex",  cursor: "pointer" }}>
+                      <IconButton
                         aria-label="Add from CSV file"
                         as={MdFilePresent}
                         variant="ghost"
-                        style={{ width: 18, height: 18 }}
+                        icon={<MdFilePresent/>}
+                        style={{ padding: 10}}
                       />
                     </label>
                   </Tooltip>
