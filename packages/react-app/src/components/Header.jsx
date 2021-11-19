@@ -12,7 +12,7 @@ export default function Header() {
         <VStack align="left">
           <HStack align="center">
             <Heading mb={1} color={headingColor}>
-              Quadratic Diplomacy
+              Pay Party
             </Heading>
             <QDIcon size="45px" />
           </HStack>

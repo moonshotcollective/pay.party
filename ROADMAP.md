@@ -1,4 +1,4 @@
-# Quadratic Diplomacy Roadmap
+# Pay Party Roadmap
 
 Quadratic Diplomayc is in its early stages of development and is itended for long-term use. As Such it needs a needs a roadmap.
 

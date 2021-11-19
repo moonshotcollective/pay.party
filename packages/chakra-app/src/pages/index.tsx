@@ -35,7 +35,7 @@ const Home = () => {
       <HStack>
         <VStack align="left">
           <HStack align="center">
-            <Heading color={headingColor}>Quadratic Diplomacy</Heading>
+            <Heading color={headingColor}>Pay Party</Heading>
             <QDIcon size="45px" />
           </HStack>
           <Text color="purple.500" fontWeight="bold">

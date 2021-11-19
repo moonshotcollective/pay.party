@@ -4,7 +4,7 @@ const { solidity } = require("ethereum-waffle");
 
 use(solidity);
 
-describe("Quadratic Diplomacy", function () {
+describe("Pay Party", function () {
   describe("Diplomat", function () {
     it("should deploy Diplomat", async function () {
       const Diplomat = await ethers.getContractFactory("Diplomat");
