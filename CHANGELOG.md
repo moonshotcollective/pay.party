@@ -1,4 +1,4 @@
-# Pay Party Changelog 
+# pay.party Changelog 
 
 ## `prod/1.1.1`
 

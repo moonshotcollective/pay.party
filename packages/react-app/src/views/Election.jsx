@@ -227,7 +227,7 @@ export default function Election({
             <PayButton
               token={electionState.tokenSymbol}
               tokenAddr={electionState.tokenAdr}
-              appName="Pay Party"
+              appName="pay.party"
               // tokenListHandler={tokens => setAvailableTokens(tokens)}
               callerAddress={address}
               maxApproval={electionState.fundAmountInWei}

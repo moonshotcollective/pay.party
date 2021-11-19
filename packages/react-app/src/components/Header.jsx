@@ -11,12 +11,12 @@ export default function Header() {
       <HStack>
         <VStack align="left">
           <HStack align="center">
-            <Heading mb={1} color={headingColor}>
-              Pay Party
-            </Heading>
-            <QDIcon size="45px" />
+            <QDIcon size={16} />
+            <Text mb={1} color={headingColor} fontSize="5xl">
+              pay.party
+            </Text>
           </HStack>
-          <Text color="purple.500" fontWeight="bold">
+          <Text color="purple.500">
             by MOONSHOT COLLECTIVE
           </Text>
         </VStack>
