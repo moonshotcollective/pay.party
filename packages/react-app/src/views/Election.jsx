@@ -85,7 +85,7 @@ export default function Election({
     setCanVote(state.canVote);
     setTotalScores(state.totalScores);
 
-    if (!state.canVote && state.voters.includes(address)) {
+    if (!state.canVote && state.voters && state.voters.includes(address)) {
       // Has voted -> Show stats
       const totalScoreSum = state.totalScores.length > 0 ? state.totalScores.reduce((x, y) => x + y) : 0;
       const pdist = state.totalScores.map(score => (score / totalScoreSum).toFixed(12));

@@ -41,13 +41,13 @@ function Home({ address, mainnetProvider, tx, readContracts, writeContracts, tar
         setIsLoading(true);
         let { idx, ceramic } = await qdipHandler.makeCeramic();
         const elections = await getAllCeramicElections(readContracts.Diplomat, ceramic);
-        const sElecs = await Promise.all(
+        const serializedElecs = await Promise.all(
           Object.entries(elections).map(([id, elec]) =>
             newSerializeCeramicElection({ id, electionDoc: elec, address, ceramic, idx, targetNetwork }),
           ),
         );
         const electionsMap = new Map();
-        sElecs.forEach(elec => electionsMap.set(elec.id, elec));
+        serializedElecs.filter(el => el).forEach(elec => electionsMap.set(elec.id, elec));
         // console.log({ electionsMap });
         setElectionsMap(electionsMap);
         setIsLoading(false);
