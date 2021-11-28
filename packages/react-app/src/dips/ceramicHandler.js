@@ -73,6 +73,8 @@ export default function CeramicHandler(
 
       const electionId = electionDoc.id.toUrl();
 
+      // console.log({ targetNetwork });
+
       /* CREATE ELECTION ON-CHAIN (push the ceramic commitId to elections array) */
       let contract = new ethers.Contract(
         Diplomat[targetNetwork.chainId][targetNetwork.name].contracts.Diplomat.address,

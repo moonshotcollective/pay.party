@@ -46,11 +46,11 @@ import { ethers } from "ethers";
 
 import { CERAMIC_PREFIX } from "../dips/helpers";
 
-const CURRENCY = "ETH";
+const CURRENCY = process.env.REACT_APP_NETWORK_SYMBOL;
 const TOKEN = process.env.REACT_APP_TOKEN_SYMBOL;
 const TOKEN_ADR = process.env.REACT_APP_TOKEN_ADDRESS;
 const STABLE = process.env.REACT_APP_STABLE_TOKEN_SYMBOL;
-const STABLE_ADR = process.env.REACT_APP_STABLE_ADDRESS;
+const STABLE_ADR = process.env.REACT_APP_STABLE_TOKEN_ADDRESS;
 
 const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, writeContracts, targetNetwork }) => {
   /***** Routes *****/
@@ -69,7 +69,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
   const [newElection, setNewElection] = useState({
     name: "",
     description: "",
-    tokenSym: "ETH",
+    tokenSym: CURRENCY,
     tokenAdr: "0x0000000000000000000000000000000000000000",
     fundAmount: 0.1,
     fundAmountInWei: toWei("0.1"),
@@ -178,7 +178,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
       setNewElection({
         name: "",
         description: "",
-        tokenSym: "ETH",
+        tokenSym: CURRENCY,
         fundAmount: 0.1,
         fundAmountInWei: toWei("0.1"),
         voteAllocation: 1,

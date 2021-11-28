@@ -824,6 +824,10 @@ module.exports = {
         address: "0xdb95f9188479575F3F718a245EcA1B3BF74567EC",
         abi: ERC20ABI,
       },
+      DAI: {
+        address: "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063",
+        abi: ERC20ABI,
+      },
     },
   },
 };

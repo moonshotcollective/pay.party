@@ -10,8 +10,8 @@ export const CERAMIC_PREFIX = "ceramic://";
 const CURRENCY = "ETH";
 const TOKEN = process.env.REACT_APP_TOKEN_SYMBOL;
 const TOKEN_ADR = process.env.REACT_APP_TOKEN_ADDRESS;
-const STABLE = process.env.REACT_APP_STABLE_TOKEN;
-const STABLE_ADR = process.env.REACT_APP_STABLE_ADDRESS;
+const STABLE = process.env.REACT_APP_STABLE_TOKEN_SYMBOL;
+const STABLE_ADR = process.env.REACT_APP_STABLE_TOKEN_ADDRESS;
 
 //// PASTE HERE
 export const getAllCeramicElections = async (contract, ceramic) => {
@@ -139,9 +139,12 @@ export const newSerializeCeramicElection = async ({ id, electionDoc, address, ce
       });
     }
   }
-  let tokenSymbol = "ETH";
+  let tokenSymbol = CURRENCY;
   if (electionDoc.content.tokenAddress == TOKEN_ADR) {
     tokenSymbol = TOKEN;
+  }
+  if (electionDoc.content.tokenAddress == STABLE_ADR) {
+    tokenSymbol = STABLE;
   }
   console.log({ content: electionDoc.content, tags });
   const serializedElection = {
@@ -335,9 +338,12 @@ export const serializeCeramicElection = async (ceramicElectionId, address, ceram
       });
     }
   }
-  let tokenSymbol = "ETH";
+  let tokenSymbol = CURRENCY;
   if (electionDoc.content.tokenAddress == TOKEN_ADR) {
     tokenSymbol = TOKEN;
+  }
+  if (electionDoc.content.tokenAddress == STABLE_ADR) {
+    tokenSymbol = STABLE;
   }
   console.log({ content: electionDoc.content, tags });
   const serializedElection = {
