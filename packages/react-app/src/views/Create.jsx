@@ -49,6 +49,8 @@ import { CERAMIC_PREFIX } from "../dips/helpers";
 const CURRENCY = "ETH";
 const TOKEN = process.env.REACT_APP_TOKEN_SYMBOL;
 const TOKEN_ADR = process.env.REACT_APP_TOKEN_ADDRESS;
+const STABLE = process.env.REACT_APP_STABLE_TOKEN_SYMBOL;
+const STABLE_ADR = process.env.REACT_APP_STABLE_ADDRESS;
 
 const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, writeContracts, targetNetwork }) => {
   /***** Routes *****/
@@ -226,6 +228,12 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
       setNewElection(prevState => ({
         ...prevState,
         tokenAdr: TOKEN_ADR,
+      }));
+    }
+    if (e.target.value === STABLE) {
+      setNewElection(prevState => ({
+        ...prevState,
+        tokenAdr: STABLE_ADR,
       }));
     }
   };
@@ -417,6 +425,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
                     >
                       <option value={CURRENCY}>{CURRENCY}</option>
                       <option value={TOKEN}>{TOKEN}</option>
+                      <option value={STABLE}>{STABLE}</option>
                     </Select>
                   </HStack>
                 </HStack>

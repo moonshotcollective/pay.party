@@ -78,13 +78,11 @@ module.exports = {
       gasPrice: 1000000000,
       accounts: [`${process.env.POLYGON_DEPLOYER_PRIV_KEY}`],
     },
-    // matic: {
-    //   url: "https://rpc-mainnet.maticvigil.com/",
-    //   gasPrice: 1000000000,
-    //   accounts: {
-    //     mnemonic: mnemonic(),
-    //   },
-    // },
+    matic: {
+      url: "https://rpc-mainnet.maticvigil.com/",
+      gasPrice: 1000000000,
+      accounts: [`${process.env.POLYGON_DEPLOYER_PRIV_KEY}`],
+    },
     // rinkebyArbitrum: {
     //   url: "https://rinkeby.arbitrum.io/rpc",
     //   gasPrice: 0,

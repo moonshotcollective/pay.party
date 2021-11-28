@@ -10,6 +10,8 @@ export const CERAMIC_PREFIX = "ceramic://";
 const CURRENCY = "ETH";
 const TOKEN = process.env.REACT_APP_TOKEN_SYMBOL;
 const TOKEN_ADR = process.env.REACT_APP_TOKEN_ADDRESS;
+const STABLE = process.env.REACT_APP_STABLE_TOKEN;
+const STABLE_ADR = process.env.REACT_APP_STABLE_ADDRESS;
 
 //// PASTE HERE
 export const getAllCeramicElections = async (contract, ceramic) => {
@@ -187,24 +189,24 @@ export const getCeramicElectionIds = async diplomatContract => {
   return elections;
 };
 
-// export const getNetwork = async () => {
-//   const web3Modal = new Web3Modal();
-//   const connection = await web3Modal.connect();
-//   const provider = new ethers.providers.Web3Provider(connection);
-//   const signer = provider.getSigner();
-//   let network = await provider.getNetwork();
-//   // console.log(network);
-//   if (network.chainId === 31337 || network.chainId === 1337) {
-//     network = { name: "localhost", chainId: 31337 };
-//   }
-//   if (network.name === "homestead") {
-//     network = { name: "mainnet", chainId: 1 };
-//   }
-//   if (network.chainId === 137) {
-//     network = { name: "polygon", chainId: 137 };
-//   }
-//   return { network, signer, provider };
-// };
+export const getNetwork = async () => {
+  const web3Modal = new Web3Modal();
+  const connection = await web3Modal.connect();
+  const provider = new ethers.providers.Web3Provider(connection);
+  const signer = provider.getSigner();
+  let network = await provider.getNetwork();
+  // console.log(network);
+  if (network.chainId === 31337 || network.chainId === 1337) {
+    network = { name: "localhost", chainId: 31337 };
+  }
+  if (network.name === "homestead") {
+    network = { name: "mainnet", chainId: 1 };
+  }
+  if (network.chainId === 137) {
+    network = { name: "polygon", chainId: 137 };
+  }
+  return { network, signer, provider };
+};
 
 export const toCeramicId = id => (id.startsWith(CERAMIC_PREFIX) ? id : CERAMIC_PREFIX + id);
 
