@@ -398,7 +398,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
                 <HStack pb="1rem" justify="space-between">
                   <HStack>
                     <InputGroup w="300px">
-                      <NumberInput max={50} min={0.001} defaultValue={newElection.fundAmount}>
+                      <NumberInput max={5000000000} min={0.001} defaultValue={newElection.fundAmount}>
                         <NumberInputField
                           w="300px"
                           placeholder="fundAmount"
