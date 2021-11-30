@@ -398,7 +398,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
                 <HStack pb="1rem" justify="space-between">
                   <HStack>
                     <InputGroup w="300px">
-                      <NumberInput max={5000000000} min={0.001} defaultValue={newElection.fundAmount}>
+                      <NumberInput min={0.000000000000000001} defaultValue={newElection.fundAmount}>
                         <NumberInputField
                           w="300px"
                           placeholder="fundAmount"
@@ -439,7 +439,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
                   Vote Allocation (number of votes for each voter)
                   <br />
                 </FormLabel>
-                <NumberInput max={1000} min={1} defaultValue={newElection.voteAllocation}>
+                <NumberInput min={1} defaultValue={newElection.voteAllocation}>
                   <NumberInputField
                     placeholder="Vote allocation"
                     borderColor="purple.500"
