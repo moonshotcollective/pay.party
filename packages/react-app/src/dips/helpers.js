@@ -7,7 +7,7 @@ import { makeCeramicClient } from "../helpers";
 
 export const CERAMIC_PREFIX = "ceramic://";
 
-const CURRENCY = "ETH";
+const CURRENCY = process.env.REACT_APP_NETWORK_SYMBOL;
 const TOKEN = process.env.REACT_APP_TOKEN_SYMBOL;
 const TOKEN_ADR = process.env.REACT_APP_TOKEN_ADDRESS;
 const STABLE = process.env.REACT_APP_STABLE_TOKEN_SYMBOL;
