@@ -801,7 +801,7 @@ module.exports = {
   4: {
     contracts: {
       DAI: {
-        address: "0x6B175474E89094C44Da98b954EedeAC495271d0F",
+        address: "0x5592ec0cfb4dbc12d3ab100b257153436a1f0fea",
         abi: DAIABI,
       },
       UNI: {
