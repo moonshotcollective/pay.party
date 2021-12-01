@@ -46,9 +46,11 @@ import { ethers } from "ethers";
 
 import { CERAMIC_PREFIX } from "../dips/helpers";
 
-const CURRENCY = "ETH";
+const CURRENCY = process.env.REACT_APP_NETWORK_SYMBOL;
 const TOKEN = process.env.REACT_APP_TOKEN_SYMBOL;
 const TOKEN_ADR = process.env.REACT_APP_TOKEN_ADDRESS;
+const STABLE = process.env.REACT_APP_STABLE_TOKEN_SYMBOL;
+const STABLE_ADR = process.env.REACT_APP_STABLE_TOKEN_ADDRESS;
 
 const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, writeContracts, targetNetwork }) => {
   /***** Routes *****/
@@ -67,7 +69,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
   const [newElection, setNewElection] = useState({
     name: "",
     description: "",
-    tokenSym: "ETH",
+    tokenSym: CURRENCY,
     tokenAdr: "0x0000000000000000000000000000000000000000",
     fundAmount: 0.1,
     fundAmountInWei: toWei("0.1"),
@@ -176,7 +178,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
       setNewElection({
         name: "",
         description: "",
-        tokenSym: "ETH",
+        tokenSym: CURRENCY,
         fundAmount: 0.1,
         fundAmountInWei: toWei("0.1"),
         voteAllocation: 1,
@@ -226,6 +228,12 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
       setNewElection(prevState => ({
         ...prevState,
         tokenAdr: TOKEN_ADR,
+      }));
+    }
+    if (e.target.value === STABLE) {
+      setNewElection(prevState => ({
+        ...prevState,
+        tokenAdr: STABLE_ADR,
       }));
     }
   };
@@ -390,7 +398,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
                 <HStack pb="1rem" justify="space-between">
                   <HStack>
                     <InputGroup w="300px">
-                      <NumberInput max={50} min={0.001} defaultValue={newElection.fundAmount}>
+                      <NumberInput min={0.000000000000000001} defaultValue={newElection.fundAmount}>
                         <NumberInputField
                           w="300px"
                           placeholder="fundAmount"
@@ -417,6 +425,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
                     >
                       <option value={CURRENCY}>{CURRENCY}</option>
                       <option value={TOKEN}>{TOKEN}</option>
+                      <option value={STABLE}>{STABLE}</option>
                     </Select>
                   </HStack>
                 </HStack>
@@ -430,7 +439,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
                   Vote Allocation (number of votes for each voter)
                   <br />
                 </FormLabel>
-                <NumberInput max={1000} min={1} defaultValue={newElection.voteAllocation}>
+                <NumberInput min={1} defaultValue={newElection.voteAllocation}>
                   <NumberInputField
                     placeholder="Vote allocation"
                     borderColor="purple.500"
