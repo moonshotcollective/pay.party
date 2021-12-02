@@ -1,4 +1,6 @@
-# Quadratic Diplomacy Changelog 
+# pay.party Changelog 
+
+## `prod/1.1.1`
 
 ## `prod/1.1.0`:
 

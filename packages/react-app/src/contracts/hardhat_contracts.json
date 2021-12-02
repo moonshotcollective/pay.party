@@ -504,7 +504,7 @@
       "chainId": "4",
       "contracts": {
         "Diplomat": {
-          "address": "0x057d7CFaC1FA6D1CEd591A448DA94525c5289f2F",
+          "address": "0x7658Eac3D619B0c141937ddEeC0E5a638F961427",
           "abi": [
             {
               "inputs": [],
@@ -998,12 +998,12 @@
     }
   },
   "137": {
-    "polygon": {
-      "name": "polygon",
+    "matic": {
+      "name": "matic",
       "chainId": "137",
       "contracts": {
         "Diplomat": {
-          "address": "0xea99c58645f897ac8bf530538e36e6d651ff8bf7",
+          "address": "0x8486D6959d4e01aAd3d3D14A0e679160239FE463",
           "abi": [
             {
               "inputs": [],

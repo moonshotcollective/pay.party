@@ -223,11 +223,11 @@ export default function Election({
             </Alert>
           )}
 
-          {!electionState.isPaid && !electionState.active && electionState.isAdmin && (
+          {address && spender && electionState && !electionState.isPaid && !electionState.active && electionState.isAdmin && (
             <PayButton
               token={electionState.tokenSymbol}
               tokenAddr={electionState.tokenAdr}
-              appName="Quadratic Diplomacy"
+              appName="pay.party"
               // tokenListHandler={tokens => setAvailableTokens(tokens)}
               callerAddress={address}
               maxApproval={electionState.fundAmountInWei}

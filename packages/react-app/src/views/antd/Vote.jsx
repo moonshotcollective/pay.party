@@ -401,7 +401,7 @@ export default function Vote({
               <PayButton
                 token={"ETH"}
                 tokenAddr={electionState.tokenAdr}
-                appName="Quadratic Diplomacy"
+                appName="pay.party"
                 tokenListHandler={tokens => setAvailableTokens(tokens)}
                 callerAddress={address}
                 maxApproval={electionState.fundAmount}

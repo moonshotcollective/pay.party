@@ -17,7 +17,7 @@ const Header = () => {
           <VStack _hover={{ cursor: "pointer" }} align="left" spacing="0">
             <HStack>
               <Heading fontSize="md" color={headingColor}>
-                Quadratic Diplomacy
+                pay.party
               </Heading>
               <QDIcon size="25px" />
             </HStack>

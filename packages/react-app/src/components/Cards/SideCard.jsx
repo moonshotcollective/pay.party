@@ -26,6 +26,7 @@ function ElectionCard({
   function goBack() {
     routeHistory.push("/");
   }
+  // console.log({electionState})
 
   return (
     <Box py="1.5rem" px="2.5rem">

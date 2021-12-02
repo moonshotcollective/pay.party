@@ -284,7 +284,7 @@ export default function Create() {
           </Form.Item>
           <Form.Item name="type" label="Storage Location">
             <Select
-              placeholder="Quadratic Diplomacy build..."
+              placeholder="pay.party build..."
               defaultValue={["Firebase (Centralized)"]}
               onSelect={updateSelectedQdip}
             >

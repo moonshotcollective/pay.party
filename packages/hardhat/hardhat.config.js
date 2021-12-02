@@ -73,7 +73,7 @@ module.exports = {
       gasPrice: 1000000000,
       accounts: [`${process.env.XDAI_DEPLOYER_PRIV_KEY}`],
     },
-    polygon: {
+    matic: {
       url: `https://polygon-mainnet.infura.io/v3/${process.env.POLYGON_INFURA_KEY}`, // <---- YOUR MORALIS ID! (not limited to infura)
       gasPrice: 1000000000,
       accounts: [`${process.env.POLYGON_DEPLOYER_PRIV_KEY}`],
@@ -81,9 +81,7 @@ module.exports = {
     // matic: {
     //   url: "https://rpc-mainnet.maticvigil.com/",
     //   gasPrice: 1000000000,
-    //   accounts: {
-    //     mnemonic: mnemonic(),
-    //   },
+    //   accounts: [`${process.env.POLYGON_DEPLOYER_PRIV_KEY}`],
     // },
     // rinkebyArbitrum: {
     //   url: "https://rinkeby.arbitrum.io/rpc",
