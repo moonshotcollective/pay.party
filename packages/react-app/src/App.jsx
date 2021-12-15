@@ -483,7 +483,7 @@ function App(props) {
                   readContracts={readContracts}
                 />
               </Route>
-              <Route path="/election/:id">
+              <Route path="/party/:id">
                 <Election
                   address={address}
                   userSigner={userSigner}
