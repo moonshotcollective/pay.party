@@ -40,7 +40,7 @@ async function applySchemaValidation(db) {
           bsonType: "object",
           properties: {
             amount: {
-              bsonType: "number",
+              bsonType: "string",
             },
             token: {
               bsonType: "string",
