@@ -1,11 +1,19 @@
 # pay.party
 
-pay.party is an attempt by the Moonshot Collective to address DAO contributor compensation by utilizing quadratically-weighed votes for rewarded elections.
+![](https://i.imgur.com/FthDZz5.png)
 
-Voters receive certain allocation of votes, which they distribute amongst their peers on a _ballot_ to signal their perceived contribution score. Each _candidate_(peer) score is calculated as the cumulative sum of the square root of the votes received. e.g. If you put one vote to a candidate, that is counted as one vote; four votes are counted as two votes, and so on, per cast ballot.
+## Summary
 
-_More info to come_
+**pay.party** is a tool used to distribute compensation to team members based on democratic principles.
 
-## Contribute
+Using Pay.Party, A user can create and fund a pay.party election, assigning candidate and voter roles to any number of Ethereum addresses. Address participants can vote on their peers to determine the compensation distribution from the elections funding pool.
 
-- See CONTRIBUTING.md
+When a pay.party has ended, the funds are distributed to each candidate based on the election outcome, and users are notified of their dispersement..
+
+### How it works
+
+Upon creating a pay.party election, a creator adds participants by assigning any number of addresses a voter and/or candidate role, the election funding token and amount, the number of votes every voter gets, and other related metadata (name, description, etc.). If an address has a _voter_ role, the address participates by voting on candidates. If, however, an address has a _candidate_ role, the address participates by voting _and_ being voted on in which case they may receive a portion of the election pool's funding.
+
+## Contributing
+
+Please see the contributing document.
