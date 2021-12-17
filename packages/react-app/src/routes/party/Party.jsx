@@ -20,16 +20,16 @@ import {
 } from "@chakra-ui/react";
 import { LockIcon } from "@chakra-ui/icons";
 import { useParams, useHistory } from "react-router-dom";
-import DistributionCard from "../components/Cards/DistributionCard";
-import Container from "../components/layout/Container";
-import SideCard from "../components/Cards/SideCard";
-import VoteCard from "../components/Cards/VoterCards/VoteCard";
-import CeramicHandler from "../dips/ceramicHandler";
+import DistributionCard from "../../components/Cards/DistributionCard";
+import Container from "../../components/layout/Container";
+import SideCard from "../../components/Cards/SideCard";
+import VoteCard from "../../components/Cards/VoterCards/VoteCard";
+import CeramicHandler from "../../dips/ceramicHandler";
 import Confetti from "react-confetti";
-import { PayButton } from "../components";
-import MongoDBController from "../controllers/mongodbController";
+import { PayButton } from "../../components";
+import MongoDBController from "../../controllers/mongodbController";
 
-export default function Election({
+export default function Party({
   address,
   mainnetProvider,
   userSigner,

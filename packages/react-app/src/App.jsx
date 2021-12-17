@@ -14,7 +14,7 @@ import { Transactor } from "./helpers";
 import { useBalance, useContractReader, useGasPrice, useOnBlock } from "eth-hooks";
 import { useEventListener } from "eth-hooks/events/useEventListener";
 import { useExchangeEthPrice } from "eth-hooks/dapps/dex";
-import { Home, Create, Election } from "./views";
+import { Home, Create, Party } from "./routes";
 import { useUserProviderAndSigner } from "./hooks";
 
 import { useContractConfig, useContractLoader } from "./hooks";
@@ -484,7 +484,7 @@ function App(props) {
                 />
               </Route>
               <Route path="/party/:id">
-                <Election
+                <Party
                   address={address}
                   userSigner={userSigner}
                   targetNetwork={targetNetwork}

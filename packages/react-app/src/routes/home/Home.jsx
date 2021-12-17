@@ -5,13 +5,13 @@ import { TabList, TabPanel, TabPanels, Spinner, Tabs, Text, Center } from "@chak
 import { useColorModeValue } from "@chakra-ui/color-mode";
 import React, { useEffect, useState, useMemo} from "react";
 import { useHistory, Link } from "react-router-dom";
-import Container from "../components/layout/Container";
-import ElectionCard from "../components/Cards/ElectionCard";
-import BaseHandler from "../dips/baseHandler";
+import Container from "../../components/layout/Container";
+import ElectionCard from "../../components/Cards/ElectionCard";
+import BaseHandler from "../../dips/baseHandler";
 import { fromWei } from "web3-utils";
-import CenteredFrame from "../components/layout/CenteredFrame";
-import { getAllCeramicElections, newSerializeCeramicElection } from "../dips/helpers";
-import MongoDbController from "../controllers/mongodbController";
+import CenteredFrame from "../../components/layout/CenteredFrame";
+import { getAllCeramicElections, newSerializeCeramicElection } from "../../dips/helpers";
+import MongoDbController from "../../controllers/mongodbController";
 import {Space, Card, Tag} from "antd"
 
 function Home({ address, mainnetProvider, tx, readContracts, writeContracts, targetNetwork }) {
