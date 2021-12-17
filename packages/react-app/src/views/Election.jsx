@@ -5,11 +5,18 @@ import {
   AlertTitle,
   AlertDescription,
   CloseButton,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
   Box,
   Button,
   Grid,
   GridItem,
   Textarea,
+  Input,
+  HStack,
 } from "@chakra-ui/react";
 import { LockIcon } from "@chakra-ui/icons";
 import { useParams, useHistory } from "react-router-dom";
@@ -64,6 +71,30 @@ export default function Election({
     }
   };
 
+  console.log(partyData)
+
+  const [tokenInstance, setTokenInstance] = useState(null);
+
+  // load an erc20
+  // TODO: add capability for other block explorers
+  const loadToken = async (values) => {
+    $.getJSON(
+      `https://api.etherscan.io/api?module=contract&action=getabi&address=${values.token}&${
+        process.env.REACT_APP_ETHERSCAN_KEY
+      }`,
+      (data) => {
+        const contractABI = JSON.parse(data.result);
+        var contractInstance = new ethers.Contract(values.token, contractABI, ethersContext.signer);
+        setTokenInstance(contractInstance);
+      }
+    );
+    console.log(tokenInstance);
+  };
+
+  const approve = () => {
+
+  }
+
   const vote = async () => {
     // EIP-712 Typed Data
     // See: https://eips.ethereum.org/EIPS/eip-712
@@ -98,13 +129,13 @@ export default function Election({
       userSigner
         ?._signTypedData(domain, types, ballot)
         .then(sig => {
-          const ballots = props.partyData.ballots;
+          const ballots = partyData.ballots;
           // Push a ballot to the parties sumbitted ballots array
           ballots.push({ signature: sig, data: ballot });
           return ballots;
         })
         .then(ballots => {
-          db.updateParty(props.partyData._id, { ballots: ballots });
+          db.updateParty(partyData._id, { ballots: ballots });
         })
         .catch(err => {
           console.log(err);
@@ -113,43 +144,9 @@ export default function Election({
   };
 
   return (
-    <Container>
-      <Grid w="full" templateColumns="repeat(3, 1fr)" gap={6}>
-        <GridItem colSpan={1}>
-          <Button
-            onClick={() => {
-              routeHistory.push("/");
-            }}
-          >
-            Back
-          </Button>
-          <Box>
-            <p>{partyData?._id}</p>
-            <p>{partyData?.name}</p>
-            <p>{partyData?.desc}</p>
-            <p>Placeholder for more metadata</p>
-          </Box>
-        </GridItem>
-        <GridItem colSpan={2}>
-          <Box
-            w="full"
-            pt="1rem"
-            align="end"
-            borderColor="purple.500"
-            borderWidth="1px"
-            borderRadius="8px"
-            py="3rem"
-            px="2.5rem"
-          >
-            <p>Vote</p>
-            <Textarea
-              onChange={handleVotesChange}
-              placeholder='ex: {"0x802999C71263f7B30927F720CF0AC10A76a0494C": 3, "0x6b541b78349097714B9D1aB6A788dB5e0dCF21a3": 7}'
-            />
-            <Button onClick={vote}>Cast Ballot</Button>
-          </Box>
-        </GridItem>
-      </Grid>
-    </Container>
+      <Box borderWidth={'1px'}>
+        <p>{JSON.stringify(partyData)}</p>
+
+      </Box>
   );
 }
