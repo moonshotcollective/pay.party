@@ -64,12 +64,9 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
 
   const [partyObj, setPartyObj] = useState({
     name: "",
-    desc: "",
-    fund: {
-      amount: "",
-      token: "",
-    },
-    strategy: "",
+    description: "",
+    receipts: [], 
+    config: {},
     participants: [],
     candidates: [],
     ballots: [],
@@ -103,28 +100,14 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
 
           <FormLabel>Desciption</FormLabel>
           <Textarea
-            type="desc"
+            type="description"
             placeholder="Describe your party"
             rows={3}
-            onChange={e => (partyObj.desc = e.currentTarget.value)}
-          />
-
-          <FormLabel>ERC-20 Token</FormLabel>
-          <Input
-            type="fundType"
-            placeholder="ex: 0xde30da39c46104798bb5aa3fe8b9e0e1f348163f"
-            onChange={e => (partyObj.fund.token = e.currentTarget.value)}
-          />
-
-          <FormLabel>Amount</FormLabel>
-          <Input
-            type="fundAmount"
-            placeholder="Amount to distribute"
-            onChange={e => (partyObj.fund.amount = e.currentTarget.value)}
+            onChange={e => (partyObj.description = e.currentTarget.value)}
           />
 
           <FormLabel>Strategy</FormLabel>
-          <Select onChange={e => (partyObj.strategy = e.currentTarget.value)}>
+          <Select onChange={e => (partyObj.config.strategy = e.currentTarget.value)}>
             <option>Linear</option>
             <option>Quadratic</option>
           </Select>

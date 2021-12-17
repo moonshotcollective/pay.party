@@ -24,7 +24,14 @@ async function applySchemaValidation(db) {
   const jsonSchema = {
     $jsonSchema: {
       bsonType: "object",
-      required: ["name", "desc"],
+      required: [
+        "name",
+        "description",
+        "receipts",
+        "participants",
+        "candidates",
+        "ballots",
+      ],
       additionalProperties: false,
       properties: {
         _id: {},
@@ -32,24 +39,17 @@ async function applySchemaValidation(db) {
           bsonType: "string",
           description: "'name' is required and is a string",
         },
-        desc: {
+        description: {
           bsonType: "string",
-          description: "'desc' is required and is a string",
+          description: "'description' is required and is a string",
         },
-        fund: {
+        receipts: {
+          bsonType: "array",
+          description: "receipts is th pay-out recipets.",
+        },
+        config: {
           bsonType: "object",
-          properties: {
-            amount: {
-              bsonType: "string",
-            },
-            token: {
-              bsonType: "string",
-            },
-          },
-        },
-        strategy: {
-          bsonType: "string",
-          description: "'strategy' is a string",
+          description: "party configuration",
         },
         participants: {
           bsonType: "array",
