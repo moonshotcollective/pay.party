@@ -511,7 +511,7 @@ function App(props) {
           <PageHeader
             className="navbar-title"
             title={<Header />}
-            style={{ cursor: "pointer", margin: 10, padding: 0 }}
+            style={{ cursor: "default", margin: 10, padding: 0 }}
             extra={[
               <Space size="large">
                 {/* <span>{faucetHint}</span>
