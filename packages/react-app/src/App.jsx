@@ -2,19 +2,18 @@ require("dotenv").config();
 import WalletConnectProvider from "@walletconnect/web3-provider";
 //import Torus from "@toruslabs/torus-embed"
 import WalletLink from "walletlink";
-import { Alert, Button, Col, Menu, Row, Select, Space, Layout, PageHeader } from "antd";
+import { Alert, Button } from "antd";
 import "antd/dist/antd.css";
 import React, { useCallback, useEffect, useState } from "react";
-import { BrowserRouter, Link, Route, Switch } from "react-router-dom";
+import { BrowserRouter, Route, Switch, useHistory } from "react-router-dom";
 import Web3Modal from "web3modal";
 import "./App.css";
-import { Account, Contract, Faucet, GasGauge, Header, Footer, Ramp, ThemeSwitch } from "./components";
+import { Account, Contract, Header, Footer } from "./components";
 import { INFURA_ID, NETWORK, NETWORKS } from "./constants";
 import { Transactor } from "./helpers";
-import { useBalance, useContractReader, useGasPrice, useOnBlock } from "eth-hooks";
-import { useEventListener } from "eth-hooks/events/useEventListener";
+import { useBalance, useGasPrice } from "eth-hooks";
 import { useExchangeEthPrice } from "eth-hooks/dapps/dex";
-import { Home, Create, Election } from "./views";
+import { Home, Create, Party } from "./routes";
 import { useUserProviderAndSigner } from "./hooks";
 
 import { useContractConfig, useContractLoader } from "./hooks";
@@ -22,34 +21,14 @@ import Portis from "@portis/web3";
 import Fortmatic from "fortmatic";
 import Authereum from "authereum";
 
-import { Box, Text, Heading, VStack, HStack, Divider, Button as ChakraButton } from "@chakra-ui/react";
+import { Box, HStack, Flex, Spacer } from "@chakra-ui/react";
 import NotConnectedCard from "./components/Cards/NotConnectedCard";
 import CenteredFrame from "./components/layout/CenteredFrame";
 
 const { ethers } = require("ethers");
-/*
-    Welcome to 🏗 scaffold-eth !
 
-    Code:
-    https://github.com/austintgriffith/scaffold-eth
+const targetNetwork = NETWORKS[process.env.REACT_APP_NETWORK_NAME]; //rinkeby; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
-    Support:
-    https://t.me/joinchat/KByvmRe5wkR-8F_zz6AjpA
-    or DM @austingriffith on twitter or telegram
-
-    You should get your own Infura.io ID and put it in `constants.js`
-    (this is your connection to the main Ethereum network for ENS etc.)
-
-
-    🌏 EXTERNAL CONTRACTS:
-    You can also bring in contract artifacts in `constants.js`
-    (and then use the `useExternalContractLoader()` hook!)
-*/
-
-/// 📡 What chain are your contracts deployed to?
-// const targetNetwork = NETWORKS[process.env.REACT_APP_NETWORK_NAME];
-
-// 😬 Sorry for all the console logging
 const DEBUG = false;
 const NETWORKCHECK = true;
 
@@ -64,12 +43,9 @@ if (DEBUG) console.log("📡 Connecting to New Cached Network: ", cachedNetwork)
 let targetNetwork = NETWORKS[cachedNetwork || "mainnet"];
 
 // 🛰 providers
+
 if (DEBUG) console.log("📡 Connecting to Mainnet Ethereum");
-// const mainnetProvider = getDefaultProvider("mainnet", { infura: INFURA_ID, etherscan: ETHERSCAN_KEY, quorum: 1 });
-// const mainnetProvider = new InfuraProvider("mainnet",INFURA_ID);
-//
-// attempt to connect to our own scaffold eth rpc and if that fails fall back to infura...
-// Using StaticJsonRpcProvider as the chainId won't change see https://github.com/ethers-io/ethers.js/issues/901
+
 const scaffoldEthProvider = navigator.onLine
   ? new ethers.providers.StaticJsonRpcProvider("https://rpc.scaffoldeth.io:48544")
   : null;
@@ -99,10 +75,6 @@ const walletLink = new WalletLink({
 // WalletLink provider
 const walletLinkProvider = walletLink.makeWeb3Provider(`https://mainnet.infura.io/v3/${INFURA_ID}`, 1);
 
-// Portis ID: 6255fb2b-58c8-433b-a2c9-62098c05ddc9
-/*
-  Web3 modal helps us "connect" external wallets:
-*/
 const web3Modal = new Web3Modal({
   network: "mainnet", // Optional. If using WalletConnect on xDai, change network to "xdai" and add RPC info below for xDai chain.
   cacheProvider: true, // optional
@@ -241,9 +213,9 @@ function App(props) {
   const mainnetContracts = useContractLoader(mainnetProvider, contractConfig);
 
   // If you want to call a function on a new block
-  useOnBlock(mainnetProvider, () => {
-    // console.log(`⛓ A new mainnet block is here: ${mainnetProvider._lastBlockNumber}`);
-  });
+  // useOnBlock(mainnetProvider, () => {
+  //   // console.log(`⛓ A new mainnet block is here: ${mainnetProvider._lastBlockNumber}`);
+  // });
 
   // Then read your DAI balance like:
   //   const myMainnetDAIBalance = useContractReader(mainnetContracts, "DAI", "balanceOf", [
@@ -505,38 +477,62 @@ function App(props) {
   }, [yourLocalBalance]);
 
   return (
-    <div style={{ padding: 52 }}>
-      <Box mb={8} w="full">
-        <Layout style={{ fixed: "top" }} className="navbar-title">
-          <PageHeader
-            className="navbar-title"
-            title={<Header />}
-            style={{ cursor: "default", margin: 10, padding: 0 }}
-            extra={[
-              <Space size="large">
-                {/* <span>{faucetHint}</span>
-                <Space direction="vertical" size={0}>
-                  {networkDisplay}
-                </Space> */}
-                <Space direction="vertical" size={0}>
-                  <label>Select Network:</label>
-                  {networkSelect}
-                </Space>
-                <Account
-                  address={address}
-                  localProvider={localProvider}
-                  userSigner={userSigner}
-                  mainnetProvider={mainnetProvider}
-                  price={price}
-                  web3Modal={web3Modal}
-                  loadWeb3Modal={loadWeb3Modal}
-                  logoutOfWeb3Modal={logoutOfWeb3Modal}
-                  blockExplorer={blockExplorer}
-                />
-              </Space>,
-            ]}
-          />
-        </Layout>
+//     <div style={{ padding: 52 }}>
+//       <Box mb={8} w="full">
+//         <Layout style={{ fixed: "top" }} className="navbar-title">
+//           <PageHeader
+//             className="navbar-title"
+//             title={<Header />}
+//             style={{ cursor: "default", margin: 10, padding: 0 }}
+//             extra={[
+//               <Space size="large">
+//                 {/* <span>{faucetHint}</span>
+//                 <Space direction="vertical" size={0}>
+//                   {networkDisplay}
+//                 </Space> */}
+//                 <Space direction="vertical" size={0}>
+//                   <label>Select Network:</label>
+//                   {networkSelect}
+//                 </Space>
+//                 <Account
+//                   address={address}
+//                   localProvider={localProvider}
+//                   userSigner={userSigner}
+//                   mainnetProvider={mainnetProvider}
+//                   price={price}
+//                   web3Modal={web3Modal}
+//                   loadWeb3Modal={loadWeb3Modal}
+//                   logoutOfWeb3Modal={logoutOfWeb3Modal}
+//                   blockExplorer={blockExplorer}
+//                 />
+//               </Space>,
+//             ]}
+//           />
+//         </Layout>
+
+    <div>
+      <Box mb={8} pl={"12vw"} pr={"12vw"}>
+        <Box pb={10}>
+          <HStack>
+            <Box>
+              <Header />
+            </Box>
+            <Spacer />
+            <Box pt={5}>
+              <Account
+                address={address}
+                localProvider={localProvider}
+                userSigner={userSigner}
+                mainnetProvider={mainnetProvider}
+                price={price}
+                web3Modal={web3Modal}
+                loadWeb3Modal={loadWeb3Modal}
+                logoutOfWeb3Modal={logoutOfWeb3Modal}
+                blockExplorer={blockExplorer}
+              />
+            </Box>
+          </HStack>
+        </Box>
         {address && address !== "" ? (
           <BrowserRouter>
             <Switch>
@@ -565,7 +561,7 @@ function App(props) {
                 />
               </Route>
               <Route path="/party/:id">
-                <Election
+                <Party
                   address={address}
                   userSigner={userSigner}
                   targetNetwork={targetNetwork}
