@@ -28,9 +28,8 @@ export const Distribute = ({ dbInstance, partyData, address, userSigner, writeCo
   // Calculate percent distribution from submitted ballots
   const calcDistribution = () => {
     try {
-      if (partyData) {
+      if (partyData.ballots.length > 0) {
         const votes = partyData.ballots.map(b => JSON.parse(b.data.ballot.votes.replace(/[ \n\r]/g, "")));
-        console.log(votes);
         let sum = 0;
         let processed = [];
         let strategy = partyData.config.strategy;
@@ -59,7 +58,9 @@ export const Distribute = ({ dbInstance, partyData, address, userSigner, writeCo
         }
         setDistribution(final);
       }
-    } catch {}
+    } catch {
+      setDistribution(null);
+    }
   };
 
   // Calculate the distribution on load
@@ -68,7 +69,6 @@ export const Distribute = ({ dbInstance, partyData, address, userSigner, writeCo
   }, []);
 
   const handleTokenChange = e => {
-    console.log(e.target.value);
     setToken(e.target.value);
   };
 
@@ -149,7 +149,6 @@ export const Distribute = ({ dbInstance, partyData, address, userSigner, writeCo
     try {
       if (partyData && partyData.ballots.length > 0) {
         setIsDistributionLoading(true);
-        console.log(partyData);
         // Distribute the funds
         if (tokenInstance && amounts) {
           tx(
@@ -157,8 +156,6 @@ export const Distribute = ({ dbInstance, partyData, address, userSigner, writeCo
             handleReceipt,
           );
         } else {
-          console.log(partyData.candidates);
-          console.log(amounts.map(a => a.toString()));
           tx(
             writeContracts.Distributor.distributeEther(partyData.candidates, amounts, { value: total }),
             handleReceipt,
@@ -196,7 +193,7 @@ export const Distribute = ({ dbInstance, partyData, address, userSigner, writeCo
       </HStack>
       <HStack>
         <NumberInput onChange={handleAmountChange}>
-          <NumberInputField placeholder="1"/>
+          <NumberInputField placeholder="1" />
           <NumberInputStepper>
             <NumberIncrementStepper />
             <NumberDecrementStepper />

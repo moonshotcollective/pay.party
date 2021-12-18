@@ -1,9 +1,4 @@
-import {
-  Box,
-  Button,
-  Textarea,
-  HStack,
-} from "@chakra-ui/react";
+import { Box, Button, Textarea, HStack } from "@chakra-ui/react";
 import React, { useState } from "react";
 
 export const Vote = ({ dbInstance, partyData, address, userSigner, targetNetwork, readContracts }) => {
@@ -18,8 +13,6 @@ export const Vote = ({ dbInstance, partyData, address, userSigner, targetNetwork
       console.log("Formatted JSON Required");
     }
   };
-
-  console.log(partyData);
 
   const vote = async () => {
     // EIP-712 Typed Data
