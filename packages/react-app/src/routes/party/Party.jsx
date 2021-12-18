@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
-import {
-  Box,
-} from "@chakra-ui/react";
+import { Button, Box } from "@chakra-ui/react";
+import { ArrowBackIcon } from "@chakra-ui/icons";
 import { useParams, useHistory } from "react-router-dom";
 import MongoDBController from "../../controllers/mongodbController";
 import { Vote, Distribute } from "./components";
@@ -32,24 +31,36 @@ export default function Party({
   }, []);
 
   return (
-    <Box borderWidth={"1px"}>
-      <p>{JSON.stringify(partyData)}</p>
-      <Vote
-        dbInstance={db}
-        partyData={partyData}
-        address={address}
-        userSigner={userSigner}
-        targetNetwork={targetNetwork}
-        readContracts={readContracts}
-      />
-      <Distribute
-        dbInstance={db}
-        partyData={partyData}
-        address={address}
-        userSigner={userSigner}
-        writeContracts={writeContracts}
-        tx={tx}
-      />
+    <Box>
+      <Button
+        size="lg"
+        variant="ghost"
+        leftIcon={<ArrowBackIcon />}
+        onClick={() => {
+          routeHistory.push("/");
+        }}
+      >
+        Back
+      </Button>
+      <Box borderWidth={"1px"}>
+        <p>{JSON.stringify(partyData)}</p>
+        <Vote
+          dbInstance={db}
+          partyData={partyData}
+          address={address}
+          userSigner={userSigner}
+          targetNetwork={targetNetwork}
+          readContracts={readContracts}
+        />
+        <Distribute
+          dbInstance={db}
+          partyData={partyData}
+          address={address}
+          userSigner={userSigner}
+          writeContracts={writeContracts}
+          tx={tx}
+        />
+      </Box>
     </Box>
   );
 }

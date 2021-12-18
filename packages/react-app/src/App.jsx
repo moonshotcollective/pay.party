@@ -5,7 +5,7 @@ import WalletLink from "walletlink";
 import { Alert, Button } from "antd";
 import "antd/dist/antd.css";
 import React, { useCallback, useEffect, useState } from "react";
-import { BrowserRouter, Route, Switch } from "react-router-dom";
+import { BrowserRouter, Route, Switch, useHistory } from "react-router-dom";
 import Web3Modal from "web3modal";
 import "./App.css";
 import { Account, Contract, Header, Footer } from "./components";
@@ -21,7 +21,7 @@ import Portis from "@portis/web3";
 import Fortmatic from "fortmatic";
 import Authereum from "authereum";
 
-import { Box } from "@chakra-ui/react";
+import { Box, HStack, Flex, Spacer } from "@chakra-ui/react";
 import NotConnectedCard from "./components/Cards/NotConnectedCard";
 import CenteredFrame from "./components/layout/CenteredFrame";
 
@@ -115,8 +115,7 @@ const web3Modal = new Web3Modal({
     // },
     "custom-walletlink": {
       display: {
-        logo:
-          "https://play-lh.googleusercontent.com/PjoJoG27miSglVBXoXrxBSLveV6e3EeBPpNY55aiUUBM9Q1RCETKCOqdOkX2ZydqVf0",
+        logo: "https://play-lh.googleusercontent.com/PjoJoG27miSglVBXoXrxBSLveV6e3EeBPpNY55aiUUBM9Q1RCETKCOqdOkX2ZydqVf0",
         name: "Coinbase",
         description: "Connect to Coinbase Wallet (not Coinbase App)",
       },
@@ -409,23 +408,30 @@ function App(props) {
   }, [yourLocalBalance]);
 
   return (
-    <div style={{ padding: 52 }}>
-      {networkDisplay}
-      <Box mb={8} w="full">
-        <div style={{ position: "fixed", textAlign: "right", right: 32, top: 60, padding: 10 }}>
-          <Account
-            address={address}
-            localProvider={localProvider}
-            userSigner={userSigner}
-            mainnetProvider={mainnetProvider}
-            price={price}
-            web3Modal={web3Modal}
-            loadWeb3Modal={loadWeb3Modal}
-            logoutOfWeb3Modal={logoutOfWeb3Modal}
-            blockExplorer={blockExplorer}
-          />
-        </div>
-        <Header />
+    <div>
+      <Box mb={8} pl={"12vw"} pr={"12vw"}>
+        <Box pb={10}>
+          <HStack>
+            <Box>
+              <Header />
+            </Box>
+            <Spacer />
+            <Box pt={5}>
+              <Account
+                address={address}
+                localProvider={localProvider}
+                userSigner={userSigner}
+                mainnetProvider={mainnetProvider}
+                price={price}
+                web3Modal={web3Modal}
+                loadWeb3Modal={loadWeb3Modal}
+                logoutOfWeb3Modal={logoutOfWeb3Modal}
+                blockExplorer={blockExplorer}
+              />
+            </Box>
+          </HStack>
+        </Box>
+
         {address && address !== "" ? (
           <BrowserRouter>
             <Switch>

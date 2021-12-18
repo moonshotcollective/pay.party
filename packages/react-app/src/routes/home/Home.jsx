@@ -1,10 +1,9 @@
 import { Button } from "@chakra-ui/button";
 import { AddIcon } from "@chakra-ui/icons";
-import { Box, Heading, HStack } from "@chakra-ui/layout";
+import { Box, Heading, HStack, Spacer } from "@chakra-ui/layout";
 import { useColorModeValue } from "@chakra-ui/color-mode";
 import React, { useEffect, useState, useMemo } from "react";
 import { useHistory, Link } from "react-router-dom";
-import Container from "../../components/layout/Container";
 import MongoDbController from "../../controllers/mongodbController";
 import { Space } from "antd";
 
@@ -32,23 +31,23 @@ function Home({ address, mainnetProvider, tx, readContracts, writeContracts, tar
     return (
       data &&
       data.map(d => (
-        <Space wrap size={[8, 16]} align="baseline" key={`${d._id}-space`}>
-          <div style={{ padding: 16 }} key={`${d._id}-div`}>
-            <Box style={{ width: "80vw" }} borderWidth="1px">
-              <p>{`Id: ${d._id}`}</p>
-              <Link
-                to={`/party/${d._id}`}
-                onClick={() => {
-                  routeHistory.push(`/party/${d._id}`);
-                }}
-              >
-                View
-              </Link>
-              <p>{d.name}</p>
-              <p>{d.desc}</p>
-            </Box>
-          </div>
-        </Space>
+        // <Space wrap size={[8, 16]} align="baseline" key={`${d._id}-space`}>
+        //   <div style={{ padding: 16 }} key={`${d._id}-div`}>
+        <Box borderWidth="1px">
+          <p>{`Id: ${d._id}`}</p>
+          <Link
+            to={`/party/${d._id}`}
+            onClick={() => {
+              routeHistory.push(`/party/${d._id}`);
+            }}
+          >
+            View
+          </Link>
+          <p>{d.name}</p>
+          <p>{d.desc}</p>
+        </Box>
+        //   </div>
+        // </Space>
       ))
     );
   }, [data]);
@@ -58,19 +57,18 @@ function Home({ address, mainnetProvider, tx, readContracts, writeContracts, tar
   };
 
   return (
-    <Container>
-      <HStack w="full" justifyContent="space-between">
-        <Heading fontSize="1.5rem" color={headingColor}>
-          Parties
+    <Box>
+      <HStack>
+        <Heading pl={2} as="h1" size="md">
+          All Parties
         </Heading>
-        <Box pr={40}>
-          <Button onClick={createElection} rightIcon={<AddIcon />}>
-            Create Party
-          </Button>
-        </Box>
+        <Spacer />
+        <Button onClick={createElection} leftIcon={<AddIcon />} size="lg" variant="ghost">
+          Create Party
+        </Button>
       </HStack>
-      {cards}
-    </Container>
+      <Box>{cards}</Box>
+    </Box>
   );
 }
 
