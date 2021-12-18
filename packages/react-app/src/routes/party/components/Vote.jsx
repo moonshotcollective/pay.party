@@ -1,23 +1,10 @@
 import {
-  Alert,
-  AlertIcon,
-  AlertTitle,
-  AlertDescription,
-  CloseButton,
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  NumberIncrementStepper,
-  NumberDecrementStepper,
   Box,
   Button,
-  Grid,
-  GridItem,
   Textarea,
-  Input,
   HStack,
 } from "@chakra-ui/react";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 export const Vote = ({ dbInstance, partyData, address, userSigner, targetNetwork, readContracts }) => {
   const [votesData, setVotesData] = useState(null);

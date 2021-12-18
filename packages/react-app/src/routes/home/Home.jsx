@@ -1,18 +1,12 @@
-import { Button, IconButton } from "@chakra-ui/button";
+import { Button } from "@chakra-ui/button";
 import { AddIcon } from "@chakra-ui/icons";
-import { Box, Flex, Heading, HStack, SimpleGrid } from "@chakra-ui/layout";
-import { TabList, TabPanel, TabPanels, Spinner, Tabs, Text, Center } from "@chakra-ui/react";
+import { Box, Heading, HStack } from "@chakra-ui/layout";
 import { useColorModeValue } from "@chakra-ui/color-mode";
 import React, { useEffect, useState, useMemo } from "react";
 import { useHistory, Link } from "react-router-dom";
 import Container from "../../components/layout/Container";
-import ElectionCard from "../../components/Cards/ElectionCard";
-import BaseHandler from "../../dips/baseHandler";
-import { fromWei } from "web3-utils";
-import CenteredFrame from "../../components/layout/CenteredFrame";
-import { getAllCeramicElections, newSerializeCeramicElection } from "../../dips/helpers";
 import MongoDbController from "../../controllers/mongodbController";
-import { Space, Card, Tag } from "antd";
+import { Space } from "antd";
 
 function Home({ address, mainnetProvider, tx, readContracts, writeContracts, targetNetwork }) {
   /***** Load Data from db *****/

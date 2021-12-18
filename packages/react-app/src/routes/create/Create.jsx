@@ -1,58 +1,15 @@
-import { ChevronLeftIcon, CopyIcon, AddIcon, DeleteIcon, CheckIcon } from "@chakra-ui/icons";
-import { MdContentPaste, MdFilePresent } from "react-icons/md";
 import {
   Box,
   Button,
-  Divider,
   FormControl,
-  FormErrorMessage,
   FormLabel,
-  FormHelperText,
-  Flex,
-  Heading,
-  HStack,
   Input,
-  InputGroup,
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  Center,
-  TableCaption,
-  Tooltip,
-  NumberInput,
-  NumberInputField,
-  Text,
-  useColorModeValue,
   Textarea,
   Select,
-  Spinner,
-  IconButton,
-  Icon,
-  Checkbox,
 } from "@chakra-ui/react";
-import React, { useEffect, useState } from "react";
-import { toWei } from "web3-utils";
-import { useFieldArray, useForm } from "react-hook-form";
+import React, { useState } from "react";
 import { useHistory } from "react-router-dom";
-import CenteredFrame from "../../components/layout/CenteredFrame";
-import dips from "../../dips";
-import AddressInputChakra from "../../components/AddressInputChakra";
-import AddressChakra from "../../components/AddressChakra";
-import ElectionCard from "../../components/Cards/ElectionCard";
-import { blockExplorer } from "../../App";
-import { ethers } from "ethers";
-import { Form, Card, InputNumber, Space } from "antd";
 import MongoDBController from "../../controllers/mongodbController";
-import { CERAMIC_PREFIX } from "../../dips/helpers";
-
-const CURRENCY = process.env.REACT_APP_NETWORK_SYMBOL;
-const TOKEN = process.env.REACT_APP_TOKEN_SYMBOL;
-const TOKEN_ADR = process.env.REACT_APP_TOKEN_ADDRESS;
-const STABLE = process.env.REACT_APP_STABLE_TOKEN_SYMBOL;
-const STABLE_ADR = process.env.REACT_APP_STABLE_TOKEN_ADDRESS;
 
 const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, writeContracts, targetNetwork }) => {
   /***** Routes *****/
