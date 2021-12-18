@@ -25,7 +25,7 @@ function Home({ address, mainnetProvider, tx, readContracts, writeContracts, tar
   const routeHistory = useHistory();
 
   /***** States *****/
-  const headingColor = useColorModeValue("yellow.600", "yellow.500");
+  const headingColor = useColorModeValue("gray.800", "whiteAlpha.900");
 
   const cards = useMemo(() => {
     return (
@@ -59,7 +59,7 @@ function Home({ address, mainnetProvider, tx, readContracts, writeContracts, tar
   return (
     <Box>
       <HStack>
-        <Heading pl={2} as="h1" size="md">
+        <Heading pl={2} as="h1" size="md" color={headingColor}>
           All Parties
         </Heading>
         <Spacer />

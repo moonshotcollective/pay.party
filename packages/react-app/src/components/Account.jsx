@@ -34,20 +34,19 @@ export default function Account({
   if (web3Modal) {
     if (web3Modal.cachedProvider) {
       modalButtons.push(
-        <Button key="logoutbutton" size="sm" variant="outline" onClick={logoutOfWeb3Modal}>
+        <Button key="logoutbutton" size="md" variant="outline" onClick={logoutOfWeb3Modal}>
           🟢 {displayAddress}
         </Button>,
       );
     } else {
       modalButtons.push(
-        <Button key="loginbutton" size="sm" onClick={loadWeb3Modal}>
+        <Button key="loginbutton" size="md" onClick={loadWeb3Modal}>
           connect
         </Button>,
       );
     }
   }
 
-  const { currentTheme } = useThemeSwitcher();
 
   return <Box>{modalButtons}</Box>;
 }

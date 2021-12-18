@@ -13,10 +13,10 @@ const customTheme = extendTheme({
   },
   styles: {
     global: props => ({
-      body: {
-        color: mode("purple.700", "violet.300")(props),
-        bg: mode("violet.50", "brand.500")(props),
-      },
+      // body: {
+      //   color: mode("purple.700", "violet.300")(props),
+      //   bg: mode("violet.50", "brand.500")(props),
+      // },
     }),
   },
   fonts,
