@@ -1,11 +1,14 @@
 import React from "react";
-import { Box, Text, Heading, VStack, HStack, Divider, Button as ChakraButton } from "@chakra-ui/react";
-import { useColorModeValue } from "@chakra-ui/color-mode";
+import { Box, Text, Heading, VStack, HStack, Divider, Button, IconButton } from "@chakra-ui/react";
+import { useColorModeValue, useColorMode} from "@chakra-ui/color-mode";
 import QDIcon from "./Icons/QDIcon";
+// import { MoonIcon, SunIcon } from "@chakra-ui/icons";
 // displays a page header
 
 export default function Header() {
-  const headingColor = useColorModeValue("yellow.600", "yellow.500");
+  // Chakra UI color mode
+  // const { colorMode, toggleColorMode } = useColorMode();
+  const headingColor = useColorModeValue("#6e3ff5", "#f1c100");
   return (
     <Box pb={0}>
       <HStack align="center">
@@ -13,6 +16,7 @@ export default function Header() {
         <Text color={headingColor} fontSize="5xl">
           pay.party
         </Text>
+        {/* <IconButton variant='ghost' icon={colorMode === "light" ? <MoonIcon /> : <SunIcon />} onClick={toggleColorMode}/> */}
       </HStack>
     </Box>
   );

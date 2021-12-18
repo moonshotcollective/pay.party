@@ -21,9 +21,11 @@ import Portis from "@portis/web3";
 import Fortmatic from "fortmatic";
 import Authereum from "authereum";
 
-import { Box, HStack, Flex, Spacer } from "@chakra-ui/react";
+import { Box, HStack, Flex, Spacer, IconButton } from "@chakra-ui/react";
 import NotConnectedCard from "./components/Cards/NotConnectedCard";
 import CenteredFrame from "./components/layout/CenteredFrame";
+import { useColorModeValue, useColorMode } from "@chakra-ui/color-mode";
+import { MoonIcon, SunIcon } from "@chakra-ui/icons";
 
 const { ethers } = require("ethers");
 
@@ -407,6 +409,8 @@ function App(props) {
     setLb(yourLocalBalance);
   }, [yourLocalBalance]);
 
+  const { colorMode, toggleColorMode } = useColorMode();
+
   return (
     <div>
       <Box mb={8} pl={"12vw"} pr={"12vw"}>
@@ -427,6 +431,13 @@ function App(props) {
                 loadWeb3Modal={loadWeb3Modal}
                 logoutOfWeb3Modal={logoutOfWeb3Modal}
                 blockExplorer={blockExplorer}
+              />
+            </Box>
+            <Box pt={5}>
+              <IconButton
+                variant="ghost"
+                icon={colorMode === "light" ? <MoonIcon /> : <SunIcon />}
+                onClick={toggleColorMode}
               />
             </Box>
           </HStack>
