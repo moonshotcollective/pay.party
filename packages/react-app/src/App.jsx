@@ -2,7 +2,7 @@ require("dotenv").config();
 import WalletConnectProvider from "@walletconnect/web3-provider";
 //import Torus from "@toruslabs/torus-embed"
 import WalletLink from "walletlink";
-import { Alert, Button, Col, Menu, Row } from "antd";
+import { Alert, Button, Col, Menu, Row, Select, Space, Layout, PageHeader } from "antd";
 import "antd/dist/antd.css";
 import React, { useCallback, useEffect, useState } from "react";
 import { BrowserRouter, Link, Route, Switch } from "react-router-dom";
@@ -47,11 +47,21 @@ const { ethers } = require("ethers");
 */
 
 /// 📡 What chain are your contracts deployed to?
-const targetNetwork = NETWORKS[process.env.REACT_APP_NETWORK_NAME]; //rinkeby; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
+// const targetNetwork = NETWORKS[process.env.REACT_APP_NETWORK_NAME]; //rinkeby; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
 // 😬 Sorry for all the console logging
 const DEBUG = false;
 const NETWORKCHECK = true;
+
+// Add more networks as the dapp expands to more networks
+const configuredNetworks = ["mainnet", "rinkeby", "matic"]; //still needs optimism
+if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
+  configuredNetworks.push("localhost");
+}
+
+const cachedNetwork = window.localStorage.getItem("network");
+if (DEBUG) console.log("📡 Connecting to New Cached Network: ", cachedNetwork);
+let targetNetwork = NETWORKS[cachedNetwork || "mainnet"];
 
 // 🛰 providers
 if (DEBUG) console.log("📡 Connecting to Mainnet Ethereum");
@@ -73,13 +83,10 @@ const mainnetInfura = navigator.onLine
   : null;
 // ( ⚠️ Getting "failed to meet quorum" errors? Check your INFURA_ID
 
-// 🏠 Your local provider is usually pointed at your local blockchain
-const localProviderUrl = targetNetwork.rpcUrl;
 // as you deploy to other networks you can set REACT_APP_PROVIDER=https://dai.poa.network in packages/react-app/.env
-const localProviderUrlFromEnv = process.env.REACT_APP_PROVIDER ? process.env.REACT_APP_PROVIDER : localProviderUrl;
+const localProviderUrlFromEnv = targetNetwork.rpcUrl;
 if (DEBUG) console.log("🏠 Connecting to provider:", localProviderUrlFromEnv);
 const localProvider = new ethers.providers.StaticJsonRpcProvider(localProviderUrlFromEnv);
-console.log({ localProvider });
 
 // 🔭 block explorer URL
 export const blockExplorer = targetNetwork.blockExplorer;
@@ -145,8 +152,7 @@ const web3Modal = new Web3Modal({
     // },
     "custom-walletlink": {
       display: {
-        logo:
-          "https://play-lh.googleusercontent.com/PjoJoG27miSglVBXoXrxBSLveV6e3EeBPpNY55aiUUBM9Q1RCETKCOqdOkX2ZydqVf0",
+        logo: "https://play-lh.googleusercontent.com/PjoJoG27miSglVBXoXrxBSLveV6e3EeBPpNY55aiUUBM9Q1RCETKCOqdOkX2ZydqVf0",
         name: "Coinbase",
         description: "Connect to Coinbase Wallet (not Coinbase App)",
       },
@@ -370,6 +376,66 @@ function App(props) {
     );
   }
 
+  const options = [];
+  for (const id in NETWORKS) {
+    if (configuredNetworks.indexOf(id) > -1) {
+      options.push(
+        <Select.Option key={id} value={NETWORKS[id].name}>
+          <span style={{ color: NETWORKS[id].color, fontSize: 14 }}>{NETWORKS[id].name}</span>
+        </Select.Option>,
+      );
+    }
+  }
+
+  const networkSelect = (
+    <Select
+      size="large"
+      defaultValue={targetNetwork.name}
+      style={{ textAlign: "left", width: 140, fontSize: 30 }}
+      onChange={value => {
+        if (targetNetwork.chainId !== NETWORKS[value].chainId) {
+          window.localStorage.setItem("network", value);
+          setTimeout(async () => {
+            targetNetwork = NETWORKS[value];
+            const ethereum = window.ethereum;
+            const data = [
+              {
+                chainId: "0x" + targetNetwork.chainId.toString(16),
+                chainName: targetNetwork.name,
+                nativeCurrency: targetNetwork.nativeCurrency,
+                rpcUrls: [targetNetwork.rpcUrl],
+                blockExplorerUrls: [targetNetwork.blockExplorer],
+              },
+            ];
+            console.log("data", data);
+            // try to add new chain
+            try {
+              await ethereum.request({ method: "wallet_addEthereumChain", params: data });
+            } catch (error) {
+              // if failed, try a network switch instead
+              await ethereum
+                .request({
+                  method: "wallet_switchEthereumChain",
+                  params: [
+                    {
+                      chainId: "0x" + targetNetwork.chainId.toString(16),
+                    },
+                  ],
+                })
+                .catch();
+              if (tx) {
+                console.log(tx);
+              }
+            }
+            window.location.reload();
+          }, 1000);
+        }
+      }}
+    >
+      {options}
+    </Select>
+  );
+
   const loadWeb3Modal = useCallback(async () => {
     const provider = await web3Modal.connect();
     setInjectedProvider(new ethers.providers.Web3Provider(provider));
@@ -440,22 +506,37 @@ function App(props) {
 
   return (
     <div style={{ padding: 52 }}>
-      {networkDisplay}
       <Box mb={8} w="full">
-        <div style={{ position: "fixed", textAlign: "right", right: 32, top: 60, padding: 10 }}>
-          <Account
-            address={address}
-            localProvider={localProvider}
-            userSigner={userSigner}
-            mainnetProvider={mainnetProvider}
-            price={price}
-            web3Modal={web3Modal}
-            loadWeb3Modal={loadWeb3Modal}
-            logoutOfWeb3Modal={logoutOfWeb3Modal}
-            blockExplorer={blockExplorer}
+        <Layout style={{ fixed: "top" }} className="navbar-title">
+          <PageHeader
+            className="navbar-title"
+            title={<Header />}
+            style={{ cursor: "default", margin: 10, padding: 0 }}
+            extra={[
+              <Space size="large">
+                {/* <span>{faucetHint}</span>
+                <Space direction="vertical" size={0}>
+                  {networkDisplay}
+                </Space> */}
+                <Space direction="vertical" size={0}>
+                  <label>Select Network:</label>
+                  {networkSelect}
+                </Space>
+                <Account
+                  address={address}
+                  localProvider={localProvider}
+                  userSigner={userSigner}
+                  mainnetProvider={mainnetProvider}
+                  price={price}
+                  web3Modal={web3Modal}
+                  loadWeb3Modal={loadWeb3Modal}
+                  logoutOfWeb3Modal={logoutOfWeb3Modal}
+                  blockExplorer={blockExplorer}
+                />
+              </Space>,
+            ]}
           />
-        </div>
-        <Header />
+        </Layout>
         {address && address !== "" ? (
           <BrowserRouter>
             <Switch>
