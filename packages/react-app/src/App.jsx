@@ -2,7 +2,7 @@ require("dotenv").config();
 import WalletConnectProvider from "@walletconnect/web3-provider";
 //import Torus from "@toruslabs/torus-embed"
 import WalletLink from "walletlink";
-import { Alert, Button } from "antd";
+// import { Alert, Button } from "antd";
 import "antd/dist/antd.css";
 import React, { useCallback, useEffect, useState } from "react";
 import { BrowserRouter, Route, Switch, useHistory } from "react-router-dom";
@@ -21,28 +21,40 @@ import Portis from "@portis/web3";
 import Fortmatic from "fortmatic";
 import Authereum from "authereum";
 
-import { Box, HStack, Flex, Spacer, IconButton } from "@chakra-ui/react";
+import {
+  Box,
+  HStack,
+  Flex,
+  Spacer,
+  IconButton,
+  Select,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  Button,
+} from "@chakra-ui/react";
 import NotConnectedCard from "./components/Cards/NotConnectedCard";
 import CenteredFrame from "./components/layout/CenteredFrame";
 import { useColorModeValue, useColorMode } from "@chakra-ui/color-mode";
-import { MoonIcon, SunIcon } from "@chakra-ui/icons";
+import { MoonIcon, SunIcon, ChevronDownIcon, TriangleDownIcon } from "@chakra-ui/icons";
 
 const { ethers } = require("ethers");
 
-const targetNetwork = NETWORKS[process.env.REACT_APP_NETWORK_NAME]; //rinkeby; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
+// let targetNetwork = NETWORKS[process.env.REACT_APP_NETWORK_NAME]; //rinkeby; // <------- select your target frontend network (localhost, rinkeby, xdai, mainnet)
 
 const DEBUG = false;
 const NETWORKCHECK = true;
 
 // Add more networks as the dapp expands to more networks
-const configuredNetworks = ["mainnet", "rinkeby", "matic"]; //still needs optimism
+const configuredNetworks = ["mainnet", "goerli", "rinkeby", "matic"]; //still needs optimism
 if (location.hostname === "localhost" || location.hostname === "127.0.0.1") {
   configuredNetworks.push("localhost");
 }
 
 const cachedNetwork = window.localStorage.getItem("network");
 if (DEBUG) console.log("📡 Connecting to New Cached Network: ", cachedNetwork);
-let targetNetwork = NETWORKS[cachedNetwork || "mainnet"];
+let targetNetwork = NETWORKS[cachedNetwork || process.env.REACT_APP_NETWORK_NAME];
 
 // 🛰 providers
 
@@ -350,64 +362,65 @@ function App(props) {
     );
   }
 
+  const switchNetwork = e => {
+    let value = e.target.value;
+    if (targetNetwork.chainId !== NETWORKS[value].chainId) {
+      window.localStorage.setItem("network", value);
+      setTimeout(async () => {
+        targetNetwork = NETWORKS[value];
+        const ethereum = window.ethereum;
+        const data = [
+          {
+            chainId: "0x" + targetNetwork.chainId.toString(16),
+            chainName: targetNetwork.name,
+            nativeCurrency: targetNetwork.nativeCurrency,
+            rpcUrls: [targetNetwork.rpcUrl],
+            blockExplorerUrls: [targetNetwork.blockExplorer],
+          },
+        ];
+        console.log("data", data);
+        // try to add new chain
+        try {
+          await ethereum.request({ method: "wallet_addEthereumChain", params: data });
+        } catch (error) {
+          // if failed, try a network switch instead
+          await ethereum
+            .request({
+              method: "wallet_switchEthereumChain",
+              params: [
+                {
+                  chainId: "0x" + targetNetwork.chainId.toString(16),
+                },
+              ],
+            })
+            .catch();
+          if (tx) {
+            console.log(tx);
+          }
+        }
+        window.location.reload();
+      }, 1000);
+    }
+  };
+
   const options = [];
   for (const id in NETWORKS) {
     if (configuredNetworks.indexOf(id) > -1) {
       options.push(
-        <Select.Option key={id} value={NETWORKS[id].name}>
-          <span style={{ color: NETWORKS[id].color, fontSize: 14 }}>{NETWORKS[id].name}</span>
-        </Select.Option>,
+        <MenuItem key={id} value={NETWORKS[id].name} onClick={switchNetwork}>
+          {NETWORKS[id].name}
+        </MenuItem>,
       );
     }
   }
 
   const networkSelect = (
-    <Select
-      size="large"
-      defaultValue={targetNetwork.name}
-      style={{ textAlign: "left", width: 140, fontSize: 30 }}
-      onChange={value => {
-        if (targetNetwork.chainId !== NETWORKS[value].chainId) {
-          window.localStorage.setItem("network", value);
-          setTimeout(async () => {
-            targetNetwork = NETWORKS[value];
-            const ethereum = window.ethereum;
-            const data = [
-              {
-                chainId: "0x" + targetNetwork.chainId.toString(16),
-                chainName: targetNetwork.name,
-                nativeCurrency: targetNetwork.nativeCurrency,
-                rpcUrls: [targetNetwork.rpcUrl],
-                blockExplorerUrls: [targetNetwork.blockExplorer],
-              },
-            ];
-            console.log("data", data);
-            // try to add new chain
-            try {
-              await ethereum.request({ method: "wallet_addEthereumChain", params: data });
-            } catch (error) {
-              // if failed, try a network switch instead
-              await ethereum
-                .request({
-                  method: "wallet_switchEthereumChain",
-                  params: [
-                    {
-                      chainId: "0x" + targetNetwork.chainId.toString(16),
-                    },
-                  ],
-                })
-                .catch();
-              if (tx) {
-                console.log(tx);
-              }
-            }
-            window.location.reload();
-          }, 1000);
-        }
-      }}
-    >
-      {options}
-    </Select>
+    <Menu>
+      <MenuButton as={Button} variant="ghost">
+        <TriangleDownIcon />
+      </MenuButton>
+      <MenuList>{options}</MenuList>
+    </Menu>
   );
 
   const loadWeb3Modal = useCallback(async () => {
@@ -481,39 +494,6 @@ function App(props) {
   const { colorMode, toggleColorMode } = useColorMode();
 
   return (
-//     <div style={{ padding: 52 }}>
-//       <Box mb={8} w="full">
-//         <Layout style={{ fixed: "top" }} className="navbar-title">
-//           <PageHeader
-//             className="navbar-title"
-//             title={<Header />}
-//             style={{ cursor: "default", margin: 10, padding: 0 }}
-//             extra={[
-//               <Space size="large">
-//                 {/* <span>{faucetHint}</span>
-//                 <Space direction="vertical" size={0}>
-//                   {networkDisplay}
-//                 </Space> */}
-//                 <Space direction="vertical" size={0}>
-//                   <label>Select Network:</label>
-//                   {networkSelect}
-//                 </Space>
-//                 <Account
-//                   address={address}
-//                   localProvider={localProvider}
-//                   userSigner={userSigner}
-//                   mainnetProvider={mainnetProvider}
-//                   price={price}
-//                   web3Modal={web3Modal}
-//                   loadWeb3Modal={loadWeb3Modal}
-//                   logoutOfWeb3Modal={logoutOfWeb3Modal}
-//                   blockExplorer={blockExplorer}
-//                 />
-//               </Space>,
-//             ]}
-//           />
-//         </Layout>
-
     <div>
       <Box mb={8} pl={"12vw"} pr={"12vw"}>
         <Box pb={10}>
@@ -522,6 +502,7 @@ function App(props) {
               <Header />
             </Box>
             <Spacer />
+            <Box pt={5}>{networkSelect}</Box>
             <Box pt={5}>
               <Account
                 address={address}
