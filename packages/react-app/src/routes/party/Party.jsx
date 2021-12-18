@@ -28,6 +28,7 @@ import CeramicHandler from "../../dips/ceramicHandler";
 import Confetti from "react-confetti";
 import { PayButton } from "../../components";
 import MongoDBController from "../../controllers/mongodbController";
+import { Vote, Distribute } from "./components";
 
 export default function Party({
   address,
@@ -44,109 +45,35 @@ export default function Party({
 
   const [partyData, setPartyData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [votesData, setVotesData] = useState(null);
 
   const db = new MongoDBController();
 
   useEffect(() => {
-    db.fetchParty(id)
-      .then(res => {
-        setPartyData(res.data);
-      })
-      .catch(err => {
-        console.log(err);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
+    (async () => {
+      const res = await db.fetchParty(id);
+      setPartyData(res.data);
+    })();
   }, []);
 
-  const handleVotesChange = e => {
-    const value = e.target.value;
-    try {
-      const parsedVotes = JSON.parse(value);
-      setVotesData(parsedVotes);
-    } catch (error) {
-      console.log("Formatted JSON Required");
-    }
-  };
-
-  console.log(partyData)
-
-  const [tokenInstance, setTokenInstance] = useState(null);
-
-  // load an erc20
-  // TODO: add capability for other block explorers
-  const loadToken = async (values) => {
-    $.getJSON(
-      `https://api.etherscan.io/api?module=contract&action=getabi&address=${values.token}&${
-        process.env.REACT_APP_ETHERSCAN_KEY
-      }`,
-      (data) => {
-        const contractABI = JSON.parse(data.result);
-        var contractInstance = new ethers.Contract(values.token, contractABI, ethersContext.signer);
-        setTokenInstance(contractInstance);
-      }
-    );
-    console.log(tokenInstance);
-  };
-
-  const approve = () => {
-
-  }
-
-  const vote = async () => {
-    // EIP-712 Typed Data
-    // See: https://eips.ethereum.org/EIPS/eip-712
-    const domain = {
-      name: "pay-party",
-      version: "1",
-      chainId: targetNetwork.chainId,
-      verifyingContract: readContracts.Diplomat.address,
-    };
-    const types = {
-      Party: [
-        { name: "party", type: "string" },
-        { name: "ballot", type: "Ballot" },
-      ],
-      Ballot: [
-        { name: "address", type: "address" },
-        { name: "votes", type: "string" },
-      ],
-    };
-
-    const ballot = {
-      party: partyData.name,
-      ballot: {
-        address: address, //ethersContext.account,
-        votes: JSON.stringify(votesData),
-      },
-    };
-
-    if (partyData.ballots.valueOf(address).length < 1) {
-      // Check if account has already submitted a ballot
-      // NOTE: sign typed data for eip712 is underscored because it's in public beta
-      userSigner
-        ?._signTypedData(domain, types, ballot)
-        .then(sig => {
-          const ballots = partyData.ballots;
-          // Push a ballot to the parties sumbitted ballots array
-          ballots.push({ signature: sig, data: ballot });
-          return ballots;
-        })
-        .then(ballots => {
-          db.updateParty(partyData._id, { ballots: ballots });
-        })
-        .catch(err => {
-          console.log(err);
-        });
-    }
-  };
-
   return (
-      <Box borderWidth={'1px'}>
-        <p>{JSON.stringify(partyData)}</p>
-
-      </Box>
+    <Box borderWidth={"1px"}>
+      <p>{JSON.stringify(partyData)}</p>
+      <Vote
+        dbInstance={db}
+        partyData={partyData}
+        address={address}
+        userSigner={userSigner}
+        targetNetwork={targetNetwork}
+        readContracts={readContracts}
+      />
+      <Distribute
+        dbInstance={db}
+        partyData={partyData}
+        address={address}
+        userSigner={userSigner}
+        writeContracts={writeContracts}
+        tx={tx}
+      />
+    </Box>
   );
 }

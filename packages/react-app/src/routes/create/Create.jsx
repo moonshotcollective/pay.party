@@ -66,7 +66,10 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
     name: "",
     description: "",
     receipts: [], 
-    config: {},
+    config: {
+      strategy: "", 
+      nvotes: 0
+    },
     participants: [],
     candidates: [],
     ballots: [],
@@ -117,7 +120,10 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
             type="participants"
             placeholder="ex: 0x802999C71263f7B30927F720CF0AC10A76a0494C, 0x6b541b78349097714B9D1aB6A788dB5e0dCF21a3, ..."
             rows={3}
-            onChange={e => (partyObj.participants = e.currentTarget.value.split(","))}
+            onChange={e => {
+              const parsed = (partyObj.participants = e.currentTarget.value.split(/[ ,]+/)).filter(c => c !== ''); 
+              console.log(parsed)
+            }}
           ></Textarea>
 
           <FormLabel>Candidates</FormLabel>
@@ -125,7 +131,11 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
             type="candidates"
             placeholder="ex: 0x802999C71263f7B30927F720CF0AC10A76a0494C, ..."
             rows={3}
-            onChange={e => (partyObj.candidates = e.currentTarget.value.split(","))}
+            onChange={e => {
+              const parsed = (partyObj.candidates = e.currentTarget.value.split(/[ ,]+/)).filter(c => c !== '')
+              console.log(parsed)
+            }
+          }
           ></Textarea>
 
           <Button type="primary" type="submit" loading={loading}>

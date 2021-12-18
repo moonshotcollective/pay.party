@@ -11,7 +11,7 @@ import "./App.css";
 import { Account, Contract, Faucet, GasGauge, Header, Footer, Ramp, ThemeSwitch } from "./components";
 import { INFURA_ID, NETWORK, NETWORKS } from "./constants";
 import { Transactor } from "./helpers";
-import { useBalance, useContractReader, useGasPrice, useOnBlock } from "eth-hooks";
+import { useBalance, useContractReader, useGasPrice } from "eth-hooks";
 import { useEventListener } from "eth-hooks/events/useEventListener";
 import { useExchangeEthPrice } from "eth-hooks/dapps/dex";
 import { Home, Create, Party } from "./routes";
@@ -235,9 +235,9 @@ function App(props) {
   const mainnetContracts = useContractLoader(mainnetProvider, contractConfig);
 
   // If you want to call a function on a new block
-  useOnBlock(mainnetProvider, () => {
-    // console.log(`⛓ A new mainnet block is here: ${mainnetProvider._lastBlockNumber}`);
-  });
+  // useOnBlock(mainnetProvider, () => {
+  //   // console.log(`⛓ A new mainnet block is here: ${mainnetProvider._lastBlockNumber}`);
+  // });
 
   // Then read your DAI balance like:
   //   const myMainnetDAIBalance = useContractReader(mainnetContracts, "DAI", "balanceOf", [
