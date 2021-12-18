@@ -7,6 +7,7 @@ import {
   FormControl,
   FormErrorMessage,
   FormLabel,
+  FormHelperText,
   Flex,
   Heading,
   HStack,
@@ -43,7 +44,8 @@ import AddressChakra from "../components/AddressChakra";
 import ElectionCard from "../components/Cards/ElectionCard";
 import { blockExplorer } from "../App";
 import { ethers } from "ethers";
-
+import { Form, Card, InputNumber, Space } from "antd";
+import MongoDBController from "../controllers/mongodbController";
 import { CERAMIC_PREFIX } from "../dips/helpers";
 
 const CURRENCY = process.env.REACT_APP_NETWORK_SYMBOL;
@@ -56,564 +58,99 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
   /***** Routes *****/
   const routeHistory = useHistory();
 
-  /***** States *****/
-  const [selectedQdip, setSelectedQdip] = useState("ceramic");
-  const [qdipHandler, setQdipHandler] = useState();
-  const [errorMsg, setErrorMsg] = useState();
-  const [isConfirmingElection, setIsConfirmingElection] = useState(false);
-  const [isCreatedElection, setIsCreatedElection] = useState(false);
-  const [electionId, setElectionId] = useState();
-  const [title, setTitle] = useState("Configure Election");
-  const [createdElection, setCreatedElection] = useState({});
+  const db = new MongoDBController();
 
-  const [newElection, setNewElection] = useState({
+  const [loading, setLoading] = useState(false);
+
+  const [partyObj, setPartyObj] = useState({
     name: "",
-    description: "",
-    tokenSym: CURRENCY,
-    tokenAdr: "0x0000000000000000000000000000000000000000",
-    fundAmount: 0.1,
-    fundAmountInWei: toWei("0.1"),
-    voteAllocation: 1,
-    kind: "ceramic",
-    voters: [],
+    desc: "",
+    fund: {
+      amount: "",
+      token: "",
+    },
+    strategy: "",
+    participants: [],
     candidates: [],
+    ballots: [],
   });
 
-  const {
-    handleSubmit,
-    register,
-    control,
-    formState: { errors, isSubmitting },
-  } = useForm();
-  const headingColor = useColorModeValue("yellow.600", "yellow.500");
-
-  const { fields, append, prepend, remove, swap, move, insert } = useFieldArray({
-    control, // control props comes from useForm (optional: if you are using FormContext)
-    name: "candidates", // unique name for your Field Array
-    // keyName: "id", default to "id", you can change the key name
-  });
-
-  /***** Effects *****/
-
-  useEffect(() => {
-    if (readContracts) {
-      if (readContracts.Diplomat && targetNetwork) {
-        return init();
-      }
-    }
-  }, [readContracts, targetNetwork]);
-
-  useEffect(async () => {
-    if (qdipHandler) {
-    }
-  }, [qdipHandler]);
-
-  useEffect(() => {
-    // console.log(selectedQdip);
-    setQdipHandler(
-      dips[selectedQdip].handler(
-        tx,
-        readContracts,
-        writeContracts,
-        mainnetProvider,
-        address,
-        userSigner,
-        targetNetwork,
-      ),
-    );
-  }, [selectedQdip, targetNetwork]);
-
-  useEffect(() => {
-    append("");
-    return () => {
-      remove();
-    };
-  }, [append]);
-  /***** Methods *****/
-  const goBack = () => {
-    routeHistory.push("/");
-  };
-
-  const init = () => {
-    setQdipHandler(
-      dips[selectedQdip].handler(
-        tx,
-        readContracts,
-        writeContracts,
-        mainnetProvider,
-        address,
-        userSigner,
-        targetNetwork,
-      ),
-    );
-  };
-
-  const onSubmit = async values => {
-    if (newElection.voters.length == 0) {
-      setErrorMsg("Need to add at least 1 ENS/address");
-      return;
-    }
-    if (newElection.candidates.length == 0) {
-      setErrorMsg("Need to add at least 1 ENS/address candidate");
-      return;
-    }
-    setIsConfirmingElection(true);
-    // Create a new election
-    // console.log({ newElection });
-    // NOTE: Avoid Weird rounding!
-    newElection.fundAmountInWei = toWei(newElection.fundAmount.toString());
-    newElection.voteAllocation = parseInt(newElection.voteAllocation);
-
-    let result = await qdipHandler.createElection(newElection, selectedQdip);
-    if (result.code) {
-      setIsConfirmingElection(false);
-    } else {
-      setIsConfirmingElection(false);
-      setIsCreatedElection(true);
-      setElectionId(result);
-      const electionState = await qdipHandler.getElectionStateById(result);
-      setCreatedElection(electionState);
-      // console.log({ electionState });
-      setTitle("Election Created!");
-      setNewElection({
-        name: "",
-        description: "",
-        tokenSym: CURRENCY,
-        fundAmount: 0.1,
-        fundAmountInWei: toWei("0.1"),
-        voteAllocation: 1,
-        tokenAdr: "0x0000000000000000000000000000000000000000",
-        kind: "ceramic",
-        votes: [],
-        candidates: [],
+  const onSubmit = async event => {
+    event.preventDefault();
+    setLoading(true);
+    db.newParty(partyObj)
+      .then(d => {
+        setLoading(false);
+      })
+      .catch(err => {
+        console.log(err);
       });
-    }
-  };
-  const updateName = e => {
-    setNewElection(prevState => ({
-      ...prevState,
-      name: e.target.value,
-    }));
-  };
-
-  const updateDesc = e => {
-    setNewElection(prevState => ({
-      ...prevState,
-      description: e.target.value,
-    }));
-  };
-
-  const updateCandidates = (checked, addr) => {
-    if (checked) {
-      setNewElection(prevState => ({
-        ...prevState,
-        candidates: [...prevState.candidates, addr],
-      }));
-    } else {
-      setNewElection(prevState => ({
-        ...prevState,
-        candidates: newElection.candidates.filter(d => d !== addr),
-      }));
-    }
-    // console.log(newElection);
-  };
-
-  const updateSelectedToken = e => {
-    console.log("updated token ", e.target.value);
-    setNewElection(prevState => ({
-      ...prevState,
-      tokenSym: e.target.value,
-    }));
-    if (e.target.value === TOKEN) {
-      setNewElection(prevState => ({
-        ...prevState,
-        tokenAdr: TOKEN_ADR,
-      }));
-    }
-    if (e.target.value === STABLE) {
-      setNewElection(prevState => ({
-        ...prevState,
-        tokenAdr: STABLE_ADR,
-      }));
-    }
-  };
-
-  const updateFundAmount = e => {
-    setNewElection(prevState => ({
-      ...prevState,
-      fundAmount: e.target.value,
-    }));
-  };
-
-  const updateVoteAllocation = e => {
-    // console.log(e.target.value);
-    setNewElection(prevState => ({
-      ...prevState,
-      voteAllocation: e.target.value,
-    }));
-  };
-
-  const removeVoter = cand => {
-    const newList = newElection.voters.filter(item => item !== cand);
-    setNewElection(prevState => ({
-      ...prevState,
-      voters: newList,
-    }));
-  };
-
-  const [toAddress, setToAddress] = useState("");
-  const addVoter = async () => {
-    if (toAddress == "") return;
-    if (toAddress.indexOf(".eth") > 0 || toAddress.indexOf(".xyz") > 0) {
-      try {
-        const possibleAddress = await ensProvider.resolveName(toAddress);
-        if (possibleAddress) {
-          toAddress = possibleAddress;
-        }
-        // eslint-disable-next-line no-empty
-      } catch (e) {}
-    }
-    if (toAddress.length != 42 || !toAddress.startsWith("0x")) {
-      setToAddress("");
-    } else {
-      if (!newElection.voters.includes(toAddress)) {
-        newElection.voters.push(toAddress);
-      }
-    }
-
-    setToAddress("");
-  };
-
-  const handleAddVoters = async () => {
-    const text = await navigator.clipboard.readText();
-    const addresses = text.split(",");
-
-    addresses.forEach(voteAddress => {
-      try {
-        // console.log(voteAddress);
-        const voteAddressWithChecksum = ethers.utils.getAddress(voteAddress);
-        if (!newElection.voters.includes(voteAddressWithChecksum)) {
-          newElection.voters.push(voteAddressWithChecksum);
-        }
-      } catch (error) {
-        console.log(error);
-      }
-    });
-    setToAddress(" ");
-    setToAddress("");
-  };
-
-  const handleAddVotersFromCsv = async event => {
-    if (event.target.files.length > 0) {
-      const file = event.target.files[0];
-      if (file.type != "text/csv") {
-        return;
-      }
-
-      let reader = new FileReader();
-
-      reader.onload = function (e) {
-        const addresses = e.target.result.split(",");
-
-        addresses.forEach(voteAddress => {
-          try {
-            const voteAddressWithChecksum = ethers.utils.getAddress(voteAddress);
-            if (!newElection.voters.includes(voteAddressWithChecksum)) {
-              newElection.voters.push(voteAddressWithChecksum);
-            }
-          } catch (error) {
-            console.log(error);
-          }
-        });
-
-        setToAddress(" ");
-        setToAddress("");
-      };
-
-      reader.readAsText(file);
-    }
-  };
-
-  const addCandidates = async () => {
-    if (!newElection.candidates.includes(toAddress)) {
-      newElection.candidates.push(toAddress);
-    }
   };
 
   return (
-    <CenteredFrame>
-      <HStack w="40vw" justifyContent="space-between">
-        <Flex flexDirection="column" justifyContent="space-between" alignItems="center" w="full">
-          <Flex justifyContent="space-between" alignItems="center" w="full">
-            <Text onClick={goBack} _hover={{ cursor: "pointer" }} pb="1rem">
-              <ChevronLeftIcon />
-              Back
-            </Text>
-            <Heading py="15" fontSize="1.5rem" color={headingColor}>
-              {title}
-            </Heading>
-            <div></div>
-          </Flex>
-          {!isCreatedElection && (
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <FormControl isInvalid={errors.elec_name} id="elec_name">
-                <FormLabel htmlFor="elec_name">Election name</FormLabel>
-                <Input
-                  placeholder="Election name"
-                  borderColor="purple.500"
-                  value={newElection.name}
-                  {...register("elec_name", {
-                    required: "This is required",
-                    maxLength: {
-                      value: 150,
-                      message: "Maximum length should be 150",
-                    },
-                  })}
-                  autoComplete="off"
-                  onChange={updateName}
-                />
-                <FormErrorMessage>{errors.name && errors.name.message}</FormErrorMessage>
-              </FormControl>
+    <Box borderWidth={"1px"}>
+      <Button
+        onClick={() => {
+          routeHistory.push("/");
+        }}
+      >
+        Back
+      </Button>
+      <form onSubmit={onSubmit}>
+        <FormControl id="create">
+          <FormLabel>Name</FormLabel>
+          <Input type="name" placeholder="Party Name" onChange={e => (partyObj.name = e.currentTarget.value)} />
 
-              <FormControl py="4">
-                <FormLabel htmlFor="description">Election description</FormLabel>
-                <Textarea
-                  placeholder="Election description"
-                  borderColor="purple.500"
-                  value={newElection.description}
-                  {...register("description", {
-                    maxLength: {
-                      value: 150,
-                      message: "Maximum length should be 150",
-                    },
-                  })}
-                  autoComplete="off"
-                  onChange={updateDesc}
-                />
-                <FormErrorMessage>{errors.description && errors.description.message}</FormErrorMessage>
-              </FormControl>
+          <FormLabel>Desciption</FormLabel>
+          <Textarea
+            type="desc"
+            placeholder="Describe your party"
+            rows={3}
+            onChange={e => (partyObj.desc = e.currentTarget.value)}
+          />
 
-              <FormControl py="4" isInvalid={errors.fundAmount || errors.funds}>
-                <FormLabel htmlFor="fundAmount">Fund Allocation (amount to be distributed)</FormLabel>
-                <HStack pb="1rem" justify="space-between">
-                  <HStack>
-                    <InputGroup w="300px">
-                      <NumberInput min={0.000000000000000001} defaultValue={newElection.fundAmount}>
-                        <NumberInputField
-                          w="300px"
-                          placeholder="fundAmount"
-                          borderColor="purple.500"
-                          {...register("fundAmount", {
-                            required: "This is required",
-                          })}
-                          value={newElection.fundAmount}
-                          onChange={updateFundAmount}
-                        />
-                      </NumberInput>
-                    </InputGroup>
-                    <Select
-                      {...register("funds", {
-                        required: "This is required",
-                        maxLength: {
-                          value: 10,
-                          message: "Maximum length should be 10",
-                        },
-                      })}
-                      value={newElection.tokenSym}
-                      onChange={updateSelectedToken}
-                      w="200px"
-                    >
-                      <option value={CURRENCY}>{CURRENCY}</option>
-                      <option value={TOKEN}>{TOKEN}</option>
-                      <option value={STABLE}>{STABLE}</option>
-                    </Select>
-                  </HStack>
-                </HStack>
-                <FormErrorMessage>
-                  {(errors.fundAmount && errors.fundAmount.message) || (errors.funds && errors.funds.message)}
-                </FormErrorMessage>
-              </FormControl>
+          <FormLabel>ERC-20 Token</FormLabel>
+          <Input
+            type="fundType"
+            placeholder="ex: 0xde30da39c46104798bb5aa3fe8b9e0e1f348163f"
+            onChange={e => (partyObj.fund.token = e.currentTarget.value)}
+          />
 
-              <FormControl isInvalid={errors.votes}>
-                <FormLabel htmlFor="votes">
-                  Vote Allocation (number of votes for each voter)
-                  <br />
-                </FormLabel>
-                <NumberInput min={1} defaultValue={newElection.voteAllocation}>
-                  <NumberInputField
-                    placeholder="Vote allocation"
-                    borderColor="purple.500"
-                    {...register("votes", {
-                      required: "This is required",
-                    })}
-                    value={newElection.voteAllocation}
-                    onChange={updateVoteAllocation}
-                  />
-                </NumberInput>
-                <FormErrorMessage>{errors.votes && errors.votes.message}</FormErrorMessage>
-              </FormControl>
+          <FormLabel>Amount</FormLabel>
+          <Input
+            type="fundAmount"
+            placeholder="Amount to distribute"
+            onChange={e => (partyObj.fund.amount = e.currentTarget.value)}
+          />
 
-              <Box pb="1rem"></Box>
-              <Divider backgroundColor="purple.500" />
-              <Box pb="1rem"></Box>
-              <FormControl isInvalid={newElection.voters.length == 0}>
-                <FormLabel htmlFor="voters">Add Participants</FormLabel>
-                <FormErrorMessage>{errors.votes && errors.votes.message}</FormErrorMessage>
-              </FormControl>
-              <HStack>
-                <AddressInputChakra
-                  ensProvider={mainnetProvider}
-                  placeholder="Enter ENS name"
-                  value={toAddress}
-                  onChange={setToAddress}
-                />
-                <InputGroup>
-                  <Tooltip label="Add Participant">
-                    <IconButton aria-label="Add address" icon={<AddIcon />} onClick={addVoter} variant="ghost" />
-                  </Tooltip>
-                  // Sniff browser -- TODO: add firefox support
-                  {navigator.userAgent.indexOf("Firefox") < 0 && (
-                    <Tooltip label="Paste from clipboard">
-                      <IconButton
-                        aria-label="Paste from clipboard"
-                        icon={<MdContentPaste />}
-                        onClick={() => handleAddVoters()}
-                        variant="ghost"
-                      />
-                    </Tooltip>
-                  )}
-                  <Tooltip label="Add from CSV file">
-                    <label for="csvFile" style={{ display: "inline-flex",  cursor: "pointer" }}>
-                      <IconButton
-                        aria-label="Add from CSV file"
-                        as={MdFilePresent}
-                        variant="ghost"
-                        icon={<MdFilePresent/>}
-                        style={{ padding: 10}}
-                      />
-                    </label>
-                  </Tooltip>
-                  <input
-                    type="file"
-                    id="csvFile"
-                    name="csvFile"
-                    style={{ display: "none" }}
-                    onChange={(evt) => handleAddVotersFromCsv(evt)}
-                  />
-                </InputGroup>
-              </HStack>
-              <Box
-                borderColor="purple.500"
-                borderWidth="1px"
-                borderRadius="8px"
-                mt={4}
-                py="0rem"
-                px="0rem"
-                overflowY="scroll"
-                maxH="200px"
-              >
-                <Table variant="simple" size="md">
-                  <TableCaption>:)</TableCaption>
-                  <Thead>
-                    <Tr>
-                      <Tooltip
-                        label="A candidate will be the participant who is being voted on."
-                        aria-label="A tooltip"
-                      >
-                        <Th>Candidate</Th>
-                      </Tooltip>
-                      <Tooltip label="A participant is who can vote in this election." aria-label="A tooltip">
-                        <Th>Participant</Th>
-                      </Tooltip>
-                      <Th></Th>
-                    </Tr>
-                  </Thead>
-                  <Tbody>
-                    {newElection.voters.map((addr, idx) => (
-                      <Tr key={idx}>
-                        <Td w="0%">
-                          <Center w="70px" color="white">
-                            <Checkbox
-                              onChange={e => {
-                                // console.log(e.target.checked, addr);
-                                updateCandidates(e.target.checked, addr);
-                              }}
-                            ></Checkbox>
-                          </Center>
-                        </Td>
-                        <Td w="100%">
-                          <AddressChakra
-                            address={addr}
-                            ensProvider={mainnetProvider}
-                            blockExplorer={blockExplorer}
-                            fontSize={16}
-                          ></AddressChakra>
-                        </Td>
-                        <Td w="0%">
-                          <IconButton
-                            aria-label="Remove address"
-                            icon={<DeleteIcon />}
-                            onClick={() => removeVoter(addr)}
-                            variant="ghost"
-                          />
-                        </Td>
-                      </Tr>
-                    ))}
-                  </Tbody>
-                </Table>
-              </Box>
+          <FormLabel>Strategy</FormLabel>
+          <Select onChange={e => (partyObj.strategy = e.currentTarget.value)}>
+            <option>Linear</option>
+            <option>Quadratic</option>
+          </Select>
 
-              <Box pb="1rem"></Box>
-              <Divider backgroundColor="purple.500" />
-              <Box pt="1rem" align="end">
-                {!isCreatedElection && (
-                  <Center>
-                    <Button
-                      mt={4}
-                      mb={4}
-                      width="30vw"
-                      colorScheme="teal"
-                      isLoading={isSubmitting || isConfirmingElection}
-                      loadingText="Submitting"
-                      type="submit"
-                      disabled={newElection.candidates.length === 0}
-                      leftIcon={<CheckIcon />}
-                    >
-                      Submit Election
-                    </Button>
-                  </Center>
-                )}
-              </Box>
-            </form>
-          )}
-          {isCreatedElection && !createdElection.id && (
-            <CenteredFrame>
-              <Flex flexDirection="column" justifyContent="center" alignItems="center">
-                <Heading fontSize="1.5rem" color={headingColor}>
-                  Creating election...
-                </Heading>
-                <Spinner color="purple.700" size="xl" />
-              </Flex>
-            </CenteredFrame>
-          )}
-          {isCreatedElection && createdElection.id && (
-            <HStack justify="center" align="center" w="80%">
-              <ElectionCard
-                id={createdElection.id}
-                name={createdElection.name}
-                owner={createdElection.creator}
-                voted={`${createdElection.n_voted.n_voted} / ${createdElection.n_voted.outOf}`}
-                active={createdElection.active}
-                amount={createdElection.amtFromWei}
-                tokenSymbol={createdElection.tokenSymbol}
-                createdAt={createdElection.created_date}
-                mainnetProvider={mainnetProvider}
-              />
-            </HStack>
-          )}
-        </Flex>
-      </HStack>
-    </CenteredFrame>
+          <FormLabel>Participants</FormLabel>
+          <Textarea
+            type="participants"
+            placeholder="ex: 0x802999C71263f7B30927F720CF0AC10A76a0494C, 0x6b541b78349097714B9D1aB6A788dB5e0dCF21a3, ..."
+            rows={3}
+            onChange={e => (partyObj.participants = e.currentTarget.value.split(","))}
+          ></Textarea>
+
+          <FormLabel>Candidates</FormLabel>
+          <Textarea
+            type="candidates"
+            placeholder="ex: 0x802999C71263f7B30927F720CF0AC10A76a0494C, ..."
+            rows={3}
+            onChange={e => (partyObj.candidates = e.currentTarget.value.split(","))}
+          ></Textarea>
+
+          <Button type="primary" type="submit" loading={loading}>
+            Submit
+          </Button>
+        </FormControl>
+      </form>
+    </Box>
   );
 };
 
