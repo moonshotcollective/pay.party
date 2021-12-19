@@ -149,7 +149,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
               onChange={e => (partyObj.name = e.currentTarget.value)}
             />
 
-            <FormLabel>Desciption</FormLabel>
+            <FormLabel>Description</FormLabel>
             <Textarea
               type="description"
               size="lg"

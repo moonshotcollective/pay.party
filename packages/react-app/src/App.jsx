@@ -2,7 +2,7 @@ require("dotenv").config();
 import WalletConnectProvider from "@walletconnect/web3-provider";
 //import Torus from "@toruslabs/torus-embed"
 import WalletLink from "walletlink";
-// import { Alert, Button } from "antd";
+import { Alert } from "antd";
 import "antd/dist/antd.css";
 import React, { useCallback, useEffect, useState } from "react";
 import { BrowserRouter, Route, Switch, useHistory } from "react-router-dom";
@@ -455,6 +455,8 @@ function App(props) {
     setRoute(window.location.pathname);
   }, [setRoute]);
 
+  const history = useHistory();
+
   let faucetHint = "";
   const faucetAvailable = localProvider && localProvider.connection && targetNetwork.name.indexOf("local") !== -1;
 
@@ -496,10 +498,12 @@ function App(props) {
   return (
     <div>
       <Box mb={8} pl={"14vw"} pr={"14vw"}>
-        <Box pb={10}>
+        <Box pb={"6vh"}>
           <HStack>
             <Box>
-              <Header />
+              <a href="/">
+                <Header />
+              </a>
             </Box>
             <Spacer />
             <Box pt={5}>{networkSelect}</Box>

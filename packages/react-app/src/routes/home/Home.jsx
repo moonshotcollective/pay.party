@@ -5,7 +5,6 @@ import { useColorModeValue } from "@chakra-ui/color-mode";
 import React, { useEffect, useState, useMemo } from "react";
 import { useHistory, Link } from "react-router-dom";
 import MongoDbController from "../../controllers/mongodbController";
-import { Space } from "antd";
 
 function Home({ address, mainnetProvider, tx, readContracts, writeContracts, targetNetwork }) {
   /***** Load Data from db *****/
