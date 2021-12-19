@@ -11,6 +11,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
   const db = new MongoDBController();
 
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingText, setLoadingText] = useState("Loading...");
   const [partyObj, setPartyObj] = useState({
     name: "",
     description: "",
@@ -26,6 +27,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
 
   const onSubmit = async event => {
     event.preventDefault();
+    setLoadingText("Submitting...");
     setIsLoading(true);
     userSigner
       .signMessage(`Create party:\n${partyObj.name}`)
@@ -50,7 +52,8 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
   const [resolvedParticipantAdrs, setResolvedParticipantAdrs] = useState([]);
   const [candidateAdrs, setCandidateAdrs] = useState([]);
   const [participantAdrs, setParticipantAdrs] = useState([]);
-  const [isInvalidInput, setIsInvalidInput] = useState(false);
+  const [isInvalidCandidateInput, setIsInvalidCandidateInput] = useState(false);
+  const [isInvalidParticipantInput, setIsInvalidParticipantInput] = useState(false);
 
   const resolveInput2 = async input => {
     const adrs = [];
@@ -96,21 +99,25 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
   };
 
   useMemo(async () => {
+    setLoadingText("Checking...");
     setIsLoading(true);
     const p = await resolveInput2(inputParticipants);
     setParticipantAdrs(p.adrs);
     setResolvedParticipantAdrs(p.res);
     partyObj.participants = p.adrs;
     setIsLoading(p.adrs.length !== inputParticipants.length);
+    setIsInvalidParticipantInput(p.adrs.length !== inputParticipants.length);
   }, [inputParticipants]);
 
   useMemo(async () => {
+    setLoadingText("Checking...");
     setIsLoading(true);
     const c = await resolveInput2(inputCandidates);
     setCandidateAdrs(c.adrs);
     setResolvedCandidateAdrs(c.res);
     partyObj.candidates = c.adrs;
     setIsLoading(c.adrs.length !== inputCandidates.length);
+    setIsInvalidCandidateInput(c.adrs.length !== inputCandidates.length);
   }, [inputCandidates]);
 
   return (
@@ -152,6 +159,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
               placeholder="ex: 0x802999C71263f7B30927F720CF0AC10A76a0494C, 0x6b541b78349097714B9D1aB6A788dB5e0dCF21a3, ..."
               rows={5}
               onChange={parseParticipants}
+              isInvalid={isInvalidParticipantInput}
             />
 
             <FormLabel>Candidates</FormLabel>
@@ -161,6 +169,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
               placeholder="ex: 0x802999C71263f7B30927F720CF0AC10A76a0494C, ..."
               rows={4}
               onChange={parseCandidates}
+              isInvalid={isInvalidCandidateInput}
             />
             <FormLabel>Strategy</FormLabel>
             <Select size="lg" onChange={e => (partyObj.config.strategy = e.currentTarget.value)}>
@@ -169,7 +178,14 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
             </Select>
 
             <Center pt={10}>
-              <Button size="lg" type="primary" type="submit" isLoading={isLoading} width={"50%"}>
+              <Button
+                size="lg"
+                type="primary"
+                type="submit"
+                isLoading={isLoading}
+                loadingText={loadingText}
+                width={"50%"}
+              >
                 Submit
               </Button>
             </Center>
