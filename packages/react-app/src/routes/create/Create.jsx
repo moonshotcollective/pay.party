@@ -1,4 +1,4 @@
-import { Box, Button, FormControl, FormLabel, Input, Textarea, Select, Center } from "@chakra-ui/react";
+import { Box, Button, FormControl, FormLabel, Input, Textarea, Select, Center, Heading, Text} from "@chakra-ui/react";
 import { ArrowBackIcon } from "@chakra-ui/icons";
 import React, { useState, useEffect, useMemo } from "react";
 import { useHistory } from "react-router-dom";
@@ -133,6 +133,12 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
         Back
       </Button>
       <Box borderWidth={"1px"} padding={"4% 18% 6% 18%"} borderRadius={12}>
+        <Center>
+          <Text fontSize='lg'>
+            Create
+          </Text>
+          {/* Create a party */}
+        </Center>
         <form onSubmit={onSubmit}>
           <FormControl id="create">
             <FormLabel>Name</FormLabel>
@@ -156,7 +162,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
             <Textarea
               type="participants"
               size="lg"
-              placeholder="ex: 0x802999C71263f7B30927F720CF0AC10A76a0494C, 0x6b541b78349097714B9D1aB6A788dB5e0dCF21a3, ..."
+              placeholder="ex: alice.eth, 0x6b541b78349097714B9D1aB6A788dB5e0dCF21a3, ..."
               rows={5}
               onChange={parseParticipants}
               isInvalid={isInvalidParticipantInput}
@@ -166,7 +172,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
             <Textarea
               type="candidates"
               size="lg"
-              placeholder="ex: 0x802999C71263f7B30927F720CF0AC10A76a0494C, ..."
+              placeholder="ex: 0x802999C71263f7B30927F720CF0AC10A76a0494C, bob.eth, ..."
               rows={4}
               onChange={parseCandidates}
               isInvalid={isInvalidCandidateInput}
@@ -186,7 +192,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
                 loadingText={loadingText}
                 width={"50%"}
               >
-                Submit
+                Submit Party
               </Button>
             </Center>
           </FormControl>
