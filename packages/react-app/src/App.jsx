@@ -417,7 +417,7 @@ function App(props) {
   const networkSelect = (
     <Menu>
       <MenuButton as={Button} variant="ghost">
-        <TriangleDownIcon />
+        <ChevronDownIcon />
       </MenuButton>
       <MenuList>{options}</MenuList>
     </Menu>
@@ -495,7 +495,7 @@ function App(props) {
 
   return (
     <div>
-      <Box mb={8} pl={"12vw"} pr={"12vw"}>
+      <Box mb={8} pl={"14vw"} pr={"14vw"}>
         <Box pb={10}>
           <HStack>
             <Box>
