@@ -1,6 +1,6 @@
 import React from "react";
-import { Box, Text, Heading, VStack, HStack, Divider, Button, IconButton } from "@chakra-ui/react";
-import { useColorModeValue, useColorMode} from "@chakra-ui/color-mode";
+import { Box, Text, HStack } from "@chakra-ui/react";
+import { useColorModeValue } from "@chakra-ui/color-mode";
 import QDIcon from "./Icons/QDIcon";
 // displays a page header
 

@@ -30,9 +30,7 @@ function Home({ address, mainnetProvider, tx, readContracts, writeContracts, tar
     return (
       data &&
       data.map(d => (
-        // <Space wrap size={[8, 16]} align="baseline" key={`${d._id}-space`}>
-        //   <div style={{ padding: 16 }} key={`${d._id}-div`}>
-        <Box borderWidth="1px">
+        <Box borderWidth="1px" key={`box-${d._id}`}>
           <p>{`Id: ${d._id}`}</p>
           <Link
             to={`/party/${d._id}`}
@@ -45,8 +43,6 @@ function Home({ address, mainnetProvider, tx, readContracts, writeContracts, tar
           <p>{d.name}</p>
           <p>{d.desc}</p>
         </Box>
-        //   </div>
-        // </Space>
       ))
     );
   }, [data]);
@@ -62,7 +58,7 @@ function Home({ address, mainnetProvider, tx, readContracts, writeContracts, tar
           All Parties
         </Heading>
         <Spacer />
-        <Button onClick={createElection} leftIcon={<AddIcon />} size="lg" variant="ghost">
+        <Button onClick={createElection} rightIcon={<AddIcon />} size="lg" variant="ghost">
           Create Party
         </Button>
       </HStack>

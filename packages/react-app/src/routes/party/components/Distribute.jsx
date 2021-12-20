@@ -1,14 +1,4 @@
-import {
-  NumberInput,
-  NumberInputField,
-  NumberInputStepper,
-  NumberIncrementStepper,
-  NumberDecrementStepper,
-  Box,
-  Button,
-  Input,
-  HStack,
-} from "@chakra-ui/react";
+import { NumberInput, NumberInputField, Box, Button, Input, HStack } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import { toWei } from "web3-utils";
 import { BigNumber, ethers } from "ethers";
@@ -27,46 +17,43 @@ export const Distribute = ({ dbInstance, partyData, address, userSigner, writeCo
 
   // Calculate percent distribution from submitted ballots
   const calcDistribution = () => {
-    try {
-      if (partyData.ballots.length > 0) {
-        const votes = partyData.ballots.map(b => JSON.parse(b.data.ballot.votes.replace(/[ \n\r]/g, "")));
-        let sum = 0;
-        let processed = [];
-        let strategy = partyData.config.strategy;
-        if (!strategy || strategy === "") {
-          strategy = "Linear";
-          console.log("Reverted to linear strategy");
-        }
-        for (let i = 0; i < partyData.candidates.length; i++) {
-          const candidate = partyData.candidates[i];
-          // Strategy handling
-          // TODO: Switch statement
-          if (strategy === "Linear") {
-            let c = votes.reduce((total, vote) => vote[candidate] + total, 0);
-            sum += c;
-            processed.push({ address: candidate, reduced: c });
-          } else if (strategy === "Quadratic") {
-            let c = votes.reduce((total, vote) => vote[candidate] ** 0.5 + total, 0);
-            sum += c;
-            processed.push({ address: candidate, reduced: c });
-          }
-        }
-        let final = [];
-        for (let i = 0; i < partyData.candidates.length; i++) {
-          const candidate = partyData.candidates[i];
-          final.push({ address: candidate, score: processed[i].reduced / sum });
-        }
-        setDistribution(final);
+    if (partyData && partyData.ballots.length > 0) {
+      const votes = partyData.ballots.map(b => JSON.parse(b.data.ballot.votes.replace(/[ \n\r]/g, "")));
+      let sum = 0;
+      let processed = [];
+      let strategy = partyData.config.strategy;
+      if (!strategy || strategy === "") {
+        strategy = "Linear";
+        console.log("Reverted to linear strategy");
       }
-    } catch {
-      setDistribution(null);
+
+      for (let i = 0; i < partyData.candidates.length; i++) {
+        const candidate = partyData.candidates[i];
+        // Strategy handling
+        // TODO: Switch statement
+        if (strategy === "Linear") {
+          let c = votes.reduce((total, vote) => vote[candidate] + total, 0);
+          sum += c;
+          processed.push({ address: candidate, reduced: c });
+        } else if (strategy === "Quadratic") {
+          let c = votes.reduce((total, vote) => vote[candidate] ** 0.5 + total, 0);
+          sum += c;
+          processed.push({ address: candidate, reduced: c });
+        }
+      }
+      let final = [];
+      for (let i = 0; i < partyData.candidates.length; i++) {
+        const candidate = partyData.candidates[i];
+        final.push({ address: candidate, score: processed[i].reduced / sum });
+      }
+      setDistribution(final);
     }
   };
 
   // Calculate the distribution on load
   useEffect(() => {
     calcDistribution();
-  }, []);
+  }, [partyData]);
 
   const handleTokenChange = e => {
     setToken(e.target.value);
@@ -111,15 +98,16 @@ export const Distribute = ({ dbInstance, partyData, address, userSigner, writeCo
   };
 
   // Update the distrubtion amounts when input total changes
-  const handleAmountChange = e => {
-    calcDistribution();
-    if (distribution) {
+  const handleAmountChange = async e => {
+    console.log(distribution);
+    if (distribution && distribution.length > 0) {
       // TODO: validate correct form
-      const amt = e;
+      const amt = e.toString();
       const amts = [];
       let tot = BigNumber.from("0x00");
       for (let i = 0; i < partyData.candidates.length; i++) {
-        const x = BigNumber.from(toWei((distribution[i].score * amt).toString()));
+        const pay = (distribution[i].score * amt).toString();
+        const x = BigNumber.from(toWei(pay));
         amts.push(x);
         tot = tot.add(x);
       }
@@ -140,8 +128,8 @@ export const Distribute = ({ dbInstance, partyData, address, userSigner, writeCo
       const receipts = partyData.receipts;
       receipts.push(receipt);
       dbInstance.updateParty(partyData._id, { receipts: receipts });
-      setIsDistributionLoading(false);
     }
+    setIsDistributionLoading(false);
   };
 
   // Distribute either Eth, or loaded erc20
@@ -194,10 +182,6 @@ export const Distribute = ({ dbInstance, partyData, address, userSigner, writeCo
       <HStack>
         <NumberInput onChange={handleAmountChange}>
           <NumberInputField placeholder="1" />
-          <NumberInputStepper>
-            <NumberIncrementStepper />
-            <NumberDecrementStepper />
-          </NumberInputStepper>
         </NumberInput>
         <DistributeButton />
       </HStack>

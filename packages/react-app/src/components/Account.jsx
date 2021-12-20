@@ -47,6 +47,5 @@ export default function Account({
     }
   }
 
-
   return <Box>{modalButtons}</Box>;
 }

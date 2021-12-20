@@ -6,7 +6,7 @@ import { CacheProvider } from "@emotion/react";
 import { EmotionCache } from "@emotion/cache";
 import "@fontsource/space-mono";
 import "@fontsource/poppins";
-import { mode } from '@chakra-ui/theme-tools';
+import { mode } from "@chakra-ui/theme-tools";
 
 import ReactDOM from "react-dom";
 import App from "./App";
@@ -40,8 +40,8 @@ const config = {
 const styles = {
   global: props => ({
     body: {
-      color: mode('gray.800', 'whiteAlpha.900')(props),
-      bg: mode('whiteAlpha.900', "#1b0f40")(props),
+      color: mode("gray.800", "whiteAlpha.900")(props),
+      bg: mode("#faf9fd", "#1b0f40")(props),
     },
   }),
 };
