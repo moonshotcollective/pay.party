@@ -1,6 +1,5 @@
 //SPDX-License-Identifier: MIT
-/**                                                                              
-                              ..                                  
+/**                                                                                                         ..                                  
                             ,*.                                   
                           .**,                                    
                           ,***.                                    
@@ -35,6 +34,8 @@ interface IERC20 {
 }
 
 contract Distributor {
+  event Distributed(address indexed sender, string message);
+
   function distributeEther(address[] memory recipients, uint256[] memory values)
     external
     payable
@@ -46,6 +47,7 @@ contract Distributor {
     if (balance > 0) {
       payable(msg.sender).transfer(balance);
     }
+    emit Distributed(msg.sender, "Distributed");
   }
 
   function distributeToken(
@@ -61,5 +63,6 @@ contract Distributor {
     for (uint256 i = 0; i < recipients.length; i++) {
       require(token.transfer(recipients[i], values[i]));
     }
+    emit Distributed(msg.sender, "Distributed");
   }
 }
