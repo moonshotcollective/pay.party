@@ -2,7 +2,7 @@ require("dotenv").config();
 import WalletConnectProvider from "@walletconnect/web3-provider";
 //import Torus from "@toruslabs/torus-embed"
 import WalletLink from "walletlink";
-// import { Alert, Button } from "antd";
+import { Alert } from "antd";
 import "antd/dist/antd.css";
 import React, { useCallback, useEffect, useState } from "react";
 import { BrowserRouter, Route, Switch, useHistory } from "react-router-dom";
@@ -33,6 +33,8 @@ import {
   MenuList,
   MenuItem,
   Button,
+  MenuItemOption,
+  MenuOptionGroup,
 } from "@chakra-ui/react";
 import NotConnectedCard from "./components/Cards/NotConnectedCard";
 import CenteredFrame from "./components/layout/CenteredFrame";
@@ -407,19 +409,23 @@ function App(props) {
   for (const id in NETWORKS) {
     if (configuredNetworks.indexOf(id) > -1) {
       options.push(
-        <MenuItem key={id} value={NETWORKS[id].name} onClick={switchNetwork}>
+        <MenuItemOption type="radio" key={id} value={NETWORKS[id].name} onClick={switchNetwork}>
           {NETWORKS[id].name}
-        </MenuItem>,
+        </MenuItemOption>,
       );
     }
   }
 
   const networkSelect = (
-    <Menu>
+    <Menu closeOnSelect={false}>
       <MenuButton as={Button} variant="ghost">
-        <TriangleDownIcon />
+        <ChevronDownIcon />
       </MenuButton>
-      <MenuList>{options}</MenuList>
+      <MenuList>
+        <MenuOptionGroup defaultValue="goerli" title="network" type="radio">
+          {options}
+        </MenuOptionGroup>
+      </MenuList>
     </Menu>
   );
 
@@ -454,6 +460,8 @@ function App(props) {
   useEffect(() => {
     setRoute(window.location.pathname);
   }, [setRoute]);
+
+  const history = useHistory();
 
   let faucetHint = "";
   const faucetAvailable = localProvider && localProvider.connection && targetNetwork.name.indexOf("local") !== -1;
@@ -495,11 +503,13 @@ function App(props) {
 
   return (
     <div>
-      <Box mb={8} pl={"12vw"} pr={"12vw"}>
-        <Box pb={10}>
+      <Box mb={8} pl={"14vw"} pr={"14vw"}>
+        <Box pb={"6vh"}>
           <HStack>
             <Box>
-              <Header />
+              <a href="/">
+                <Header />
+              </a>
             </Box>
             <Spacer />
             <Box pt={5}>{networkSelect}</Box>
