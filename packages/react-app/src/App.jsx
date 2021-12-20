@@ -33,6 +33,8 @@ import {
   MenuList,
   MenuItem,
   Button,
+  MenuItemOption,
+  MenuOptionGroup,
 } from "@chakra-ui/react";
 import NotConnectedCard from "./components/Cards/NotConnectedCard";
 import CenteredFrame from "./components/layout/CenteredFrame";
@@ -407,19 +409,23 @@ function App(props) {
   for (const id in NETWORKS) {
     if (configuredNetworks.indexOf(id) > -1) {
       options.push(
-        <MenuItem key={id} value={NETWORKS[id].name} onClick={switchNetwork}>
+        <MenuItemOption type="radio" key={id} value={NETWORKS[id].name} onClick={switchNetwork}>
           {NETWORKS[id].name}
-        </MenuItem>,
+        </MenuItemOption>,
       );
     }
   }
 
   const networkSelect = (
-    <Menu>
+    <Menu closeOnSelect={false}>
       <MenuButton as={Button} variant="ghost">
         <ChevronDownIcon />
       </MenuButton>
-      <MenuList>{options}</MenuList>
+      <MenuList>
+        <MenuOptionGroup defaultValue="goerli" title="network" type="radio">
+          {options}
+        </MenuOptionGroup>
+      </MenuList>
     </Menu>
   );
 
