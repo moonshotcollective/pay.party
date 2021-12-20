@@ -1,6 +1,6 @@
-import { Box, Button, FormControl, FormLabel, Input, Textarea, Select, Center, Heading, Text} from "@chakra-ui/react";
+import { Box, Button, FormControl, FormLabel, Input, Textarea, Select, Center, Text } from "@chakra-ui/react";
 import { ArrowBackIcon } from "@chakra-ui/icons";
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import { useHistory } from "react-router-dom";
 import MongoDBController from "../../controllers/mongodbController";
 
@@ -94,7 +94,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
   };
 
   const parseCandidates = e => {
-    const splitInput = e.currentTarget.value.split(/[ ,]+/).filter(c => c !== "");
+    const splitInput = e.currentTarget.value.split(/[ ,\n]+/).filter(c => c !== "");
     setInputCandidates(splitInput);
   };
 
@@ -134,10 +134,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
       </Button>
       <Box borderWidth={"1px"} padding={"4% 18% 6% 18%"} borderRadius={12}>
         <Center>
-          <Text fontSize='lg'>
-            Create
-          </Text>
-          {/* Create a party */}
+          <Text fontSize="lg">Create</Text>
         </Center>
         <form onSubmit={onSubmit}>
           <FormControl id="create">
@@ -178,7 +175,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
               isInvalid={isInvalidCandidateInput}
             />
             <FormLabel>Strategy</FormLabel>
-            <Select size="lg" onChange={e => (partyObj.config.strategy = e.currentTarget.value)}>
+            <Select size="lg" onChange={e => (partyObj.config.strategy = e.target.value)}>
               <option>Linear</option>
               <option>Quadratic</option>
             </Select>
