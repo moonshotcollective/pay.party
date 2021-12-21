@@ -20,6 +20,7 @@ export default function Party({
 
   const [partyData, setPartyData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showDebug, setShowDebug] = useState(false);
 
   const db = new MongoDBController();
 
@@ -29,7 +30,6 @@ export default function Party({
       setPartyData(res.data);
     })();
   }, []);
-
   return (
     <Box>
       <Button
@@ -42,8 +42,17 @@ export default function Party({
       >
         Back
       </Button>
+      <Button
+        size="lg"
+        variant="ghost"
+        onClick={() => {
+          showDebug ? setShowDebug(false) : setShowDebug(true);
+        }}
+      >
+        Debug
+      </Button>
       <Box borderWidth={"1px"}>
-        <p>{JSON.stringify(partyData)}</p>
+        {showDebug && <p>{JSON.stringify(partyData)}</p>}
         <Vote
           dbInstance={db}
           partyData={partyData}
@@ -51,6 +60,7 @@ export default function Party({
           userSigner={userSigner}
           targetNetwork={targetNetwork}
           readContracts={readContracts}
+          mainnetProvider={mainnetProvider}
         />
         <Distribute
           dbInstance={db}

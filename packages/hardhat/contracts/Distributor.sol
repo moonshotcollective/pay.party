@@ -19,7 +19,10 @@
         ,***,.          .*****,                                    
       ,**,.           ./***,                                       
     ,,             .***,                                          
-                  .**,                                                                                        
+                  .**,                 
+
+                    Moonshot Collective
+            https://github.com/moonshotcollective 
 */
 pragma solidity >=0.8.0 <0.9.0;
 
@@ -32,7 +35,10 @@ interface IERC20 {
     uint256 value
   ) external returns (bool);
 }
-
+/* 
+Implementation Resources: 
+  https://github.com/banteg/disperse-research
+*/
 contract Distributor {
   event Distributed(address indexed sender, string message);
 

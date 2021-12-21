@@ -1,4 +1,4 @@
-import { NumberInput, NumberInputField, Box, Button, Input, HStack } from "@chakra-ui/react";
+import { NumberInput, NumberInputField, Box, Button, Input, HStack, Spacer } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import { toWei } from "web3-utils";
 import { BigNumber, ethers } from "ethers";
@@ -172,14 +172,16 @@ export const Distribute = ({ dbInstance, partyData, address, userSigner, writeCo
   };
 
   return (
-    <Box borderWidth={"1px"}>
-      <HStack>
+    <Box borderWidth={"1px"} padding={6}>
+      <HStack pl={"15%"} pr={"15%"}>
         <Input onChange={handleTokenChange} placeholder="ex: 0xde30da39c46104798bb5aa3fe8b9e0e1f348163f"></Input>
+        <Spacer />
         <Button onClick={loadToken} isLoading={isTokenLoading}>
           Load Token
         </Button>
       </HStack>
-      <HStack>
+      <HStack pl={"15%"} pr={"15%"} pt={4}>
+        <Spacer />
         <NumberInput onChange={handleAmountChange}>
           <NumberInputField placeholder="1" />
         </NumberInput>
