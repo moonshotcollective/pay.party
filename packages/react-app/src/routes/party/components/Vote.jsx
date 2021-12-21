@@ -1,17 +1,25 @@
-import { Box, Button, Textarea, HStack } from "@chakra-ui/react";
-import React, { useState } from "react";
+import {
+  Box,
+  Button,
+  Textarea,
+  HStack,
+  Text,
+  Input,
+  NumberInput,
+  NumberInputField,
+  NumberInputStepper,
+  NumberIncrementStepper,
+  NumberDecrementStepper,
+  Spacer,
+  Center,
+} from "@chakra-ui/react";
+import React, { useState, useMemo } from "react";
+import AddressChakra from "../../../components/AddressChakra";
 
-export const Vote = ({ dbInstance, partyData, address, userSigner, targetNetwork, readContracts }) => {
-  const [votesData, setVotesData] = useState(null);
-
-  const handleVotesChange = e => {
-    const value = e.target.value;
-    try {
-      const parsedVotes = JSON.parse(value);
-      setVotesData(parsedVotes);
-    } catch (error) {
-      console.log("Formatted JSON Required");
-    }
+export const Vote = ({ dbInstance, partyData, address, userSigner, targetNetwork, readContracts, mainnetProvider }) => {
+  const [votesData, setVotesData] = useState({});
+  const handleVotesChange = (event, adr) => {
+    votesData[adr] = Number(event);
   };
 
   const vote = async () => {
@@ -37,21 +45,25 @@ export const Vote = ({ dbInstance, partyData, address, userSigner, targetNetwork
     const ballot = {
       party: partyData.name,
       ballot: {
-        address: address, //ethersContext.account,
+        address: address,
         votes: JSON.stringify(votesData, null, 2),
       },
     };
 
-    // TODO: Check if account has already submitted a ballot
-    // if (partyData.ballots.valueOf(address).length < 1) {
     // NOTE: sign typed data for eip712 is underscored because it's in public beta
     userSigner
       ?._signTypedData(domain, types, ballot)
       .then(sig => {
         const ballots = partyData.ballots;
+        const cast = ballots.valueOf(address).filter(d => d.data.ballot.address === address);
+        // TODO: Check if account has already submitted a ballot
+        if (cast.length === 0) {
+          ballots.push({ signature: sig, data: ballot });
+          return ballots;
+        } else {
+          throw "Error: Account already voted!";
+        }
         // Push a ballot to the parties sumbitted ballots array
-        ballots.push({ signature: sig, data: ballot });
-        return ballots;
       })
       .then(ballots => {
         dbInstance.updateParty(partyData._id, { ballots: ballots });
@@ -59,15 +71,49 @@ export const Vote = ({ dbInstance, partyData, address, userSigner, targetNetwork
       .catch(err => {
         console.log(err);
       });
-    // }
   };
+
+  const candidates = useMemo(() => {
+    return partyData?.candidates.map(d => {
+      return (
+        <HStack pt={2}>
+          <AddressChakra
+            address={d}
+            ensProvider={mainnetProvider}
+            // blockExplorer={blockExplorer}
+          />
+          <Spacer />
+          <NumberInput
+            defaultValue={0}
+            min={0}
+            onChange={e => {
+              handleVotesChange(e, d);
+            }}
+            width="6em"
+            size="lg"
+          >
+            <NumberInputField />
+            <NumberInputStepper>
+              <NumberIncrementStepper />
+              <NumberDecrementStepper />
+            </NumberInputStepper>
+          </NumberInput>
+        </HStack>
+      );
+    });
+  }, [partyData]);
 
   return (
     <Box borderWidth={"1px"}>
-      <HStack>
-        <Textarea onChange={handleVotesChange} placeholder='{"0x001...": 3, "0x002": 7, ...}'></Textarea>
-        <Button onClick={vote}>Vote</Button>
-      </HStack>
+      <Center pt={4}>
+        <Text fontSize="lg">Cast Votes</Text>
+      </Center>
+      <Box pr={"25%"} pl={"25%"}>
+        {candidates}
+        <Center padding={4}>
+          <Button onClick={vote}>Vote</Button>
+        </Center>
+      </Box>
     </Box>
   );
 };

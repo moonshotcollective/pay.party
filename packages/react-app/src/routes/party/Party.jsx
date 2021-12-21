@@ -43,7 +43,7 @@ export default function Party({
         Back
       </Button>
       <Box borderWidth={"1px"}>
-        <p>{JSON.stringify(partyData)}</p>
+        {/* <p>{JSON.stringify(partyData)}</p> */}
         <Vote
           dbInstance={db}
           partyData={partyData}
@@ -51,6 +51,7 @@ export default function Party({
           userSigner={userSigner}
           targetNetwork={targetNetwork}
           readContracts={readContracts}
+          mainnetProvider={mainnetProvider}
         />
         <Distribute
           dbInstance={db}
