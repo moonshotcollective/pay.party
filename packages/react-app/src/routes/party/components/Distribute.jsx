@@ -181,7 +181,7 @@ export const Distribute = ({ dbInstance, partyData, address, userSigner, writeCo
         </Button>
       </HStack>
       <HStack pl={"15%"} pr={"15%"} pt={4}>
-        <Spacer/>
+        <Spacer />
         <NumberInput onChange={handleAmountChange}>
           <NumberInputField placeholder="1" />
         </NumberInput>

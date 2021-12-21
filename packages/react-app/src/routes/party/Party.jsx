@@ -46,16 +46,13 @@ export default function Party({
         size="lg"
         variant="ghost"
         onClick={() => {
-          showDebug ? setShowDebug(false) : setShowDebug(true)
+          showDebug ? setShowDebug(false) : setShowDebug(true);
         }}
-
       >
         Debug
       </Button>
       <Box borderWidth={"1px"}>
-        {showDebug && 
-        <p>{JSON.stringify(partyData)}</p>
-}
+        {showDebug && <p>{JSON.stringify(partyData)}</p>}
         <Vote
           dbInstance={db}
           partyData={partyData}

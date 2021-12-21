@@ -73,14 +73,14 @@ export const Vote = ({ dbInstance, partyData, address, userSigner, targetNetwork
           console.log(err);
         });
     } else {
-      console.log("Error: Account Not Participant!")
+      console.log("Error: Account Not Participant!");
     }
   };
 
   const candidates = useMemo(() => {
     return partyData?.candidates.map(d => {
       return (
-        <HStack pt={2}>
+        <HStack pt={2} key={`vote-${d}`}>
           <AddressChakra
             address={d}
             ensProvider={mainnetProvider}
