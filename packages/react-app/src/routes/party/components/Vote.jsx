@@ -51,26 +51,30 @@ export const Vote = ({ dbInstance, partyData, address, userSigner, targetNetwork
     };
 
     // NOTE: sign typed data for eip712 is underscored because it's in public beta
-    userSigner
-      ?._signTypedData(domain, types, ballot)
-      .then(sig => {
-        const ballots = partyData.ballots;
-        const cast = ballots.valueOf(address).filter(d => d.data.ballot.address === address);
-        // TODO: Check if account has already submitted a ballot
-        if (cast.length === 0) {
-          ballots.push({ signature: sig, data: ballot });
-          return ballots;
-        } else {
-          throw "Error: Account already voted!";
-        }
-        // Push a ballot to the parties sumbitted ballots array
-      })
-      .then(ballots => {
-        dbInstance.updateParty(partyData._id, { ballots: ballots });
-      })
-      .catch(err => {
-        console.log(err);
-      });
+    if (partyData.participants.includes(address)) {
+      userSigner
+        ?._signTypedData(domain, types, ballot)
+        .then(sig => {
+          const ballots = partyData.ballots;
+          const cast = ballots.valueOf(address).filter(d => d.data.ballot.address === address);
+          // TODO: Check if account has already submitted a ballot
+          if (cast.length === 0) {
+            ballots.push({ signature: sig, data: ballot });
+            return ballots;
+          } else {
+            throw "Error: Account already voted!";
+          }
+          // Push a ballot to the parties sumbitted ballots array
+        })
+        .then(ballots => {
+          dbInstance.updateParty(partyData._id, { ballots: ballots });
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    } else {
+      console.log("Error: Account Not Participant!")
+    }
   };
 
   const candidates = useMemo(() => {
