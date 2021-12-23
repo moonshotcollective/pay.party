@@ -127,7 +127,7 @@ export const Distribute = ({ dbInstance, partyData, address, userSigner, writeCo
       };
       const receipts = partyData.receipts;
       receipts.push(receipt);
-      dbInstance.updateParty(partyData._id, { receipts: receipts });
+      dbInstance.updateParty(partyData.id, { receipts: receipts });
     }
     setIsDistributionLoading(false);
   };

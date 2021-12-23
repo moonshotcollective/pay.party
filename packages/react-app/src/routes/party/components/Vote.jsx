@@ -67,7 +67,7 @@ export const Vote = ({ dbInstance, partyData, address, userSigner, targetNetwork
           // Push a ballot to the parties sumbitted ballots array
         })
         .then(ballots => {
-          dbInstance.updateParty(partyData._id, { ballots: ballots });
+          dbInstance.updateParty(partyData.id, { ballots: ballots });
         })
         .catch(err => {
           console.log(err);
