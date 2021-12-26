@@ -139,16 +139,10 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
         <form onSubmit={onSubmit}>
           <FormControl id="create">
             <FormLabel>Name</FormLabel>
-            <Input
-              type="name"
-              size="lg"
-              placeholder="Party Name"
-              onChange={e => (partyObj.name = e.currentTarget.value)}
-            />
+            <Input size="lg" placeholder="Party Name" onChange={e => (partyObj.name = e.currentTarget.value)} />
 
             <FormLabel>Description</FormLabel>
             <Textarea
-              type="description"
               size="lg"
               placeholder="Describe your party"
               rows={3}
@@ -157,7 +151,6 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
 
             <FormLabel>Participants</FormLabel>
             <Textarea
-              type="participants"
               size="lg"
               placeholder="ex: alice.eth, 0x6b541b78349097714B9D1aB6A788dB5e0dCF21a3, ..."
               rows={5}
@@ -167,7 +160,6 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
 
             <FormLabel>Candidates</FormLabel>
             <Textarea
-              type="candidates"
               size="lg"
               placeholder="ex: 0x802999C71263f7B30927F720CF0AC10A76a0494C, bob.eth, ..."
               rows={4}
@@ -181,14 +173,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
             </Select>
 
             <Center pt={10}>
-              <Button
-                size="lg"
-                type="primary"
-                type="submit"
-                isLoading={isLoading}
-                loadingText={loadingText}
-                width={"50%"}
-              >
+              <Button size="lg" type="submit" isLoading={isLoading} loadingText={loadingText} width={"50%"}>
                 Submit Party
               </Button>
             </Center>

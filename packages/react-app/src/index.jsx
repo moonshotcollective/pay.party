@@ -5,6 +5,7 @@ import { ChakraProvider, ColorModeScript } from "@chakra-ui/react";
 import { CacheProvider } from "@emotion/react";
 import { EmotionCache } from "@emotion/cache";
 import "@fontsource/space-mono";
+import "@fontsource/inter";
 import "@fontsource/poppins";
 import { mode } from "@chakra-ui/theme-tools";
 
@@ -12,7 +13,7 @@ import ReactDOM from "react-dom";
 import App from "./App";
 import "./index.css";
 import createEmotionCache from "./styles/createEmotionCache";
-// import customTheme from "./styles/customTheme";
+import customTheme from "./styles/customTheme";
 import { Web3Provider } from "./helpers/Web3Context";
 import { extendTheme, withDefaultColorScheme } from "@chakra-ui/react";
 
@@ -45,11 +46,11 @@ const styles = {
     },
   }),
 };
-const customTheme = extendTheme({ config, styles }); //withDefaultColorScheme({ colorScheme: 'purple' }))
+// const customTheme = extendTheme({ config, styles }); //withDefaultColorScheme({ colorScheme: 'purple' }))
 
 ReactDOM.render(
   <>
-    <ColorModeScript initialColorMode={customTheme.config.initialColorMode} />,
+    <ColorModeScript initialColorMode={config.initialColorMode} />
     <ChakraProvider theme={customTheme}>
       <App />
     </ChakraProvider>

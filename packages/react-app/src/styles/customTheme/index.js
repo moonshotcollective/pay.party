@@ -1,30 +1,24 @@
 import { extendTheme } from "@chakra-ui/react";
 import { mode } from "@chakra-ui/theme-tools";
 
-import colors from "./colors";
-import Button from "./components/button";
-import fonts from "./fonts";
+// import colors from "./colors";
+// import Button from "./components/button";
 
+import { customTheme as baseTheme } from "@moonshotcollective/ui";
 import { StepsStyleConfig as Steps } from "chakra-ui-steps";
 
 const customTheme = extendTheme({
+  ...baseTheme,
   config: {
     initialColorMode: "dark",
   },
-  styles: {
-    global: props => ({
-      // body: {
-      //   color: mode("purple.700", "violet.300")(props),
-      //   bg: mode("violet.50", "brand.500")(props),
-      // },
-    }),
-  },
-  fonts,
-  colors,
-  components: {
-    Button,
-    Steps,
-  },
+  // // We can extend the base theme as we which, eg:
+  // colors,
+  // components: {
+  //   ...baseTheme.components,
+  //  Button,
+  //   Steps,
+  // },
 });
 
 export default customTheme;
