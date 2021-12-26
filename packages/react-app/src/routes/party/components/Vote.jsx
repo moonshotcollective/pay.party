@@ -12,6 +12,7 @@ import {
   NumberDecrementStepper,
   Spacer,
   Center,
+  Divider,
 } from "@chakra-ui/react";
 import React, { useState, useMemo } from "react";
 import AddressChakra from "../../../components/AddressChakra";
@@ -80,6 +81,7 @@ export const Vote = ({ dbInstance, partyData, address, userSigner, targetNetwork
   const candidates = useMemo(() => {
     return partyData?.candidates.map(d => {
       return (
+        <Box>
         <HStack pt={2} key={`vote-${d}`}>
           <AddressChakra
             address={d}
@@ -103,6 +105,8 @@ export const Vote = ({ dbInstance, partyData, address, userSigner, targetNetwork
             </NumberInputStepper>
           </NumberInput>
         </HStack>
+        <Divider pt={2}/>
+        </Box>
       );
     });
   }, [partyData]);
@@ -112,7 +116,8 @@ export const Vote = ({ dbInstance, partyData, address, userSigner, targetNetwork
       <Center pt={4}>
         <Text fontSize="lg">Cast Votes</Text>
       </Center>
-      <Box pr={"25%"} pl={"25%"}>
+      <Box pl={"12%"} pr="12%">
+        <Divider />
         {candidates}
         <Center padding={4}>
           <Button onClick={vote}>Vote</Button>

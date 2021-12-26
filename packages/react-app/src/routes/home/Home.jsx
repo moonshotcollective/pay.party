@@ -32,16 +32,17 @@ function Home({ address, mainnetProvider, tx, readContracts, writeContracts, tar
       data.map(d => (
         <Box borderWidth="1px" key={`box-${d.id}`}>
           <p>{`Id: ${d.id}`}</p>
-          <Link
+          <p>{d.name}</p>
+          <p>{d.desc}</p>
+          <Button
+            variant="link"
             to={`/party/${d.id}`}
             onClick={() => {
               routeHistory.push(`/party/${d.id}`);
             }}
           >
             View
-          </Link>
-          <p>{d.name}</p>
-          <p>{d.desc}</p>
+          </Button>
         </Box>
       ))
     );

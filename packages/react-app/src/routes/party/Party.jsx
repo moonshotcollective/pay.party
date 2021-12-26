@@ -3,7 +3,7 @@ import { Button, Box } from "@chakra-ui/react";
 import { ArrowBackIcon } from "@chakra-ui/icons";
 import { useParams, useHistory } from "react-router-dom";
 import MongoDBController from "../../controllers/mongodbController";
-import { Vote, Distribute } from "./components";
+import { Vote, View, Distribute } from "./components";
 
 export default function Party({
   address,
@@ -21,6 +21,7 @@ export default function Party({
   const [partyData, setPartyData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showDebug, setShowDebug] = useState(false);
+  const [canVote, setCanVote] = useState(false);
 
   const db = new MongoDBController();
 
@@ -28,6 +29,13 @@ export default function Party({
     (async () => {
       const res = await db.fetchParty(id);
       setPartyData(res.data);
+      const cast = res.data.ballots?.valueOf(address).filter(d => d.data.ballot.address === address);
+      // TODO: Check if account has already submitted a ballot
+      if (cast.length === 0) {
+        setCanVote(true);
+      } else {
+        setCanVote(false);
+      }
     })();
   }, []);
   return (
@@ -53,15 +61,27 @@ export default function Party({
       </Button>
       <Box borderWidth={"1px"}>
         {showDebug && <p>{JSON.stringify(partyData)}</p>}
-        <Vote
-          dbInstance={db}
-          partyData={partyData}
-          address={address}
-          userSigner={userSigner}
-          targetNetwork={targetNetwork}
-          readContracts={readContracts}
-          mainnetProvider={mainnetProvider}
-        />
+        {canVote ? (
+          <Vote
+            dbInstance={db}
+            partyData={partyData}
+            address={address}
+            userSigner={userSigner}
+            targetNetwork={targetNetwork}
+            readContracts={readContracts}
+            mainnetProvider={mainnetProvider}
+          />
+        ) : (
+          <View
+            dbInstance={db}
+            partyData={partyData}
+            address={address}
+            userSigner={userSigner}
+            targetNetwork={targetNetwork}
+            readContracts={readContracts}
+            mainnetProvider={mainnetProvider}
+          />
+        )}
         <Distribute
           dbInstance={db}
           partyData={partyData}
