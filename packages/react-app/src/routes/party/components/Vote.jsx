@@ -1,18 +1,21 @@
 import {
   Box,
   Button,
-  Textarea,
-  HStack,
   Text,
-  Input,
   NumberInput,
   NumberInputField,
   NumberInputStepper,
   NumberIncrementStepper,
   NumberDecrementStepper,
-  Spacer,
   Center,
-  Divider,
+  Table,
+  Thead,
+  Tbody,
+  Tfoot,
+  Tr,
+  Th,
+  Td,
+  TableCaption,
 } from "@chakra-ui/react";
 import React, { useState, useMemo } from "react";
 import AddressChakra from "../../../components/AddressChakra";
@@ -81,32 +84,34 @@ export const Vote = ({ dbInstance, partyData, address, userSigner, targetNetwork
   const candidates = useMemo(() => {
     return partyData?.candidates.map(d => {
       return (
-        <Box>
-        <HStack pt={2} key={`vote-${d}`}>
-          <AddressChakra
-            address={d}
-            ensProvider={mainnetProvider}
-            // blockExplorer={blockExplorer}
-          />
-          <Spacer />
-          <NumberInput
-            defaultValue={0}
-            min={0}
-            onChange={e => {
-              handleVotesChange(e, d);
-            }}
-            width="6em"
-            size="lg"
-          >
-            <NumberInputField />
-            <NumberInputStepper>
-              <NumberIncrementStepper />
-              <NumberDecrementStepper />
-            </NumberInputStepper>
-          </NumberInput>
-        </HStack>
-        <Divider pt={2}/>
-        </Box>
+        <Tbody>
+          <Tr>
+            <Td>
+              <AddressChakra
+                address={d}
+                ensProvider={mainnetProvider}
+                // blockExplorer={blockExplorer}
+              />
+            </Td>
+            <Td>
+              <NumberInput
+                defaultValue={0}
+                min={0}
+                onChange={e => {
+                  handleVotesChange(e, d);
+                }}
+                width="6em"
+                size="lg"
+              >
+                <NumberInputField />
+                <NumberInputStepper>
+                  <NumberIncrementStepper />
+                  <NumberDecrementStepper />
+                </NumberInputStepper>
+              </NumberInput>
+            </Td>
+          </Tr>
+        </Tbody>
       );
     });
   }, [partyData]);
@@ -116,13 +121,18 @@ export const Vote = ({ dbInstance, partyData, address, userSigner, targetNetwork
       <Center pt={4}>
         <Text fontSize="lg">Cast Votes</Text>
       </Center>
-      <Box pl={"12%"} pr="12%">
-        <Divider />
-        {candidates}
-        <Center padding={4}>
+      <Table>
+        <Thead>
+          <Tr>
+            <Th>Address</Th>
+            <Th>Score</Th>
+          </Tr>
+        </Thead>
+        <TableCaption>
           <Button onClick={vote}>Vote</Button>
-        </Center>
-      </Box>
+        </TableCaption>
+        {candidates}
+      </Table>
     </Box>
   );
 };

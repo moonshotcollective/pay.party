@@ -173,14 +173,14 @@ export const Distribute = ({ dbInstance, partyData, address, userSigner, writeCo
 
   return (
     <Box borderWidth={"1px"} padding={6}>
-      <HStack pl={"15%"} pr={"15%"}>
+      <HStack pl={"6%"} pr={"6%"}>
         <Input onChange={handleTokenChange} placeholder="ex: 0xde30da39c46104798bb5aa3fe8b9e0e1f348163f"></Input>
         <Spacer />
         <Button onClick={loadToken} isLoading={isTokenLoading}>
           Load Token
         </Button>
       </HStack>
-      <HStack pl={"15%"} pr={"15%"} pt={4}>
+      <HStack pl={"6%"} pr={"6%"} pt={4}>
         <Spacer />
         <NumberInput onChange={handleAmountChange}>
           <NumberInputField placeholder="1" />

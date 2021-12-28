@@ -594,8 +594,8 @@ function App(props) {
             <NotConnectedCard />
           </CenteredFrame>
         )}
-        <Footer />
       </Box>
+      <Footer pr="100%" />
     </div>
   );
 }
