@@ -10,7 +10,7 @@ export default function Header() {
   return (
     <Box pb={0}>
       <HStack align="center">
-        <QDIcon size={16} />
+        <QDIcon size={72} />
         <Text color={headingColor} fontSize="5xl">
           pay.party
         </Text>
