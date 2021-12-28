@@ -11,20 +11,10 @@ import {
 import { useColorModeValue } from "@chakra-ui/react";
 import { FaEthereum } from "react-icons/fa";
 import React from "react";
-import {
-  useMoralis,
-  useMoralisWeb3Api,
-  useMoralisWeb3ApiCall,
-} from "react-moralis";
+import { useMoralis, useMoralisWeb3Api, useMoralisWeb3ApiCall } from "react-moralis";
 import { MoralisChainId } from "../../types";
 
-const BalancesButton = ({
-  chainId,
-  address,
-}: {
-  chainId: MoralisChainId;
-  address: string;
-}) => {
+const BalancesButton = ({ chainId, address }: { chainId: MoralisChainId, address: string }) => {
   const { web3 } = useMoralis();
   const {
     account: { getNativeBalance },
@@ -39,21 +29,13 @@ const BalancesButton = ({
   return (
     <Popover isLazy>
       <PopoverTrigger>
-        <IconButton
-          onClick={() => getNativeBalanceQuery.fetch()}
-          aria-label="balances"
-          icon={<FaEthereum />}
-        />
+        <IconButton onClick={() => getNativeBalanceQuery.fetch()} aria-label="balances" icon={<FaEthereum />} />
       </PopoverTrigger>
       <PopoverContent backgroundColor={bgColor} rounded="3xl">
-        <PopoverHeader fontWeight="semibold">
-          Native token balance
-        </PopoverHeader>
+        <PopoverHeader fontWeight="semibold">Native token balance</PopoverHeader>
         <PopoverArrow />
         <PopoverCloseButton />
-        <PopoverBody fontSize="2xl">
-          {web3?.utils.fromWei(getNativeBalanceQuery.data?.balance || "0")}
-        </PopoverBody>
+        <PopoverBody fontSize="2xl">{web3?.utils.fromWei(getNativeBalanceQuery.data?.balance || "0")}</PopoverBody>
       </PopoverContent>
     </Popover>
   );
