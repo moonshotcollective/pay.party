@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Button, Box } from "@chakra-ui/react";
 import { ArrowBackIcon } from "@chakra-ui/icons";
 import { useParams, useHistory } from "react-router-dom";
@@ -18,26 +18,28 @@ export default function Party({
   const routeHistory = useHistory();
   let { id } = useParams();
 
-  const [partyData, setPartyData] = useState(null);
+  const [partyData, setPartyData] = useState({});
+  const [accountVoteData, setAccountVoteData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showDebug, setShowDebug] = useState(false);
   const [canVote, setCanVote] = useState(false);
 
   const db = new MongoDBController();
 
-  useEffect(() => {
-    (async () => {
-      const res = await db.fetchParty(id);
-      setPartyData(res.data);
-      const cast = res.data.ballots?.valueOf(address).filter(d => d.data.ballot.address === address);
-      // TODO: Check if account has already submitted a ballot
-      if (cast.length === 0) {
-        setCanVote(true);
-      } else {
-        setCanVote(false);
-      }
-    })();
-  }, []);
+  useEffect(async () => {
+    db.fetchParty(id)
+      .then(res => {
+        setPartyData(res.data);
+        const votes = res.data.ballots.filter(b => b.data.ballot.address === address);
+        setAccountVoteData(votes);
+        setCanVote(votes.length === 0 ? true : false);
+
+      })
+      .catch(err => {
+        console.log(err);
+      });
+  }, [id]);
+
   return (
     <Box>
       <Button
@@ -73,13 +75,9 @@ export default function Party({
           />
         ) : (
           <View
-            dbInstance={db}
             partyData={partyData}
-            address={address}
-            userSigner={userSigner}
-            targetNetwork={targetNetwork}
-            readContracts={readContracts}
             mainnetProvider={mainnetProvider}
+            votesData={accountVoteData}
           />
         )}
         <Distribute

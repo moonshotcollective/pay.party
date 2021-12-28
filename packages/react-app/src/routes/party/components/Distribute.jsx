@@ -17,7 +17,7 @@ export const Distribute = ({ dbInstance, partyData, address, userSigner, writeCo
 
   // Calculate percent distribution from submitted ballots
   const calcDistribution = () => {
-    if (partyData && partyData.ballots.length > 0) {
+    if (partyData &&  partyData.ballots && partyData.ballots.length > 0) {
       const votes = partyData.ballots.map(b => JSON.parse(b.data.ballot.votes.replace(/[ \n\r]/g, "")));
       let sum = 0;
       let processed = [];
