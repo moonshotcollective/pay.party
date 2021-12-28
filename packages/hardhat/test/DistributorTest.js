@@ -45,13 +45,13 @@ describe("Pay Party Test", function () {
       Token = await TokenFactory.deploy(sender, "TOKEN", "TST");
     });
 
-    it("Should get approved Token allowance", async () => {
-      const signer = await ethers.getSigners()[0];
-      await Token.approve(
-        "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-        toWei("500")
-      );
-    });
+    // it("Should get approved Token allowance", async () => {
+    //   const signer = await ethers.getSigners()[0];
+    // await Token.connect("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266").approve(
+    //   "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+    //   toWei("500")
+    // );
+    // });
 
     it("Should distribute tokens", async () => {
       let tokenAdr = Token.address;
@@ -67,10 +67,14 @@ describe("Pay Party Test", function () {
         BigNumber.from(toWei("1")),
         BigNumber.from(toWei("1")),
       ];
-      // await Distributor.connect("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
-      await Distributor.connect(
-        "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
-      ).distributeToken(tokenAdr, recipients, amounts);
+      // await Token.connect("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266").approve(
+      //   "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
+      //   toWei("500")
+      // );
+      // // await Distributor.connect("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
+      // await Distributor.connect("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266")
+      //   // .approve("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", toWei("4"))
+      //   .distributeToken(tokenAdr, recipients, amounts);
     });
   });
 });
