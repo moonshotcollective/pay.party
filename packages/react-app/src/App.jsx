@@ -365,7 +365,7 @@ function App(props) {
   }
 
   const switchNetwork = e => {
-    let value = e.target.value;
+    let value = e.target.innerText;
     if (targetNetwork.chainId !== NETWORKS[value].chainId) {
       window.localStorage.setItem("network", value);
       setTimeout(async () => {
