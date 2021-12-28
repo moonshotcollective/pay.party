@@ -7,7 +7,7 @@ export default class MongoDBController {
     return this.http.post(url, {}, data); // Clean this up
   }
   async fetchAllParties() {
-    const url = `${process.env.REACT_APP_API_URL}/party`;
+    const url = `${process.env.REACT_APP_API_URL}/parties`;
     return this.http.get(url);
   }
   async fetchParty(id) {

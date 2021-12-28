@@ -30,18 +30,19 @@ function Home({ address, mainnetProvider, tx, readContracts, writeContracts, tar
     return (
       data &&
       data.map(d => (
-        <Box borderWidth="1px" key={`box-${d._id}`}>
-          <p>{`Id: ${d._id}`}</p>
-          <Link
-            to={`/party/${d._id}`}
+        <Box borderWidth="1px" key={`box-${d.id}`}>
+          <p>{`Id: ${d.id}`}</p>
+          <p>{d.name}</p>
+          <p>{d.desc}</p>
+          <Button
+            variant="link"
+            to={`/party/${d.id}`}
             onClick={() => {
-              routeHistory.push(`/party/${d._id}`);
+              routeHistory.push(`/party/${d.id}`);
             }}
           >
             View
-          </Link>
-          <p>{d.name}</p>
-          <p>{d.desc}</p>
+          </Button>
         </Box>
       ))
     );
