@@ -84,7 +84,7 @@ export const Vote = ({ dbInstance, partyData, address, userSigner, targetNetwork
   const candidates = useMemo(() => {
     return partyData?.candidates.map(d => {
       return (
-        <Tbody>
+        <Tbody key={`vote-row-${d}`}>
           <Tr>
             <Td>
               <AddressChakra

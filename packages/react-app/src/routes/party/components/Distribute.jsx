@@ -106,7 +106,7 @@ export const Distribute = ({ dbInstance, partyData, address, userSigner, writeCo
       const amts = [];
       let tot = BigNumber.from("0x00");
       for (let i = 0; i < partyData.candidates.length; i++) {
-        const pay = (distribution[i].score * amt).toString();
+        const pay = (distribution[i].score * amt).toFixed(18).toString();
         const x = BigNumber.from(toWei(pay));
         amts.push(x);
         tot = tot.add(x);

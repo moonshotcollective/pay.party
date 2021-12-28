@@ -35,7 +35,7 @@ export const View = ({
       partyData.candidates &&
       partyData.candidates.map(d => {
         return (
-          <Tbody>
+          <Tbody key={`view-row-${d}`}>
             <Tr>
               <Td>
                 <AddressChakra

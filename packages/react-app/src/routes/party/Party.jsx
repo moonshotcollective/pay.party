@@ -33,7 +33,6 @@ export default function Party({
         const votes = res.data.ballots.filter(b => b.data.ballot.address === address);
         setAccountVoteData(votes);
         setCanVote(votes.length === 0 ? true : false);
-
       })
       .catch(err => {
         console.log(err);
