@@ -14,6 +14,10 @@ describe("Pay Party Test", function () {
   before((done) => {
     setTimeout(done, 4000);
   });
+  let owner, spender, holder;
+  beforeEach(async () => {
+    [owner, spender, holder] = await ethers.getSigners();
+  });
 
   describe("Distributor Contract", () => {
     it("Should deploy Distributor", async () => {
@@ -41,8 +45,8 @@ describe("Pay Party Test", function () {
 
     it("Should deploy Test Token", async () => {
       const TokenFactory = await ethers.getContractFactory("Token");
-      const sender = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"; //await ethers.getSigners()[0];
-      Token = await TokenFactory.deploy(sender, "TOKEN", "TST");
+      // const sender = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"; //await ethers.getSigners()[0];
+      Token = await TokenFactory.deploy(owner.address, "TOKEN", "TST");
     });
 
     // it("Should get approved Token allowance", async () => {
@@ -54,7 +58,6 @@ describe("Pay Party Test", function () {
     // });
 
     it("Should distribute tokens", async () => {
-      let tokenAdr = Token.address;
       const recipients = [
         "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
         "0x01684C57AE8a4226271068210Ce1cCED865a5AfC",
@@ -63,18 +66,22 @@ describe("Pay Party Test", function () {
       ];
       const amounts = [
         BigNumber.from(toWei("1")),
-        BigNumber.from(toWei("1")),
-        BigNumber.from(toWei("1")),
-        BigNumber.from(toWei("1")),
+        BigNumber.from(toWei("0")),
+        BigNumber.from(toWei("0")),
+        BigNumber.from(toWei("0")),
       ];
-      // await Token.connect("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266").approve(
-      //   "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-      //   toWei("500")
+      await Token.approve(holder.address, BigNumber.from(toWei("4")));
+      await Token.transfer(holder.address, toWei("4"));
+      // WIP
+      // const x = await Token.balanceOf(holder.address);
+      // const u = await Token.allowance(owner.address, holder.address);
+      // console.log(x.toString());
+      // console.log(u.toString());
+      // await Distributor.connect(holder).distributeToken(
+      //   tokenAdr,
+      //   recipients,
+      //   amounts
       // );
-      // // await Distributor.connect("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
-      // await Distributor.connect("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266")
-      //   // .approve("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266", toWei("4"))
-      //   .distributeToken(tokenAdr, recipients, amounts);
     });
   });
 });
