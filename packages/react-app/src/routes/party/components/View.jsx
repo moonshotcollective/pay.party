@@ -25,7 +25,7 @@ export const View = ({
   const [castVotes, setCastVotes] = useState(null);
 
   useEffect(() => {
-    const scores = votesData && JSON.parse(votesData[0].data.ballot.votes);
+    const scores = votesData && votesData[0] && JSON.parse(votesData[0].data.ballot.votes);
     setCastVotes(scores);
   }, [votesData]);
 
@@ -35,7 +35,7 @@ export const View = ({
       partyData.candidates &&
       partyData.candidates.map(d => {
         return (
-          <Tbody>
+          <Tbody key={`view-row-${d}`}>
             <Tr>
               <Td>
                 <AddressChakra
