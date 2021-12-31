@@ -21,7 +21,9 @@ import React, { useState, useMemo } from "react";
 import AddressChakra from "../../../components/AddressChakra";
 
 export const Vote = ({ dbInstance, partyData, address, userSigner, targetNetwork, readContracts, mainnetProvider }) => {
-  const [votesData, setVotesData] = useState({});
+  // Init votes data to 0 votes for each candidate
+  const [votesData, setVotesData] = useState(partyData.candidates.reduce((o, key) => ({ ...o, [key]: 0}), {}));
+  // Init votes left to nvotes
   const [votesLeft, setVotesLeft] = useState(partyData.config.nvotes);
   const [invalidVotesLeft, setInvalidVotesLeft] = useState(false);
 
@@ -129,8 +131,10 @@ export const Vote = ({ dbInstance, partyData, address, userSigner, targetNetwork
       <Center pt={4}>
         <Text fontSize="lg">Cast Votes</Text>
       </Center>
-      <Table>
+      <Center>
         {votesLeft}
+      </Center>
+      <Table>
         <Thead>
           <Tr>
             <Th>Address</Th>
