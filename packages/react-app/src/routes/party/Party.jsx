@@ -23,6 +23,7 @@ export default function Party({
   const [loading, setLoading] = useState(true);
   const [showDebug, setShowDebug] = useState(false);
   const [canVote, setCanVote] = useState(false);
+  const [isParticipant, setIsParticipant] = useState(false);
 
   const db = new MongoDBController();
 
@@ -30,9 +31,12 @@ export default function Party({
     db.fetchParty(id)
       .then(res => {
         setPartyData(res.data);
+        console.log(res.data)
         const votes = res.data.ballots.filter(b => b.data.ballot.address === address);
+        const participating = res.data.participants.includes(address);
         setAccountVoteData(votes);
-        setCanVote(votes.length === 0 ? true : false);
+        setCanVote(votes.length === 0 && participating ? true : false);
+        setIsParticipant(participating)
       })
       .catch(err => {
         console.log(err);

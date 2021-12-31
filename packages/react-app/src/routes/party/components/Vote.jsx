@@ -22,8 +22,14 @@ import AddressChakra from "../../../components/AddressChakra";
 
 export const Vote = ({ dbInstance, partyData, address, userSigner, targetNetwork, readContracts, mainnetProvider }) => {
   const [votesData, setVotesData] = useState({});
+  const [votesLeft, setVotesLeft] = useState(partyData.config.nvotes);
+  const [invalidVotesLeft, setInvalidVotesLeft] = useState(false);
+
   const handleVotesChange = (event, adr) => {
     votesData[adr] = Number(event);
+    const spent = Object.values(votesData).reduce((a, b) => a + b);
+    setVotesLeft(partyData.config.nvotes - spent);
+    setInvalidVotesLeft(spent > partyData.config.nvotes);
   };
 
   const vote = async () => {
@@ -55,7 +61,7 @@ export const Vote = ({ dbInstance, partyData, address, userSigner, targetNetwork
     };
 
     // NOTE: sign typed data for eip712 is underscored because it's in public beta
-    if (partyData.participants.includes(address)) {
+    if (partyData.participants.includes(address) && !invalidVotesLeft) {
       userSigner
         ?._signTypedData(domain, types, ballot)
         .then(sig => {
@@ -63,12 +69,12 @@ export const Vote = ({ dbInstance, partyData, address, userSigner, targetNetwork
           const cast = ballots.valueOf(address).filter(d => d.data.ballot.address === address);
           // TODO: Check if account has already submitted a ballot
           if (cast.length === 0) {
+            // Push a ballot to the parties sumbitted ballots array
             ballots.push({ signature: sig, data: ballot });
             return ballots;
           } else {
             throw "Error: Account already voted!";
           }
-          // Push a ballot to the parties sumbitted ballots array
         })
         .then(ballots => {
           dbInstance.updateParty(partyData.id, { ballots: ballots });
@@ -77,7 +83,7 @@ export const Vote = ({ dbInstance, partyData, address, userSigner, targetNetwork
           console.log(err);
         });
     } else {
-      console.log("Error: Account Not Participant!");
+      console.log("Error: Inavlid Ballot!");
     }
   };
 
@@ -97,11 +103,13 @@ export const Vote = ({ dbInstance, partyData, address, userSigner, targetNetwork
               <NumberInput
                 defaultValue={0}
                 min={0}
+                max={partyData.config.nvotes}
                 onChange={e => {
                   handleVotesChange(e, d);
                 }}
                 width="6em"
                 size="lg"
+                isInvalid={invalidVotesLeft}
               >
                 <NumberInputField />
                 <NumberInputStepper>
@@ -114,7 +122,7 @@ export const Vote = ({ dbInstance, partyData, address, userSigner, targetNetwork
         </Tbody>
       );
     });
-  }, [partyData]);
+  }, [partyData, votesLeft]);
 
   return (
     <Box borderWidth={"1px"}>
@@ -122,6 +130,7 @@ export const Vote = ({ dbInstance, partyData, address, userSigner, targetNetwork
         <Text fontSize="lg">Cast Votes</Text>
       </Center>
       <Table>
+        {votesLeft}
         <Thead>
           <Tr>
             <Th>Address</Th>
@@ -129,7 +138,7 @@ export const Vote = ({ dbInstance, partyData, address, userSigner, targetNetwork
           </Tr>
         </Thead>
         <TableCaption>
-          <Button onClick={vote}>Vote</Button>
+          <Button onClick={vote} disabled={invalidVotesLeft}>Vote</Button>
         </TableCaption>
         {candidates}
       </Table>
