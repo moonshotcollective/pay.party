@@ -10,7 +10,7 @@ import Fortmatic from "fortmatic";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 //import Torus from "@toruslabs/torus-embed"
 // import WalletLink from "walletlink";
-import Web3Modal from "web3modal";
+import { SafeAppWeb3Modal } from "@gnosis.pm/safe-apps-web3modal";
 import { INFURA_ID, NETWORK, NETWORKS } from "../constants";
 import { loadDiplomatContract, Transactor } from "../helpers";
 import { useContractConfig } from "../hooks";
@@ -69,7 +69,7 @@ export function Web3Provider({ children, network = "localhost", DEBUG = false, N
     // const walletLinkProvider = walletLink.makeWeb3Provider(`https://mainnet.infura.io/v3/${INFURA_ID}`, 1);
 
     // Portis ID: 6255fb2b-58c8-433b-a2c9-62098c05ddc9
-    return new Web3Modal({
+    return new SafeAppWeb3Modal({
       network: "mainnet", // Optional. If using WalletConnect on xDai, change network to "xdai" and add RPC info below for xDai chain.
       cacheProvider: true, // optional
       theme: "light", // optional. Change to "dark" for a dark theme.

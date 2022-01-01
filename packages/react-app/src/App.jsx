@@ -6,7 +6,7 @@ import { Alert } from "antd";
 import "antd/dist/antd.css";
 import React, { useCallback, useEffect, useState } from "react";
 import { BrowserRouter, Route, Switch, useHistory } from "react-router-dom";
-import Web3Modal from "web3modal";
+import { SafeAppWeb3Modal } from "@gnosis.pm/safe-apps-web3modal";
 import "./App.css";
 import { Account, Contract, Header } from "./components";
 import Footer from "./components/layout/Footer";
@@ -92,7 +92,7 @@ const walletLink = new WalletLink({
 // WalletLink provider
 const walletLinkProvider = walletLink.makeWeb3Provider(`https://mainnet.infura.io/v3/${INFURA_ID}`, 1);
 
-const web3Modal = new Web3Modal({
+const web3Modal = new SafeAppWeb3Modal({
   network: "mainnet", // Optional. If using WalletConnect on xDai, change network to "xdai" and add RPC info below for xDai chain.
   cacheProvider: true, // optional
   theme: "dark", // optional. Change to "dark" for a dark theme.
@@ -431,7 +431,7 @@ function App(props) {
   );
 
   const loadWeb3Modal = useCallback(async () => {
-    const provider = await web3Modal.connect();
+    const provider = await web3Modal.requestProvider();
     setInjectedProvider(new ethers.providers.Web3Provider(provider));
 
     provider.on("chainChanged", chainId => {

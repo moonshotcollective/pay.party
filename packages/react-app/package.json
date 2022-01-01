@@ -33,6 +33,8 @@
     "@fontsource/inter": "^4.5.1",
     "@fontsource/poppins": "^4.5.0",
     "@fontsource/space-mono": "^4.5.0",
+    "@gnosis.pm/safe-apps-sdk": "^6.1.1",
+    "@gnosis.pm/safe-apps-web3modal": "^6.0.1",
     "@moonshotcollective/ui": "^0.0.5",
     "@portis/web3": "^4.0.5",
     "@ramp-network/ramp-instant-sdk": "^2.2.0",
