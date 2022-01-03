@@ -4,7 +4,7 @@ import { toWei } from "web3-utils";
 import { BigNumber, ethers } from "ethers";
 import $ from "jquery";
 
-export const Distribute = ({ dbInstance, partyData, address, userSigner, writeContracts, tx }) => {
+export const Distribute = ({ dbInstance, partyData, address, userSigner, writeContracts, readContracts, tx }) => {
   const [tokenInstance, setTokenInstance] = useState(null);
   const [amounts, setAmounts] = useState(null);
   const [total, setTotal] = useState();
@@ -94,7 +94,7 @@ export const Distribute = ({ dbInstance, partyData, address, userSigner, writeCo
   // Approve total token amount
   const approve = async () => {
     // setIsApprovalLoading(true);
-    tx(tokenInstance?.approve(tokenInstance.address, total), handleApproval);
+    tx(tokenInstance?.approve(readContracts.Distributor.address, total), handleApproval);
   };
 
   // Update the distrubtion amounts when input total changes
@@ -140,12 +140,12 @@ export const Distribute = ({ dbInstance, partyData, address, userSigner, writeCo
         // Distribute the funds
         if (tokenInstance && amounts) {
           tx(
-            writeContracts.Distributor.distributeToken(tokenInstance.address, partyData.candidates, amounts),
+            writeContracts.Distributor.distributeToken(tokenInstance.address, partyData.candidates, amounts, partyData.id),
             handleReceipt,
           );
         } else {
           tx(
-            writeContracts.Distributor.distributeEther(partyData.candidates, amounts, { value: total }),
+            writeContracts.Distributor.distributeEther(partyData.candidates, amounts, partyData.id, { value: total }),
             handleReceipt,
           );
         }

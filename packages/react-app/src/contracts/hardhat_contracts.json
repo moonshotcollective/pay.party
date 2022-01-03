@@ -1,66 +1,56 @@
 {
-  "4": {
-    "rinkeby": {
-      "name": "rinkeby",
-      "chainId": "4",
-      "contracts": {
-        "Distributor": {
-          "address": "0x4F90BcAba1c05d7aaFE3838Ad3D7a7BB0c5D0360",
-          "abi": [
-            {
-              "inputs": [
-                {
-                  "internalType": "address[]",
-                  "name": "recipients",
-                  "type": "address[]"
-                },
-                {
-                  "internalType": "uint256[]",
-                  "name": "values",
-                  "type": "uint256[]"
-                }
-              ],
-              "name": "distributeEther",
-              "outputs": [],
-              "stateMutability": "payable",
-              "type": "function"
-            },
-            {
-              "inputs": [
-                {
-                  "internalType": "contract IERC20",
-                  "name": "token",
-                  "type": "address"
-                },
-                {
-                  "internalType": "address[]",
-                  "name": "recipients",
-                  "type": "address[]"
-                },
-                {
-                  "internalType": "uint256[]",
-                  "name": "values",
-                  "type": "uint256[]"
-                }
-              ],
-              "name": "distributeToken",
-              "outputs": [],
-              "stateMutability": "nonpayable",
-              "type": "function"
-            }
-          ]
-        }
-      }
-    }
-  },
   "5": {
     "goerli": {
       "name": "goerli",
       "chainId": "5",
       "contracts": {
         "Distributor": {
-          "address": "0xEa99C58645f897ac8BF530538e36e6D651ff8bF7",
+          "address": "0x7F0933fFcb090555ccc7A8b935fD200a2bfd6D43",
           "abi": [
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "sender",
+                  "type": "address"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "string",
+                  "name": "id",
+                  "type": "string"
+                }
+              ],
+              "name": "ethDistributed",
+              "type": "event"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "sender",
+                  "type": "address"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "token",
+                  "type": "address"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "string",
+                  "name": "id",
+                  "type": "string"
+                }
+              ],
+              "name": "tokenDistributed",
+              "type": "event"
+            },
             {
               "inputs": [
                 {
@@ -72,6 +62,11 @@
                   "internalType": "uint256[]",
                   "name": "values",
                   "type": "uint256[]"
+                },
+                {
+                  "internalType": "string",
+                  "name": "id",
+                  "type": "string"
                 }
               ],
               "name": "distributeEther",
@@ -82,7 +77,7 @@
             {
               "inputs": [
                 {
-                  "internalType": "contract IERC20",
+                  "internalType": "contract ERC20",
                   "name": "token",
                   "type": "address"
                 },
@@ -95,6 +90,11 @@
                   "internalType": "uint256[]",
                   "name": "values",
                   "type": "uint256[]"
+                },
+                {
+                  "internalType": "string",
+                  "name": "id",
+                  "type": "string"
                 }
               ],
               "name": "distributeToken",

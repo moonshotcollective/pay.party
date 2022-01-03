@@ -85,6 +85,7 @@ export default function Party({
           address={address}
           userSigner={userSigner}
           writeContracts={writeContracts}
+          readContracts={readContracts}
           tx={tx}
         />
       </Box>

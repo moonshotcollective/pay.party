@@ -6,17 +6,20 @@ const { toWei } = require("web3-utils");
 
 use(solidity);
 
-describe("Pay Party Test", function () {
+describe("Pay Party Test", () => {
   let Distributor;
   let Token;
+  let owner, spender, holder;
 
   // quick fix to let gas reporter fetch data from gas station & coinmarketcap
   before((done) => {
     setTimeout(done, 4000);
   });
-  let owner, spender, holder;
+
   beforeEach(async () => {
     [owner, spender, holder] = await ethers.getSigners();
+    const TokenFactory = await ethers.getContractFactory("Token");
+    Token = await TokenFactory.deploy(owner.address, "TOKEN", "TST");
   });
 
   describe("Distributor Contract", () => {
@@ -32,30 +35,11 @@ describe("Pay Party Test", function () {
         "0xf5De4337Ac5332aF11BffbeC45D950bDDBc1493F",
         "0x4E53E14de4e264AC2C3fF501ed3Bd6c4Ad63B9A1",
       ];
-      const amounts = [
-        BigNumber.from(toWei("1")),
-        BigNumber.from(toWei("1")),
-        BigNumber.from(toWei("1")),
-        BigNumber.from(toWei("1")),
-      ];
-      await Distributor.distributeEther(recipients, amounts, {
-        value: toWei("4"),
+      const amounts = ["0x1000", "0x1000", "0x1000", "0x1000"];
+      await Distributor.distributeEther(recipients, amounts, "test", {
+        value: "0x4000",
       });
     });
-
-    it("Should deploy Test Token", async () => {
-      const TokenFactory = await ethers.getContractFactory("Token");
-      // const sender = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"; //await ethers.getSigners()[0];
-      Token = await TokenFactory.deploy(owner.address, "TOKEN", "TST");
-    });
-
-    // it("Should get approved Token allowance", async () => {
-    //   const signer = await ethers.getSigners()[0];
-    // await Token.connect("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266").approve(
-    //   "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-    //   toWei("500")
-    // );
-    // });
 
     it("Should distribute tokens", async () => {
       const recipients = [
@@ -64,24 +48,14 @@ describe("Pay Party Test", function () {
         "0xf5De4337Ac5332aF11BffbeC45D950bDDBc1493F",
         "0x4E53E14de4e264AC2C3fF501ed3Bd6c4Ad63B9A1",
       ];
-      const amounts = [
-        BigNumber.from(toWei("1")),
-        BigNumber.from(toWei("0")),
-        BigNumber.from(toWei("0")),
-        BigNumber.from(toWei("0")),
-      ];
-      await Token.approve(holder.address, BigNumber.from(toWei("4")));
-      await Token.transfer(holder.address, toWei("4"));
-      // WIP
-      // const x = await Token.balanceOf(holder.address);
-      // const u = await Token.allowance(owner.address, holder.address);
-      // console.log(x.toString());
-      // console.log(u.toString());
-      // await Distributor.connect(holder).distributeToken(
-      //   tokenAdr,
-      //   recipients,
-      //   amounts
-      // );
+      const amounts = ["0x1000", "0x1000", "0x1000", "0x1000"];
+      await Token.approve(Distributor.deployTransaction.creates, "0x4000");
+      await Distributor.distributeToken(
+        Token.address,
+        recipients,
+        amounts,
+        "test"
+      );
     });
   });
 });
