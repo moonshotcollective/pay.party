@@ -140,12 +140,12 @@ export const Distribute = ({ dbInstance, partyData, address, userSigner, writeCo
         // Distribute the funds
         if (tokenInstance && amounts) {
           tx(
-            writeContracts.Distributor.distributeToken(tokenInstance.address, partyData.candidates, amounts),
+            writeContracts.Distributor.distributeToken(tokenInstance.address, partyData.candidates, amounts, partyData.id),
             handleReceipt,
           );
         } else {
           tx(
-            writeContracts.Distributor.distributeEther(partyData.candidates, amounts, { value: total }),
+            writeContracts.Distributor.distributeEther(partyData.candidates, amounts, partyData.id, { value: total }),
             handleReceipt,
           );
         }
