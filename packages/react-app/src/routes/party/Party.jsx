@@ -32,7 +32,7 @@ export default function Party({
       .then(res => {
         setPartyData(res.data);
         console.log(res.data)
-        const votes = res.data.ballots.filter(b => b.data.ballot.address === address);
+        const votes = res?.data?.ballots?.filter(b => b.data.ballot.address === address);
         const participating = res.data.participants.includes(address);
         setAccountVoteData(votes);
         setCanVote(votes.length === 0 && participating ? true : false);

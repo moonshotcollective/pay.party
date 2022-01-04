@@ -27,7 +27,6 @@ export const Distribute = ({ dbInstance, partyData, address, userSigner, writeCo
         strategy = "Linear";
         console.log("Reverted to linear strategy");
       }
-
       for (let i = 0; i < partyData.candidates.length; i++) {
         const candidate = partyData.candidates[i];
         // Strategy handling
@@ -114,17 +113,20 @@ export const Distribute = ({ dbInstance, partyData, address, userSigner, writeCo
       }
 
       const amt = Number(e);
+      const adrs = [];
       const amts = [];
       let tot = BigNumber.from("0x00");
       for (let i = 0; i < validAdrs.length; i++) {
         let pay = (validScores[i] * amt).toFixed(18).toString();
         const x = BigNumber.from(toWei(pay));
         amts.push(x);
+        adrs.push(validAdrs[i])
         tot = tot.add(x);
       }
+      console.log(adrs, amts)
       setTotal(tot);
       setAmounts(amts);
-      setAddresses(validAdrs)
+      setAddresses(adrs)
     }
   };
 
@@ -151,7 +153,7 @@ export const Distribute = ({ dbInstance, partyData, address, userSigner, writeCo
       if (partyData && partyData.ballots.length > 0) {
         setIsDistributionLoading(true);
         // Distribute the funds
-        if (tokenInstance && amounts) {
+        if (tokenInstance && amounts && addresses) {
           tx(
             writeContracts.Distributor.distributeToken(tokenInstance.address, addresses, amounts, partyData.id),
             handleReceipt,
@@ -200,6 +202,7 @@ export const Distribute = ({ dbInstance, partyData, address, userSigner, writeCo
         </NumberInput>
         <DistributeButton />
       </HStack>
+      {/* <>{amounts}</> */}
     </Box>
   );
 };
