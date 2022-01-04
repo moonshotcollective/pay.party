@@ -17,16 +17,15 @@ import {
 import React, { useState, useMemo, useEffect } from "react";
 import AddressChakra from "../../../components/AddressChakra";
 
-export const View = ({
-  partyData,
-  mainnetProvider,
-  votesData,
-}) => {
+export const View = ({ partyData, mainnetProvider, votesData, distribution }) => {
   const [castVotes, setCastVotes] = useState(null);
+  const [currentDist, setCurrentDist] = useState(null);
 
   useEffect(() => {
     const scores = votesData && votesData[0] && JSON.parse(votesData[0].data.ballot.votes);
     setCastVotes(scores);
+    const dist = distribution && distribution.reduce((obj, item) => Object.assign(obj, { [item.address]: item.score }), {});
+    setCurrentDist(dist)
   }, [votesData]);
 
   const candidateRows = useMemo(() => {
@@ -44,7 +43,8 @@ export const View = ({
                   // blockExplorer={blockExplorer}
                 />
               </Td>
-              <Td>{castVotes && castVotes[d]}</Td>
+              <Td isNumeric>{castVotes && castVotes[d]}</Td>
+              <Td isNumeric>{currentDist && (currentDist[d] * 100).toFixed(0)}%</Td>
             </Tr>
           </Tbody>
         );
@@ -61,7 +61,8 @@ export const View = ({
         <Thead>
           <Tr>
             <Th>Address</Th>
-            <Th>Score</Th>
+            <Th>Your Vote</Th>
+            <Th>Current Distribution</Th>
           </Tr>
         </Thead>
         {candidateRows}

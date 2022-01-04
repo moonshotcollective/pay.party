@@ -24,6 +24,7 @@ export default function Party({
   const [showDebug, setShowDebug] = useState(false);
   const [canVote, setCanVote] = useState(false);
   const [isParticipant, setIsParticipant] = useState(false);
+  const [distribution, setDistribution] = useState();
 
   const db = new MongoDBController();
 
@@ -42,6 +43,45 @@ export default function Party({
         console.log(err);
       });
   }, [id]);
+
+    // Calculate percent distribution from submitted ballots
+    const calcDistribution = () => {
+      if (partyData &&  partyData.ballots && partyData.ballots.length > 0) {
+        const votes = partyData.ballots.map(b => JSON.parse(b.data.ballot.votes.replace(/[ \n\r]/g, "")));
+        let sum = 0;
+        let processed = [];
+        let strategy = partyData.config.strategy;
+        if (!strategy || strategy === "") {
+          strategy = "Linear";
+          console.log("Reverted to linear strategy");
+        }
+        for (let i = 0; i < partyData.candidates.length; i++) {
+          const candidate = partyData.candidates[i];
+          // Strategy handling
+          // TODO: Switch statement
+          if (strategy === "Linear") {
+            let c = votes.reduce((total, vote) => vote[candidate] + total, 0);
+            sum += c;
+            processed.push({ address: candidate, reduced: c });
+          } else if (strategy === "Quadratic") {
+            let c = votes.reduce((total, vote) => vote[candidate] ** 0.5 + total, 0);
+            sum += c;
+            processed.push({ address: candidate, reduced: c });
+          }
+        }
+        let final = [];
+        for (let i = 0; i < partyData.candidates.length; i++) {
+          const candidate = partyData.candidates[i];
+          final.push({ address: candidate, score: processed[i].reduced / sum });
+        }
+        setDistribution(final);
+      }
+    };
+  
+    // Calculate the distribution on load
+    useEffect(() => {
+      calcDistribution();
+    }, [partyData]);
 
   return (
     <Box>
@@ -81,6 +121,7 @@ export default function Party({
             partyData={partyData}
             mainnetProvider={mainnetProvider}
             votesData={accountVoteData}
+            distribution={distribution}
           />
         )}
         <Distribute
@@ -90,6 +131,7 @@ export default function Party({
           userSigner={userSigner}
           writeContracts={writeContracts}
           tx={tx}
+          distribution={distribution}
         />
       </Box>
     </Box>
