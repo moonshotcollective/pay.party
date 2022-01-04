@@ -48,7 +48,7 @@ module.exports = {
   defaultNetwork,
   gasReporter: {
     currency: "USD",
-    gasPrice: 100,
+    gasPrice: 150,
     coinmarketcap: "dd389059-9822-4d8c-8fc0-d5d37982f64f",
   },
   etherscan: {
