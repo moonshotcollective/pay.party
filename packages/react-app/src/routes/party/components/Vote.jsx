@@ -79,7 +79,7 @@ export const Vote = ({ dbInstance, partyData, address, userSigner, targetNetwork
           }
         })
         .then(ballots => {
-          dbInstance.updateParty(partyData.id, { ballots: ballots });
+          dbInstance.updateParty(partyData.id, { ballots: ballots, receipts: partyData.receipts });
         })
         .catch(err => {
           console.log(err);

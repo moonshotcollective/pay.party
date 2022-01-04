@@ -139,9 +139,9 @@ export const Distribute = ({ dbInstance, partyData, address, userSigner, writeCo
         token: tokenInstance?.address,
         txn: res.hash,
       };
-      const receipts = partyData.receipts;
-      receipts.push(receipt);
-      dbInstance.updateParty(partyData.id, { receipts: receipts });
+      partyData.receipts.push(receipt);
+      // NOTE: When updating the party, be sure include ALL the updated data
+      dbInstance.updateParty(partyData.id, { ballots: partyData.ballots, receipts: partyData.receipts });
     }
     setIsDistributionLoading(false);
   };
