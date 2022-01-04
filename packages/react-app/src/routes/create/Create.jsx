@@ -116,6 +116,9 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
     setCandidateAdrs(c.adrs);
     setResolvedCandidateAdrs(c.res);
     partyObj.candidates = c.adrs;
+    // NOTE: This sets the amoung of votes based on the candidate count
+    // TODO: Configurable amounts
+    partyObj.config.nvotes = c.adrs.length * 5;
     setIsLoading(c.adrs.length !== inputCandidates.length);
     setIsInvalidCandidateInput(c.adrs.length !== inputCandidates.length);
   }, [inputCandidates]);
