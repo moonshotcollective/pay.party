@@ -4,56 +4,16 @@ import { toWei } from "web3-utils";
 import { BigNumber, ethers } from "ethers";
 import $ from "jquery";
 
-export const Distribute = ({ dbInstance, partyData, address, userSigner, writeContracts, tx }) => {
+export const Distribute = ({ dbInstance, partyData, address, userSigner, readContracts, writeContracts, tx, distribution }) => {
   const [tokenInstance, setTokenInstance] = useState(null);
   const [amounts, setAmounts] = useState(null);
   const [total, setTotal] = useState();
-  const [distribution, setDistribution] = useState();
   const [isDistributionLoading, setIsDistributionLoading] = useState(false);
   const [isTokenLoading, setIsTokenLoading] = useState(false);
   const [isApprovalLoading, setIsApprovalLoading] = useState(false);
   const [token, setToken] = useState(null);
   const [hasApprovedAllowance, setHasApprovedAllowance] = useState(false);
-
-  // Calculate percent distribution from submitted ballots
-  const calcDistribution = () => {
-    if (partyData &&  partyData.ballots && partyData.ballots.length > 0) {
-      const votes = partyData.ballots.map(b => JSON.parse(b.data.ballot.votes.replace(/[ \n\r]/g, "")));
-      let sum = 0;
-      let processed = [];
-      let strategy = partyData.config.strategy;
-      if (!strategy || strategy === "") {
-        strategy = "Linear";
-        console.log("Reverted to linear strategy");
-      }
-
-      for (let i = 0; i < partyData.candidates.length; i++) {
-        const candidate = partyData.candidates[i];
-        // Strategy handling
-        // TODO: Switch statement
-        if (strategy === "Linear") {
-          let c = votes.reduce((total, vote) => vote[candidate] + total, 0);
-          sum += c;
-          processed.push({ address: candidate, reduced: c });
-        } else if (strategy === "Quadratic") {
-          let c = votes.reduce((total, vote) => vote[candidate] ** 0.5 + total, 0);
-          sum += c;
-          processed.push({ address: candidate, reduced: c });
-        }
-      }
-      let final = [];
-      for (let i = 0; i < partyData.candidates.length; i++) {
-        const candidate = partyData.candidates[i];
-        final.push({ address: candidate, score: processed[i].reduced / sum });
-      }
-      setDistribution(final);
-    }
-  };
-
-  // Calculate the distribution on load
-  useEffect(() => {
-    calcDistribution();
-  }, [partyData]);
+  const [addresses, setAddresses] = useState([]);
 
   const handleTokenChange = e => {
     setToken(e.target.value);
@@ -94,25 +54,38 @@ export const Distribute = ({ dbInstance, partyData, address, userSigner, writeCo
   // Approve total token amount
   const approve = async () => {
     // setIsApprovalLoading(true);
-    tx(tokenInstance?.approve(tokenInstance.address, total), handleApproval);
+    tx(tokenInstance?.approve(readContracts.Distributor.address, total), handleApproval);
   };
 
   // Update the distrubtion amounts when input total changes
   const handleAmountChange = async e => {
-    console.log(distribution);
     if (distribution && distribution.length > 0) {
-      // TODO: validate correct form
-      const amt = e.toString();
+
+      const validDistribution = distribution.filter(d => d.score !== 0);
+      
+      const validAdrs = [];
+      const validScores = []; 
+  
+      for (let i = 0; i < validDistribution.length; i++) {
+        validAdrs.push(validDistribution[i].address)
+        validScores.push(validDistribution[i].score)
+      }
+
+      const amt = Number(e);
+      const adrs = [];
       const amts = [];
       let tot = BigNumber.from("0x00");
-      for (let i = 0; i < partyData.candidates.length; i++) {
-        const pay = (distribution[i].score * amt).toFixed(18).toString();
+      for (let i = 0; i < validAdrs.length; i++) {
+        let pay = (validScores[i] * amt).toFixed(18).toString();
         const x = BigNumber.from(toWei(pay));
         amts.push(x);
+        adrs.push(validAdrs[i])
         tot = tot.add(x);
       }
+      console.log(adrs, amts)
       setTotal(tot);
       setAmounts(amts);
+      setAddresses(adrs)
     }
   };
 
@@ -125,27 +98,28 @@ export const Distribute = ({ dbInstance, partyData, address, userSigner, writeCo
         token: tokenInstance?.address,
         txn: res.hash,
       };
-      const receipts = partyData.receipts;
-      receipts.push(receipt);
-      dbInstance.updateParty(partyData.id, { receipts: receipts });
+      partyData.receipts.push(receipt);
+      // NOTE: When updating the party, be sure include ALL the updated data
+      dbInstance.updateParty(partyData.id, { ballots: partyData.ballots, receipts: partyData.receipts });
     }
     setIsDistributionLoading(false);
   };
 
   // Distribute either Eth, or loaded erc20
   const distribute = () => {
+    
     try {
       if (partyData && partyData.ballots.length > 0) {
         setIsDistributionLoading(true);
         // Distribute the funds
-        if (tokenInstance && amounts) {
+        if (tokenInstance && amounts && addresses) {
           tx(
-            writeContracts.Distributor.distributeToken(tokenInstance.address, partyData.candidates, amounts, partyData.id),
+            writeContracts.Distributor.distributeToken(tokenInstance.address, addresses, amounts, partyData.id),
             handleReceipt,
           );
         } else {
           tx(
-            writeContracts.Distributor.distributeEther(partyData.candidates, amounts, partyData.id, { value: total }),
+            writeContracts.Distributor.distributeEther(addresses, amounts, partyData.id, { value: total }),
             handleReceipt,
           );
         }
