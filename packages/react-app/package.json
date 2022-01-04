@@ -62,6 +62,7 @@
     "dids": "^2.4.0",
     "dotenv": "^10.0.0",
     "eth-hooks": "2.3.8",
+    "ethereum-bloom-filters": "^1.0.10",
     "ethers": "^5.3.0",
     "fortmatic": "^2.2.1",
     "framer-motion": "^4.1.17",
