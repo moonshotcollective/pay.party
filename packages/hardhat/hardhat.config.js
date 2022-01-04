@@ -57,6 +57,14 @@ module.exports = {
     apiKey: process.env.ETHERSCAN_KEY,
   },
   networks: {
+    hardhat: {
+      gasPrice: 1000000000,
+      count: 10,
+      accounts: {
+        mnemonic: mnemonic(),
+        accountsBalance: "10000000000000000000000",
+      },
+    },
     localhost: {
       url: "http://localhost:8545",
     },
