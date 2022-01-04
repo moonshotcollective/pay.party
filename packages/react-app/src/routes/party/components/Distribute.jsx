@@ -14,6 +14,7 @@ export const Distribute = ({ dbInstance, partyData, address, userSigner, writeCo
   const [isApprovalLoading, setIsApprovalLoading] = useState(false);
   const [token, setToken] = useState(null);
   const [hasApprovedAllowance, setHasApprovedAllowance] = useState(false);
+  const [addresses, setAddresses] = useState([]);
 
   // Calculate percent distribution from submitted ballots
   const calcDistribution = () => {
@@ -99,20 +100,31 @@ export const Distribute = ({ dbInstance, partyData, address, userSigner, writeCo
 
   // Update the distrubtion amounts when input total changes
   const handleAmountChange = async e => {
-    console.log(distribution);
     if (distribution && distribution.length > 0) {
-      // TODO: validate correct form
-      const amt = e.toString();
+
+      const validDistribution = distribution.filter(d => d.score !== 0);
+      console.log(validDistribution) 
+      
+      const validAdrs = [];
+      const validScores = []; 
+  
+      for (let i = 0; i < validDistribution.length; i++) {
+        validAdrs.push(validDistribution[i].address)
+        validScores.push(validDistribution[i].score)
+      }
+
+      const amt = Number(e);
       const amts = [];
       let tot = BigNumber.from("0x00");
-      for (let i = 0; i < partyData.candidates.length; i++) {
-        const pay = (distribution[i].score * amt).toFixed(18).toString();
+      for (let i = 0; i < validAdrs.length; i++) {
+        let pay = (validScores[i] * amt).toFixed(18).toString();
         const x = BigNumber.from(toWei(pay));
         amts.push(x);
         tot = tot.add(x);
       }
       setTotal(tot);
       setAmounts(amts);
+      setAddresses(validAdrs)
     }
   };
 
@@ -134,18 +146,19 @@ export const Distribute = ({ dbInstance, partyData, address, userSigner, writeCo
 
   // Distribute either Eth, or loaded erc20
   const distribute = () => {
+    
     try {
       if (partyData && partyData.ballots.length > 0) {
         setIsDistributionLoading(true);
         // Distribute the funds
         if (tokenInstance && amounts) {
           tx(
-            writeContracts.Distributor.distributeToken(tokenInstance.address, partyData.candidates, amounts, partyData.id),
+            writeContracts.Distributor.distributeToken(tokenInstance.address, addresses, amounts, partyData.id),
             handleReceipt,
           );
         } else {
           tx(
-            writeContracts.Distributor.distributeEther(partyData.candidates, amounts, partyData.id, { value: total }),
+            writeContracts.Distributor.distributeEther(addresses, amounts, partyData.id, { value: total }),
             handleReceipt,
           );
         }
