@@ -26,7 +26,7 @@ export default function Account({
   } else {
     displayAddress =
       address !== undefined
-        ? `${address.substr(0, 5)}...${address.substr(address.length - 6, address.length)}`
+        ? `${address.substr(0, 6)}...${address.substr(address.length - 4, address.length)}`
         : "Loading...";
   }
 
