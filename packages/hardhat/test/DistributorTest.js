@@ -6,17 +6,20 @@ const { toWei } = require("web3-utils");
 
 use(solidity);
 
-describe("Pay Party Test", function () {
+describe("Pay Party Test", () => {
   let Distributor;
   let Token;
+  let owner, spender, holder;
 
   // quick fix to let gas reporter fetch data from gas station & coinmarketcap
   before((done) => {
-    setTimeout(done, 4000);
+    setTimeout(done, 10000);
   });
-  let owner, spender, holder;
+
   beforeEach(async () => {
     [owner, spender, holder] = await ethers.getSigners();
+    const TokenFactory = await ethers.getContractFactory("Token");
+    Token = await TokenFactory.deploy(owner.address, "TOKEN", "TST");
   });
 
   describe("Distributor Contract", () => {
@@ -31,31 +34,33 @@ describe("Pay Party Test", function () {
         "0x01684C57AE8a4226271068210Ce1cCED865a5AfC",
         "0xf5De4337Ac5332aF11BffbeC45D950bDDBc1493F",
         "0x4E53E14de4e264AC2C3fF501ed3Bd6c4Ad63B9A1",
+        "0xF9E401ca2b801Fad97A0267D7E26693D0c62d99D",
+        "0xf7a5fdccB356C6FC296EE08bc991aE6c69c18ce2",
+        "0x6b541b78349097714B9D1aB6A788dB5e0dCF21a3",
+        "0x802999C71263f7B30927F720CF0AC10A76a0494C",
+        "0x53CD80E82fcCc06C949c8e0e8A53082852877f5e",
+        "0xa8dA6166cbD2876cCde424eE2a717C355bE4702B",
+        "0x997e0165bbD5C91FCB5d9dAc0635F3F18223C71E",
+        "0xb4b3614Ff9767F925b83BEd267a6b8F277db7b0C",
       ];
       const amounts = [
-        BigNumber.from(toWei("1")),
-        BigNumber.from(toWei("1")),
-        BigNumber.from(toWei("1")),
-        BigNumber.from(toWei("1")),
+        "0x1000",
+        "0x1000",
+        "0x1000",
+        "0x1000",
+        "0x1000",
+        "0x1000",
+        "0x1000",
+        "0x1000",
+        "0x1000",
+        "0x1000",
+        "0x1000",
+        "0x1000",
       ];
-      await Distributor.distributeEther(recipients, amounts, {
-        value: toWei("4"),
+      await Distributor.distributeEther(recipients, amounts, "test", {
+        value: toWei("12"),
       });
     });
-
-    it("Should deploy Test Token", async () => {
-      const TokenFactory = await ethers.getContractFactory("Token");
-      // const sender = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"; //await ethers.getSigners()[0];
-      Token = await TokenFactory.deploy(owner.address, "TOKEN", "TST");
-    });
-
-    // it("Should get approved Token allowance", async () => {
-    //   const signer = await ethers.getSigners()[0];
-    // await Token.connect("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266").approve(
-    //   "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266",
-    //   toWei("500")
-    // );
-    // });
 
     it("Should distribute tokens", async () => {
       const recipients = [
@@ -63,25 +68,36 @@ describe("Pay Party Test", function () {
         "0x01684C57AE8a4226271068210Ce1cCED865a5AfC",
         "0xf5De4337Ac5332aF11BffbeC45D950bDDBc1493F",
         "0x4E53E14de4e264AC2C3fF501ed3Bd6c4Ad63B9A1",
+        "0xF9E401ca2b801Fad97A0267D7E26693D0c62d99D",
+        "0xf7a5fdccB356C6FC296EE08bc991aE6c69c18ce2",
+        "0x6b541b78349097714B9D1aB6A788dB5e0dCF21a3",
+        "0x802999C71263f7B30927F720CF0AC10A76a0494C",
+        "0x53CD80E82fcCc06C949c8e0e8A53082852877f5e",
+        "0xa8dA6166cbD2876cCde424eE2a717C355bE4702B",
+        "0x997e0165bbD5C91FCB5d9dAc0635F3F18223C71E",
+        "0xb4b3614Ff9767F925b83BEd267a6b8F277db7b0C",
       ];
       const amounts = [
-        BigNumber.from(toWei("1")),
-        BigNumber.from(toWei("0")),
-        BigNumber.from(toWei("0")),
-        BigNumber.from(toWei("0")),
+        "0x1000",
+        "0x1000",
+        "0x1000",
+        "0x1000",
+        "0x1000",
+        "0x1000",
+        "0x1000",
+        "0x1000",
+        "0x1000",
+        "0x1000",
+        "0x1000",
+        "0x1000",
       ];
-      await Token.approve(holder.address, BigNumber.from(toWei("4")));
-      await Token.transfer(holder.address, toWei("4"));
-      // WIP
-      // const x = await Token.balanceOf(holder.address);
-      // const u = await Token.allowance(owner.address, holder.address);
-      // console.log(x.toString());
-      // console.log(u.toString());
-      // await Distributor.connect(holder).distributeToken(
-      //   tokenAdr,
-      //   recipients,
-      //   amounts
-      // );
+      await Token.approve(Distributor.deployTransaction.creates, toWei("12"));
+      await Distributor.distributeToken(
+        Token.address,
+        recipients,
+        amounts,
+        "test"
+      );
     });
   });
 });
