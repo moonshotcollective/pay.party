@@ -9,8 +9,8 @@ export default function Header() {
   const headingColor = useColorModeValue("#6e3ff5", "#f1c100");
   return (
     <Box pb={0}>
-      <HStack align="center">
-        <QDIcon size={72} />
+      <HStack>
+        <QDIcon size={24}/>
         <Text color={headingColor} fontSize="5xl">
           pay.party
         </Text>
