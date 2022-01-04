@@ -2,6 +2,9 @@
   "name": "@scaffold-eth/react-app",
   "version": "1.0.0",
   "homepage": ".",
+  "engines": {
+    "node": "16.x"
+  },
   "browserslist": {
     "production": [
       ">0.2%",
