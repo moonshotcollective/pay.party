@@ -136,7 +136,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
         Back
       </Button>
       <Center p='5'>
-        <Box borderWidth={"1px"} shadow="md" rounded="md" p="10" w="4xl" minW='sm'>
+        <Box borderWidth={"1px"} shadow="xl" rounded="md" p="10" w="4xl" minW='sm'>
           <Center p='5'>
             <Text fontSize="lg">Create Party</Text>
           </Center>

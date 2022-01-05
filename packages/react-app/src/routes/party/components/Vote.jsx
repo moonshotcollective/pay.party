@@ -127,7 +127,7 @@ export const Vote = ({ dbInstance, partyData, address, userSigner, targetNetwork
   }, [partyData, votesLeft]);
 
   return (
-    <Box borderWidth={"1px"} shadow="md" rounded="md" p="10" w="4xl" minW="sm">
+    <Box borderWidth={"1px"} shadow="xl" rounded="md" p="10" w="4xl" minW="sm">
       <Center pt={4}>
         <Text fontSize="lg">Party</Text>
       </Center>

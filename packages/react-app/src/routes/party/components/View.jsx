@@ -55,7 +55,7 @@ export const View = ({ partyData, mainnetProvider, votesData, distribution }) =>
   }, [partyData, castVotes]);
 
   return (
-    <Box borderWidth={"1px"} shadow='md' rounded='md' p='10' w='4xl'>
+    <Box borderWidth={"1px"} shadow='xl' rounded='md' p='10' w='4xl'>
       <Center pt={4}>
         <Text fontSize="lg">Party</Text>
       </Center>

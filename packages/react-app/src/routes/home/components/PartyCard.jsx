@@ -4,7 +4,7 @@ import { useHistory, Link } from "react-router-dom";
 export const PartyCard = ({ name, desc, id }) => {
   const routeHistory = useHistory();
   return (
-    <Box borderWidth="1px" key={`box-${id}`} rounded="md" shadow="md" p="5" w="sm">
+    <Box borderWidth="1px" key={`box-${id}`} rounded="md" shadow="xl" p="5" w="sm">
       <Text fontSize="lg" fontWeight="semibold">
         {name}
       </Text>

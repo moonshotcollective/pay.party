@@ -153,7 +153,7 @@ export const Distribute = ({
   };
 
   return (
-    <Box borderWidth={"1px"} shadow="md" rounded="md" p="10" w="4xl" minW='lg'>
+    <Box borderWidth={"1px"} shadow="xl" rounded="md" p="10" w="4xl" minW='lg'>
       <Center pb='10'>
         <Text fontSize="lg">Distribute Funds</Text>
       </Center>
