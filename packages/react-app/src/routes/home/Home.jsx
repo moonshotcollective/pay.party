@@ -5,6 +5,7 @@ import { useColorModeValue } from "@chakra-ui/color-mode";
 import React, { useEffect, useState, useMemo } from "react";
 import { useHistory, Link } from "react-router-dom";
 import MongoDbController from "../../controllers/mongodbController";
+import { PartyCard, EmptyCard } from "./components";
 
 function Home({ address, mainnetProvider, tx, readContracts, writeContracts, targetNetwork }) {
   /***** Load Data from db *****/
@@ -27,25 +28,7 @@ function Home({ address, mainnetProvider, tx, readContracts, writeContracts, tar
   const headingColor = useColorModeValue("gray.800", "whiteAlpha.900");
 
   const cards = useMemo(() => {
-    return (
-      data &&
-      data.map(d => (
-        <Box borderWidth="1px" key={`box-${d.id}`}>
-          <p>{`Id: ${d.id}`}</p>
-          <p>{d.name}</p>
-          <p>{d.desc}</p>
-          <Button
-            variant="link"
-            to={`/party/${d.id}`}
-            onClick={() => {
-              routeHistory.push(`/party/${d.id}`);
-            }}
-          >
-            View
-          </Button>
-        </Box>
-      ))
-    );
+    return data && data.map(d => <Box p='2'><PartyCard name={d.name} desc={d.description} id={d.id} /></Box>);
   }, [data]);
 
   const createElection = () => {
@@ -63,7 +46,15 @@ function Home({ address, mainnetProvider, tx, readContracts, writeContracts, tar
           Create Party
         </Button>
       </HStack>
-      <Box>{cards}</Box>
+      <Box>
+      {
+        cards && cards.length > 0 
+        ? 
+        cards 
+        : 
+        <EmptyCard />
+      }
+      </Box>
     </Box>
   );
 }
