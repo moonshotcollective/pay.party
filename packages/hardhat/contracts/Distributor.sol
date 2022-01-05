@@ -55,8 +55,7 @@ contract Distributor {
     }
 
     if (msg.value > total) {
-      (bool sent, ) = msg.sender.call{value: msg.value - total}("");
-      require(sent, "FAILED_CONTRACT_DRAIN");
+      SafeTransferLib.safeTransferETH(msg.sender, msg.value - total);
     }
 
     emit ethDistributed(msg.sender, id);
