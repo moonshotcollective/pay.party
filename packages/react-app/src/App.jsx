@@ -37,6 +37,8 @@ import {
   MenuItemOption,
   MenuOptionGroup,
   Divider,
+  Wrap, 
+  WrapItem
 } from "@chakra-ui/react";
 import NotConnectedCard from "./components/Cards/NotConnectedCard";
 import CenteredFrame from "./components/layout/CenteredFrame";
@@ -506,14 +508,14 @@ function App(props) {
   return (
     <div>
       <Box mb={8} pl={"14vw"} pr={"14vw"}>
-        <Box pb={"6vh"}>
-          <HStack>
-            <Box>
+        <Wrap pb={"6vh"}>
+            <WrapItem>
               <a href="/">
                 <Header />
               </a>
-            </Box>
+            </WrapItem>
             <Spacer />
+            <WrapItem>
             <Box pt={5}>{networkSelect}</Box>
             <Box pt={5}>
               <Account
@@ -535,8 +537,8 @@ function App(props) {
                 onClick={toggleColorMode}
               />
             </Box>
-          </HStack>
-        </Box>
+            </WrapItem>
+        </Wrap>
         {address && address !== "" ? (
           <BrowserRouter>
             <Switch>
