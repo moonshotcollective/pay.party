@@ -135,54 +135,56 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
       >
         Back
       </Button>
-      <Box borderWidth={"1px"} padding={"4% 18% 6% 18%"} borderRadius={12}>
-        <Center>
-          <Text fontSize="lg">Create</Text>
-        </Center>
-        <form onSubmit={onSubmit}>
-          <FormControl id="create">
-            <FormLabel>Name</FormLabel>
-            <Input size="lg" placeholder="Party Name" onChange={e => (partyObj.name = e.currentTarget.value)} />
+      <Center p='5'>
+        <Box borderWidth={"1px"} shadow="md" rounded="md" p="10" w="4xl" minW='sm'>
+          <Center p='5'>
+            <Text fontSize="lg">Create Party</Text>
+          </Center>
+          <form onSubmit={onSubmit}>
+            <FormControl id="create">
+              <FormLabel>Name</FormLabel>
+              <Input size="lg" placeholder="Party Name" onChange={e => (partyObj.name = e.currentTarget.value)} />
 
-            <FormLabel>Description</FormLabel>
-            <Textarea
-              size="lg"
-              placeholder="Describe your party"
-              rows={3}
-              onChange={e => (partyObj.description = e.currentTarget.value)}
-            />
+              <FormLabel>Description</FormLabel>
+              <Textarea
+                size="lg"
+                placeholder="Describe your party"
+                rows={3}
+                onChange={e => (partyObj.description = e.currentTarget.value)}
+              />
 
-            <FormLabel>Participants</FormLabel>
-            <Textarea
-              size="lg"
-              placeholder="ex: alice.eth, 0x6b541b78349097714B9D1aB6A788dB5e0dCF21a3, ..."
-              rows={5}
-              onChange={parseParticipants}
-              isInvalid={isInvalidParticipantInput}
-            />
+              <FormLabel>Participants</FormLabel>
+              <Textarea
+                size="lg"
+                placeholder="ex: alice.eth, 0x6b541b78349097714B9D1aB6A788dB5e0dCF21a3, ..."
+                rows={5}
+                onChange={parseParticipants}
+                isInvalid={isInvalidParticipantInput}
+              />
 
-            <FormLabel>Candidates</FormLabel>
-            <Textarea
-              size="lg"
-              placeholder="ex: 0x802999C71263f7B30927F720CF0AC10A76a0494C, bob.eth, ..."
-              rows={4}
-              onChange={parseCandidates}
-              isInvalid={isInvalidCandidateInput}
-            />
-            <FormLabel>Strategy</FormLabel>
-            <Select size="lg" onChange={e => (partyObj.config.strategy = e.target.value)}>
-              <option>Linear</option>
-              <option>Quadratic</option>
-            </Select>
+              <FormLabel>Candidates</FormLabel>
+              <Textarea
+                size="lg"
+                placeholder="ex: 0x802999C71263f7B30927F720CF0AC10A76a0494C, bob.eth, ..."
+                rows={4}
+                onChange={parseCandidates}
+                isInvalid={isInvalidCandidateInput}
+              />
+              <FormLabel>Strategy</FormLabel>
+              <Select size="lg" onChange={e => (partyObj.config.strategy = e.target.value)}>
+                <option>Linear</option>
+                <option>Quadratic</option>
+              </Select>
 
-            <Center pt={10}>
-              <Button size="lg" type="submit" isLoading={isLoading} loadingText={loadingText}>
-                Submit Party
-              </Button>
-            </Center>
-          </FormControl>
-        </form>
-      </Box>
+              <Center pt={10}>
+                <Button size="lg" type="submit" isLoading={isLoading} loadingText={loadingText}>
+                  Submit Party
+                </Button>
+              </Center>
+            </FormControl>
+          </form>
+        </Box>
+      </Center>
     </Box>
   );
 };

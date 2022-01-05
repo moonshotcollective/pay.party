@@ -53,10 +53,9 @@ export const View = ({ partyData, mainnetProvider, votesData, distribution }) =>
       });
     return row;
   }, [partyData, castVotes]);
-  console.log(partyData)
 
   return (
-    <Box borderWidth={"1px"}>
+    <Box borderWidth={"1px"} shadow='md' rounded='md' p='10' w='4xl'>
       <Center pt={4}>
         <Text fontSize="lg">Party</Text>
       </Center>
@@ -70,7 +69,7 @@ export const View = ({ partyData, mainnetProvider, votesData, distribution }) =>
         <Text pt={4}fontSize="md">{`Voted: ${partyData?.ballots?.length}/${partyData?.participants?.length}`}</Text>
       </Center>
 
-      <Table pr={2} pl={2}>
+      <Table borderWidth='1px'>
         <Thead>
           <Tr>
             <Th>Address</Th>

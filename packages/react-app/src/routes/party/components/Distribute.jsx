@@ -1,10 +1,19 @@
-import { NumberInput, NumberInputField, Box, Button, Input, HStack, Spacer } from "@chakra-ui/react";
+import { NumberInput, NumberInputField, Box, Button, Input, HStack, Spacer, Text, Center } from "@chakra-ui/react";
 import React, { useEffect, useState } from "react";
 import { toWei } from "web3-utils";
 import { BigNumber, ethers } from "ethers";
 import $ from "jquery";
 
-export const Distribute = ({ dbInstance, partyData, address, userSigner, readContracts, writeContracts, tx, distribution }) => {
+export const Distribute = ({
+  dbInstance,
+  partyData,
+  address,
+  userSigner,
+  readContracts,
+  writeContracts,
+  tx,
+  distribution,
+}) => {
   const [tokenInstance, setTokenInstance] = useState(null);
   const [amounts, setAmounts] = useState(null);
   const [total, setTotal] = useState();
@@ -60,15 +69,14 @@ export const Distribute = ({ dbInstance, partyData, address, userSigner, readCon
   // Update the distrubtion amounts when input total changes
   const handleAmountChange = async e => {
     if (distribution && distribution.length > 0) {
-
       const validDistribution = distribution.filter(d => d.score !== 0);
-      
+
       const validAdrs = [];
-      const validScores = []; 
-  
+      const validScores = [];
+
       for (let i = 0; i < validDistribution.length; i++) {
-        validAdrs.push(validDistribution[i].address)
-        validScores.push(validDistribution[i].score)
+        validAdrs.push(validDistribution[i].address);
+        validScores.push(validDistribution[i].score);
       }
 
       const amt = Number(e);
@@ -79,13 +87,13 @@ export const Distribute = ({ dbInstance, partyData, address, userSigner, readCon
         let pay = (validScores[i] * amt).toFixed(18).toString();
         const x = BigNumber.from(toWei(pay));
         amts.push(x);
-        adrs.push(validAdrs[i])
+        adrs.push(validAdrs[i]);
         tot = tot.add(x);
       }
-      console.log(adrs, amts)
+      console.log(adrs, amts);
       setTotal(tot);
       setAmounts(amts);
-      setAddresses(adrs)
+      setAddresses(adrs);
     }
   };
 
@@ -107,7 +115,6 @@ export const Distribute = ({ dbInstance, partyData, address, userSigner, readCon
 
   // Distribute either Eth, or loaded erc20
   const distribute = () => {
-    
     try {
       if (partyData && partyData.ballots.length > 0) {
         setIsDistributionLoading(true);
@@ -146,15 +153,18 @@ export const Distribute = ({ dbInstance, partyData, address, userSigner, readCon
   };
 
   return (
-    <Box borderWidth={"1px"} padding={6}>
-      <HStack pl={"6%"} pr={"6%"}>
+    <Box borderWidth={"1px"} shadow="md" rounded="md" p="10" w="4xl" minW='lg'>
+      <Center pb='10'>
+        <Text fontSize="lg">Distribute Funds</Text>
+      </Center>
+      <HStack>
         <Input onChange={handleTokenChange} placeholder="ex: 0xde30da39c46104798bb5aa3fe8b9e0e1f348163f"></Input>
         <Spacer />
         <Button onClick={loadToken} isLoading={isTokenLoading}>
           Load Token
         </Button>
       </HStack>
-      <HStack pl={"6%"} pr={"6%"} pt={4}>
+      <HStack  pt={4}>
         <Spacer />
         <NumberInput onChange={handleAmountChange}>
           <NumberInputField placeholder="1" />

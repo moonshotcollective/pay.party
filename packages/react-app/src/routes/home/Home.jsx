@@ -1,7 +1,8 @@
 import { Button } from "@chakra-ui/button";
 import { AddIcon } from "@chakra-ui/icons";
-import { Box, Heading, HStack, Spacer } from "@chakra-ui/layout";
+import { Box, Heading, HStack, Spacer, Flex } from "@chakra-ui/layout";
 import { useColorModeValue } from "@chakra-ui/color-mode";
+import { Wrap, WrapItem } from '@chakra-ui/react'
 import React, { useEffect, useState, useMemo } from "react";
 import { useHistory, Link } from "react-router-dom";
 import MongoDbController from "../../controllers/mongodbController";
@@ -28,7 +29,7 @@ function Home({ address, mainnetProvider, tx, readContracts, writeContracts, tar
   const headingColor = useColorModeValue("gray.800", "whiteAlpha.900");
 
   const cards = useMemo(() => {
-    return data && data.map(d => <Box p='2'><PartyCard name={d.name} desc={d.description} id={d.id} /></Box>);
+    return data && data.map(d => <WrapItem p='2'><PartyCard name={d.name} desc={d.description} id={d.id} /></WrapItem>);
   }, [data]);
 
   const createElection = () => {
@@ -46,7 +47,7 @@ function Home({ address, mainnetProvider, tx, readContracts, writeContracts, tar
           Create Party
         </Button>
       </HStack>
-      <Box>
+      <Wrap>
       {
         cards && cards.length > 0 
         ? 
@@ -54,7 +55,7 @@ function Home({ address, mainnetProvider, tx, readContracts, writeContracts, tar
         : 
         <EmptyCard />
       }
-      </Box>
+      </Wrap>
     </Box>
   );
 }
