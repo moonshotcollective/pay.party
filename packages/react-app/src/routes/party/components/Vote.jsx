@@ -22,7 +22,7 @@ import AddressChakra from "../../../components/AddressChakra";
 
 export const Vote = ({ dbInstance, partyData, address, userSigner, targetNetwork, readContracts, mainnetProvider }) => {
   // Init votes data to 0 votes for each candidate
-  const [votesData, setVotesData] = useState(partyData.candidates.reduce((o, key) => ({ ...o, [key]: 0}), {}));
+  const [votesData, setVotesData] = useState(partyData.candidates.reduce((o, key) => ({ ...o, [key]: 0 }), {}));
   // Init votes left to nvotes
   const [votesLeft, setVotesLeft] = useState(partyData.config.nvotes);
   const [invalidVotesLeft, setInvalidVotesLeft] = useState(false);
@@ -129,11 +129,18 @@ export const Vote = ({ dbInstance, partyData, address, userSigner, targetNetwork
   return (
     <Box borderWidth={"1px"}>
       <Center pt={4}>
-        <Text fontSize="lg">Cast Votes</Text>
+        <Text fontSize="lg">Party</Text>
       </Center>
-      <Center>
-        {votesLeft}
+      <Center pt={4}>
+        <Text>{`${partyData.name}`}</Text>
       </Center>
+      <Center pt={4} pl="5%" pr="5%">
+        <Text fontSize="sm">{`${partyData.description}`}</Text>
+      </Center>
+      <Center pt={4}>
+        <Text fontSize="xl">Cast Votes</Text>
+      </Center>
+      <Center>{votesLeft}</Center>
       <Table>
         <Thead>
           <Tr>
@@ -142,7 +149,9 @@ export const Vote = ({ dbInstance, partyData, address, userSigner, targetNetwork
           </Tr>
         </Thead>
         <TableCaption>
-          <Button onClick={vote} disabled={invalidVotesLeft}>Vote</Button>
+          <Button onClick={vote} disabled={invalidVotesLeft}>
+            Vote
+          </Button>
         </TableCaption>
         {candidates}
       </Table>

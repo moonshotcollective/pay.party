@@ -11,5 +11,15 @@ export const colorModeConfig = {
 
 export const theme = extendTheme({
   ...customTheme,
+
+  styles: {
+    global: props => ({
+      body: {
+        color: mode("gray.800", "whiteAlpha.900")(props),
+        bg: mode("white", "#0b0228")(props),
+        lineHeight: "base",
+      },
+    }),
+  },
   config: colorModeConfig,
 });

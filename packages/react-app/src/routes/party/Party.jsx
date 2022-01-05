@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { Button, Box } from "@chakra-ui/react";
+import { Button, Box, Divider } from "@chakra-ui/react";
 import { ArrowBackIcon } from "@chakra-ui/icons";
 import { useParams, useHistory } from "react-router-dom";
 import MongoDBController from "../../controllers/mongodbController";
@@ -104,7 +104,7 @@ export default function Party({
       >
         Debug
       </Button>
-      <Box borderWidth={"1px"}>
+      <Box>
         {showDebug && <p>{JSON.stringify(partyData)}</p>}
         {canVote ? (
           <Vote
