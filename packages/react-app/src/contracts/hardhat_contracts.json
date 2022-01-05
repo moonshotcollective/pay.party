@@ -5,7 +5,7 @@
       "chainId": "5",
       "contracts": {
         "Distributor": {
-          "address": "0xbA4A68bD79B288D661DFf4E9D6b0Ba21D5E495C2",
+          "address": "0x7B31B672aF3160F7f90799D41223Ab05840c3097",
           "abi": [
             {
               "anonymous": false,
