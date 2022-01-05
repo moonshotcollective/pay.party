@@ -59,10 +59,7 @@ const Footer = () => {
             as={FaGithub}
             w={8}
             h={8}
-            color="purple.500"
-            _hover={{
-              color: "yellow.500",
-            }}
+            color="#6F3FF5"
           />
         </Link>
       </Flex>
