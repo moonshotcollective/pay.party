@@ -509,7 +509,6 @@ function App(props) {
     <div>
       <Box mb={8} pl={"14vw"} pr={"14vw"}>
         <Wrap pb={"6vh"}>
-          {/* <HStack> */}
             <WrapItem>
               <a href="/">
                 <Header />
@@ -539,7 +538,6 @@ function App(props) {
               />
             </Box>
             </WrapItem>
-          {/* </HStack> */}
         </Wrap>
         {address && address !== "" ? (
           <BrowserRouter>

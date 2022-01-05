@@ -60,13 +60,13 @@ export const View = ({ partyData, mainnetProvider, votesData, distribution }) =>
         <Text fontSize="lg">Party</Text>
       </Center>
       <Center pt={4}>
-        <Text>{`${partyData?.name}`}</Text>
+        <Text fontSize='xl'>{`${partyData?.name}`}</Text>
       </Center>
       <Center pt={4} pl="5%" pr="5%">
         <Text fontSize="sm">{`${partyData?.description}`}</Text>
       </Center>
-        <Center>
-        <Text pt={4}fontSize="md">{`Voted: ${partyData?.ballots?.length}/${partyData?.participants?.length}`}</Text>
+        <Center p='4'>
+        <Text fontWeight='semibold' fontSize='lg'>{`Voted: ${partyData?.ballots?.length}/${partyData?.participants?.length}`}</Text>
       </Center>
 
       <Table borderWidth='1px'>
