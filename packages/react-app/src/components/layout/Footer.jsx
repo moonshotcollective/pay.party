@@ -1,10 +1,16 @@
-import { Box, Flex, Link, useColorMode } from "@chakra-ui/react";
+import { Box, Divider, Flex, Link, Text, useColorMode, Spacer, Center } from "@chakra-ui/react";
+import { Icon } from "@chakra-ui/icon";
+import { FaGithub } from "react-icons/fa";
 
 const Footer = () => {
   const { colorMode } = useColorMode();
   return (
-    <Box as="footer" width="full" alignContent="center" py="12">
+    <Box as="footer" width="full" alignContent="center" py="12" height="min-content">
       <Flex alignItems="center" justifyContent="center">
+        <Text fontSize={"xs"} color="grey">
+          {process.env.REACT_APP_VERSION}
+        </Text>
+        <Spacer />
         <Link href="https://gitcoin.co/" target="_blank" rel="noopener noreferrer">
           {colorMode === "light" ? (
             <svg width="124" height="58" viewBox="0 0 188 58" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -44,6 +50,17 @@ const Footer = () => {
               />
             </svg>
           )}
+        </Link>
+        <Center height="42px" paddingLeft={4} paddingRight={3}>
+          <Divider orientation="vertical" />
+        </Center>
+        <Link href="https://github.com/moonshotcollective" isExternal>
+          <Icon
+            as={FaGithub}
+            w={8}
+            h={8}
+            color="#6F3FF5"
+          />
         </Link>
       </Flex>
     </Box>

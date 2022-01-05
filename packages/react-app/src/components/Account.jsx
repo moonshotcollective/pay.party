@@ -1,6 +1,6 @@
 import React from "react";
 import { useThemeSwitcher } from "react-css-theme-switcher";
-import { Box, Button } from "@chakra-ui/react";
+import { Box, Button, Icon } from "@chakra-ui/react";
 import { useLookupAddress } from "eth-hooks/dapps/ens";
 
 export default function Account({
@@ -35,7 +35,12 @@ export default function Account({
     if (web3Modal?.cachedProvider || web3Modal?.provider?.safe) {
       modalButtons.push(
         <Button key="logoutbutton" size="md" variant="outline" onClick={logoutOfWeb3Modal}>
-          🟢 {displayAddress}
+          <Icon viewBox="10 -22 144 144">
+            <svg height="100" width="100">
+              <circle cx="50" cy="50" r="40" fill="#50C878" />
+            </svg>
+          </Icon>
+          {displayAddress}
         </Button>,
       );
     } else {

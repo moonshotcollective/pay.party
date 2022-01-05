@@ -36,6 +36,7 @@ import {
   Button,
   MenuItemOption,
   MenuOptionGroup,
+  Divider,
 } from "@chakra-ui/react";
 import NotConnectedCard from "./components/Cards/NotConnectedCard";
 import CenteredFrame from "./components/layout/CenteredFrame";
@@ -594,8 +595,8 @@ function App(props) {
             <NotConnectedCard />
           </CenteredFrame>
         )}
+      <Footer />
       </Box>
-      <Footer pr="100%" />
     </div>
   );
 }

@@ -99,7 +99,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
   };
 
   useMemo(async () => {
-    setLoadingText("Checking...");
+    setLoadingText("Loading...");
     setIsLoading(true);
     const p = await resolveInput2(inputParticipants);
     setParticipantAdrs(p.adrs);
@@ -110,7 +110,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
   }, [inputParticipants]);
 
   useMemo(async () => {
-    setLoadingText("Checking...");
+    setLoadingText("Loading...");
     setIsLoading(true);
     const c = await resolveInput2(inputCandidates);
     setCandidateAdrs(c.adrs);
@@ -176,7 +176,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
             </Select>
 
             <Center pt={10}>
-              <Button size="lg" type="submit" isLoading={isLoading} loadingText={loadingText} width={"50%"}>
+              <Button size="lg" type="submit" isLoading={isLoading} loadingText={loadingText}>
                 Submit Party
               </Button>
             </Center>
