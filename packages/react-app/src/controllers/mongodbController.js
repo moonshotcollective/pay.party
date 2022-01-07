@@ -18,4 +18,12 @@ export default class MongoDBController {
     const url = `${process.env.REACT_APP_API_URL}/party/${id}`;
     return this.http.put(url, data);
   }
+  async addPartyReceipt(id, data) {
+    const url = `${process.env.REACT_APP_API_URL}/party/${id}/distribute`;
+    return this.http.put(url, data);
+  }
+  async addPartyBallot(id, data) {
+    const url = `${process.env.REACT_APP_API_URL}/party/${id}/vote`;
+    return this.http.put(url, data);
+  }
 }

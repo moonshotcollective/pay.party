@@ -98,7 +98,7 @@ export const Distribute = ({
   };
 
   const handleReceipt = res => {
-    if (res && (res.status === "confirmed" || res.status === 1)) {
+    if (res && res.hash && (res.status === "confirmed" || res.status === 1)) {
       console.log(" 🍾 Transaction " + res.hash + " finished!");
       const receipt = {
         account: address,
@@ -106,9 +106,7 @@ export const Distribute = ({
         token: tokenInstance?.address,
         txn: res.hash,
       };
-      partyData.receipts.push(receipt);
-      // NOTE: When updating the party, be sure include ALL the updated data
-      dbInstance.updateParty(partyData.id, { ballots: partyData.ballots, receipts: partyData.receipts });
+      dbInstance.addPartyReceipt(partyData.id, receipt);
     }
     setIsDistributionLoading(false);
   };
