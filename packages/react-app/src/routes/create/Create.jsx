@@ -144,7 +144,6 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
             <FormControl id="create">
               <FormLabel>Name</FormLabel>
               <Input size="lg" placeholder="Party Name" onChange={e => (partyObj.name = e.currentTarget.value)} />
-
               <FormLabel>Description</FormLabel>
               <Textarea
                 size="lg"
@@ -152,7 +151,6 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
                 rows={3}
                 onChange={e => (partyObj.description = e.currentTarget.value)}
               />
-
               <FormLabel>Participants</FormLabel>
               <Textarea
                 size="lg"
@@ -161,7 +159,6 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
                 onChange={parseParticipants}
                 isInvalid={isInvalidParticipantInput}
               />
-
               <FormLabel>Candidates</FormLabel>
               <Textarea
                 size="lg"
@@ -170,12 +167,6 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
                 onChange={parseCandidates}
                 isInvalid={isInvalidCandidateInput}
               />
-              <FormLabel>Strategy</FormLabel>
-              <Select size="lg" onChange={e => (partyObj.config.strategy = e.target.value)}>
-                <option>Linear</option>
-                <option>Quadratic</option>
-              </Select>
-
               <Center pt={10}>
                 <Button size="lg" type="submit" isLoading={isLoading} loadingText={loadingText}>
                   Submit Party

@@ -1,5 +1,5 @@
 import { NumberInput, NumberInputField, Box, Button, Input, HStack, Spacer, Text, Center } from "@chakra-ui/react";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { toWei } from "web3-utils";
 import { BigNumber, ethers } from "ethers";
 import $ from "jquery";
@@ -13,6 +13,7 @@ export const Distribute = ({
   writeContracts,
   tx,
   distribution,
+  strategy,
 }) => {
   const [tokenInstance, setTokenInstance] = useState(null);
   const [amounts, setAmounts] = useState(null);
@@ -84,13 +85,12 @@ export const Distribute = ({
       const amts = [];
       let tot = BigNumber.from("0x00");
       for (let i = 0; i < validAdrs.length; i++) {
-        let pay = (validScores[i] * amt).toFixed(18).toString();
+        let pay = (validScores[i] * amt).toFixed(16).toString();
         const x = BigNumber.from(toWei(pay));
         amts.push(x);
         adrs.push(validAdrs[i]);
         tot = tot.add(x);
       }
-      console.log(adrs, amts);
       setTotal(tot);
       setAmounts(amts);
       setAddresses(adrs);
@@ -151,8 +151,8 @@ export const Distribute = ({
   };
 
   return (
-    <Box borderWidth={"1px"} shadow="xl" rounded="md" p="10" w="4xl" minW='lg'>
-      <Center pb='10'>
+    <Box>
+      <Center pb="10" pt="10">
         <Text fontSize="lg">Distribute Funds</Text>
       </Center>
       <HStack>
@@ -162,7 +162,7 @@ export const Distribute = ({
           Load Token
         </Button>
       </HStack>
-      <HStack  pt={4}>
+      <HStack pt={4}>
         <Spacer />
         <NumberInput onChange={handleAmountChange}>
           <NumberInputField placeholder="1" />
