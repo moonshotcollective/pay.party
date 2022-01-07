@@ -1,9 +1,21 @@
-import React, { useEffect, useState, useMemo } from "react";
-import { Button, Box, Divider, Center } from "@chakra-ui/react";
-import { ArrowBackIcon } from "@chakra-ui/icons";
+import React, { useEffect, useState } from "react";
+import {
+  Button,
+  Box,
+  Center,
+  Menu,
+  MenuOptionGroup,
+  MenuButton,
+  MenuList,
+  MenuItemOption,
+  Spacer,
+  Text,
+  HStack,
+} from "@chakra-ui/react";
+import { ArrowBackIcon, ChevronDownIcon } from "@chakra-ui/icons";
 import { useParams, useHistory } from "react-router-dom";
 import MongoDBController from "../../controllers/mongodbController";
-import { Vote, View, Distribute } from "./components";
+import { VoteTable, ViewTable, Distribute, Metadata } from "./components";
 
 export default function Party({
   address,
@@ -25,6 +37,7 @@ export default function Party({
   const [canVote, setCanVote] = useState(false);
   const [isParticipant, setIsParticipant] = useState(false);
   const [distribution, setDistribution] = useState();
+  const [strategy, setStrategy] = useState("linear");
 
   const db = new MongoDBController();
 
@@ -49,20 +62,20 @@ export default function Party({
       const votes = partyData.ballots.map(b => JSON.parse(b.data.ballot.votes.replace(/[ \n\r]/g, "")));
       let sum = 0;
       let processed = [];
-      let strategy = partyData.config.strategy;
+      // let strategy = partyData.config.strategy;
       if (!strategy || strategy === "") {
-        strategy = "Linear";
+        strategy = "linear";
         console.log("Reverted to linear strategy");
       }
       for (let i = 0; i < partyData.candidates.length; i++) {
         const candidate = partyData.candidates[i];
         // Strategy handling
         // TODO: Switch statement
-        if (strategy === "Linear") {
+        if (strategy === "linear") {
           let c = votes.reduce((total, vote) => vote[candidate] + total, 0);
           sum += c;
           processed.push({ address: candidate, reduced: c });
-        } else if (strategy === "Quadratic") {
+        } else if (strategy === "quadratic") {
           let c = votes.reduce((total, vote) => vote[candidate] ** 0.5 + total, 0);
           sum += c;
           processed.push({ address: candidate, reduced: c });
@@ -77,10 +90,31 @@ export default function Party({
     }
   };
 
+  const StrategySelect = () => {
+    return (
+      <Menu closeOnSelect={false}>
+        <MenuButton as={Button} variant="link" rightIcon={<ChevronDownIcon />}>
+          {strategy}
+        </MenuButton>
+        <MenuList>
+          <MenuOptionGroup title="select strategy" type="radio" onChange={e => setStrategy(e)}>
+            <MenuItemOption key="linear-select" value="linear">
+              Linear
+            </MenuItemOption>
+            ,
+            <MenuItemOption key="quadratic-select" value="quadratic">
+              Quadratic
+            </MenuItemOption>
+          </MenuOptionGroup>
+        </MenuList>
+      </Menu>
+    );
+  };
+
   // Calculate the distribution on load
   useEffect(() => {
     calcDistribution();
-  }, [partyData]);
+  }, [partyData, strategy]);
 
   return (
     <Box>
@@ -103,11 +137,18 @@ export default function Party({
       >
         Debug
       </Button>
-      <Box>
-        {showDebug && <p>{JSON.stringify(partyData)}</p>}
-        <Center p="5">
+      <Center p="5">
+        <Box borderWidth={"1px"} shadow="xl" rounded="md" p="10" w="4xl">
+          {showDebug && <p>{JSON.stringify(partyData)}</p>}
+          <Metadata
+            partyData={partyData}
+            mainnetProvider={mainnetProvider}
+            votesData={accountVoteData}
+            distribution={distribution}
+            strategy={strategy}
+          />
           {canVote ? (
-            <Vote
+            <VoteTable
               dbInstance={db}
               partyData={partyData}
               address={address}
@@ -117,15 +158,20 @@ export default function Party({
               mainnetProvider={mainnetProvider}
             />
           ) : (
-            <View
-              partyData={partyData}
-              mainnetProvider={mainnetProvider}
-              votesData={accountVoteData}
-              distribution={distribution}
-            />
+            <Box>
+              <Center pb="1" pt="3">
+                <Text pr="3">Strategy:</Text>
+                <StrategySelect />
+              </Center>
+              <ViewTable
+                partyData={partyData}
+                mainnetProvider={mainnetProvider}
+                votesData={accountVoteData}
+                distribution={distribution}
+                strategy={strategy}
+              />
+            </Box>
           )}
-        </Center>
-        <Center p="5">
           <Distribute
             dbInstance={db}
             partyData={partyData}
@@ -135,9 +181,10 @@ export default function Party({
             readContracts={readContracts}
             tx={tx}
             distribution={distribution}
+            strategy={strategy}
           />
-        </Center>
-      </Box>
+        </Box>
+      </Center>
     </Box>
   );
 }
