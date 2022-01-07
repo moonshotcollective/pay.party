@@ -72,14 +72,13 @@ export const Vote = ({ dbInstance, partyData, address, userSigner, targetNetwork
           // TODO: Check if account has already submitted a ballot
           if (cast.length === 0) {
             // Push a ballot to the parties sumbitted ballots array
-            ballots.push({ signature: sig, data: ballot });
-            return ballots;
+            return { signature: sig, data: ballot };
           } else {
             throw "Error: Account already voted!";
           }
         })
-        .then(ballots => {
-          dbInstance.updateParty(partyData.id, { ballots: ballots, receipts: partyData.receipts });
+        .then(b => {
+          dbInstance.addPartyBallot(partyData.id, b);
         })
         .catch(err => {
           console.log(err);
