@@ -39,14 +39,18 @@ export const ViewTable = ({ partyData, mainnetProvider, votesData, distribution,
           <Tbody key={`view-row-${d}`}>
             <Tr>
               <Td>
-                <AddressChakra
+                  <AddressChakra
                   address={d}
                   ensProvider={mainnetProvider}
                   // blockExplorer={blockExplorer}
                 />
               </Td>
-              <Td>{castVotes && castVotes[d]}</Td>
-              <Td>{currentDist && (currentDist[d] * 100).toFixed(0)}%</Td>
+              <Td>
+                <Center>{castVotes && castVotes[d]}</Center>
+              </Td>
+              <Td>
+                <Center>{currentDist && (currentDist[d] * 100).toFixed(0)}%</Center>
+              </Td>
             </Tr>
           </Tbody>
         );
@@ -59,9 +63,9 @@ export const ViewTable = ({ partyData, mainnetProvider, votesData, distribution,
       <Table borderWidth="1px">
         <Thead>
           <Tr>
-            <Th>Address</Th>
-            <Th>Your Vote</Th>
-            <Th>{`Score (${strategy})`}</Th>
+            <Th><Center>Address</Center></Th>
+            <Th><Center>{castVotes ? "Your Ballot" : " "}</Center></Th>
+            <Th><Center>{`Score (${strategy})`}</Center></Th>
           </Tr>
         </Thead>
         {candidateRows}
