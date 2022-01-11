@@ -15,7 +15,7 @@ import {
 import { ArrowBackIcon, ChevronDownIcon } from "@chakra-ui/icons";
 import { useParams, useHistory } from "react-router-dom";
 import MongoDBController from "../../controllers/mongodbController";
-import { VoteTable, ViewTable, Distribute, Metadata } from "./components";
+import { VoteTable, ViewTable, ReceiptsTable, Distribute, Metadata } from "./components";
 
 export default function Party({
   address,
@@ -38,6 +38,7 @@ export default function Party({
   const [isParticipant, setIsParticipant] = useState(false);
   const [distribution, setDistribution] = useState();
   const [strategy, setStrategy] = useState("linear");
+  const [isPaid, setIsPaid] = useState(false);
 
   const db = new MongoDBController();
 
@@ -50,6 +51,7 @@ export default function Party({
         setAccountVoteData(votes);
         setCanVote(votes.length === 0 && participating ? true : false);
         setIsParticipant(participating);
+        setIsPaid(res.data.receipts.length > 0);
       })
       .catch(err => {
         console.log(err);
@@ -159,7 +161,7 @@ export default function Party({
             />
           ) : (
             <Box>
-              <Center pb="1" pt="3">
+              <Center pb="2" pt="3">
                 <Text pr="3">Strategy:</Text>
                 <StrategySelect />
               </Center>
@@ -183,6 +185,7 @@ export default function Party({
             distribution={distribution}
             strategy={strategy}
           />
+          {isPaid && <ReceiptsTable partyData={partyData} />}
         </Box>
       </Center>
     </Box>
