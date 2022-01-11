@@ -426,7 +426,7 @@ function App(props) {
         <ChevronDownIcon />
       </MenuButton>
       <MenuList>
-        <MenuOptionGroup defaultValue={process.env.REACT_APP_NETWORK_NAME} title="select network" type="radio">
+        <MenuOptionGroup value={targetNetwork.name} title="select network" type="radio">
           {options}
         </MenuOptionGroup>
       </MenuList>
