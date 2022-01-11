@@ -102,7 +102,7 @@ export const Distribute = ({
       console.log(" 🍾 Transaction " + res.hash + " finished!");
       const receipt = {
         account: address,
-        amount: total,
+        amount: total.toHexString(),
         token: tokenInstance?.address,
         txn: res.hash,
       };
