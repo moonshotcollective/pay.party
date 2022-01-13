@@ -130,7 +130,7 @@ export default function Party({
       >
         Back
       </Button>
-      <Button
+      {/* <Button
         size="lg"
         variant="ghost"
         onClick={() => {
@@ -138,7 +138,7 @@ export default function Party({
         }}
       >
         Debug
-      </Button>
+      </Button> */}
       <Center p="5">
         <Box borderWidth={"1px"} shadow="xl" rounded="md" p="10" w="4xl">
           {showDebug && <p>{JSON.stringify(partyData)}</p>}
