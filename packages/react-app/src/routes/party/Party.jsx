@@ -26,6 +26,7 @@ export default function Party({
   readContracts,
   writeContracts,
   yourLocalBalance,
+  isSmartContract
 }) {
   const routeHistory = useHistory();
   let { id } = useParams();
@@ -184,6 +185,7 @@ export default function Party({
             tx={tx}
             distribution={distribution}
             strategy={strategy}
+            isSmartContract={isSmartContract}
           />
           {isPaid && <ReceiptsTable partyData={partyData} />}
         </Box>

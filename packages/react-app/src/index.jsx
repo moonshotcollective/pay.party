@@ -16,12 +16,15 @@ import createEmotionCache from "./styles/createEmotionCache";
 import { colorModeConfig, theme } from "./styles/customTheme";
 import { Web3Provider } from "./helpers/Web3Context";
 import { extendTheme, withDefaultColorScheme } from "@chakra-ui/react";
+import SafeProvider from '@gnosis.pm/safe-apps-react-sdk';
 
 ReactDOM.render(
   <>
     <ColorModeScript initialColorMode={colorModeConfig.initialColorMode} />
     <ChakraProvider theme={theme}>
+    <SafeProvider>
       <App />
+      </SafeProvider>
     </ChakraProvider>
   </>,
   document.getElementById("root"),

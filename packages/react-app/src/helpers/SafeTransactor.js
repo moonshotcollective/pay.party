@@ -3,16 +3,24 @@ import Notify from "bnc-notify";
 import { BLOCKNATIVE_DAPPID } from "../constants";
 
 const { ethers } = require("ethers");
+import SafeAppsSDK from "@gnosis.pm/safe-apps-sdk";
+
+const opts = {
+  whitelistedDomains: [/gnosis-safe.io/],
+};
+
+const appsSdk = new SafeAppsSDK(opts);
 
 // this should probably just be renamed to "notifier"
 // it is basically just a wrapper around BlockNative's wonderful Notify.js
 // https://docs.blocknative.com/notify
 const callbacks = {};
 
-const DEBUG = false;
+const DEBUG = true;
 
-export default function Transactor(providerOrSigner, gasPrice, etherscan) {
-  console.log("!!!!!!!!! TRANSACTOR !!!!!!!!!!!");
+export default function SafeTransactor(providerOrSigner, gasPrice, etherscan) {
+  console.log("!!!!!!!!! SAFE TRANSACTOR !!!!!!!!!!!");
+
   if (typeof providerOrSigner !== "undefined") {
     // eslint-disable-next-line consistent-return
     return async (tx, callback) => {

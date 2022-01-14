@@ -15,6 +15,7 @@ export default function Account({
   logoutOfWeb3Modal,
   blockExplorer,
 }) {
+  // console.log(address)
   const lookup = useLookupAddress(mainnetProvider, address);
   const ensSplit = lookup?.split(".");
   const validEnsCheck = ensSplit && ensSplit[ensSplit.length - 1] === "eth";
@@ -32,9 +33,9 @@ export default function Account({
 
   const modalButtons = [];
   if (web3Modal) {
-    if (web3Modal?.cachedProvider || web3Modal?.provider?.safe) {
+    if (address) {//web3Modal?.cachedProvider || web3Modal?.provider?.safe) {
       modalButtons.push(
-        <Button key="logoutbutton" size="md" variant="outline" onClick={logoutOfWeb3Modal}>
+        <Button key="logoutbutton" size="md" variant="outline" onClick={web3Modal.walletReset}>
           <Icon viewBox="10 -22 144 144">
             <svg height="100" width="100">
               <circle cx="50" cy="50" r="40" fill="#50C878" />
@@ -45,7 +46,11 @@ export default function Account({
       );
     } else {
       modalButtons.push(
-        <Button key="loginbutton" size="md" onClick={loadWeb3Modal}>
+        <Button key="loginbutton" size="md" onClick={async () => {
+            await web3Modal.walletSelect()
+            await web3Modal.walletCheck()
+          
+          }}>
           connect
         </Button>,
       );
