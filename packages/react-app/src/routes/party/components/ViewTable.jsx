@@ -1,10 +1,6 @@
 import {
   Box,
-  HStack,
-  Text,
-  Spacer,
   Center,
-  Divider,
   Table,
   Thead,
   Tbody,
@@ -12,25 +8,17 @@ import {
   Tr,
   Th,
   Td,
-  TableCaption,
 } from "@chakra-ui/react";
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import AddressChakra from "../../../components/AddressChakra";
 
 export const ViewTable = ({ partyData, mainnetProvider, votesData, distribution, strategy }) => {
-  const [castVotes, setCastVotes] = useState(null);
-  const [currentDist, setCurrentDist] = useState(null);
+  const [castVotes, setCastVotes] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const scores = votesData && votesData[0] && JSON.parse(votesData[0].data.ballot.votes);
-    setCastVotes(scores);
-    const dist =
-      distribution && distribution.reduce((obj, item) => Object.assign(obj, { [item.address]: item.score }), {});
-    setCurrentDist(dist);
-  }, [votesData, distribution]);
-
   const candidateRows = useMemo(() => {
+    const ballotVotes = votesData && votesData[0] && JSON.parse(votesData[0].data.ballot.votes);
+    const dist = distribution && distribution.reduce((obj, item) => Object.assign(obj, { [item.address]: item.score }), {});
     const row =
       partyData &&
       partyData.candidates &&
@@ -39,33 +27,41 @@ export const ViewTable = ({ partyData, mainnetProvider, votesData, distribution,
           <Tbody key={`view-row-${d}`}>
             <Tr>
               <Td>
-                  <AddressChakra
+                <AddressChakra
                   address={d}
                   ensProvider={mainnetProvider}
                   // blockExplorer={blockExplorer}
                 />
               </Td>
               <Td>
-                <Center>{castVotes && castVotes[d]}</Center>
+                <Center>{ballotVotes && ballotVotes[d]}</Center>
               </Td>
               <Td>
-                <Center>{currentDist && (currentDist[d] * 100).toFixed(0)}%</Center>
+                <Center>{!isNaN(dist[d] * 1) && dist && (dist[d] * 100).toFixed(2)}%</Center>
               </Td>
             </Tr>
           </Tbody>
         );
       });
+
+    setCastVotes(ballotVotes);
     return row;
-  }, [partyData, castVotes, distribution]);
+  }, [partyData, votesData, distribution, strategy]); 
 
   return (
     <Box>
       <Table borderWidth="1px">
         <Thead>
           <Tr>
-            <Th><Center>Address</Center></Th>
-            <Th><Center>{castVotes ? "Your Ballot" : " "}</Center></Th>
-            <Th><Center>{`Score (${strategy})`}</Center></Th>
+            <Th>
+              <Center>Address</Center>
+            </Th>
+            <Th>
+              <Center>{castVotes ? "Your Ballot" : ""}</Center>
+            </Th>
+            <Th>
+              <Center>{`Score (${strategy})`}</Center>
+            </Th>
           </Tr>
         </Thead>
         {candidateRows}

@@ -17,7 +17,7 @@ import {
   Td,
   TableCaption,
 } from "@chakra-ui/react";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import AddressChakra from "../../../components/AddressChakra";
 
 export const VoteTable = ({
@@ -30,10 +30,21 @@ export const VoteTable = ({
   mainnetProvider,
 }) => {
   // Init votes data to 0 votes for each candidate
-  const [votesData, setVotesData] = useState(partyData.candidates.reduce((o, key) => ({ ...o, [key]: 0 }), {}));
+  console.log(partyData)
+  const [votesData, setVotesData] = useState(null);
   // Init votes left to nvotes
-  const [votesLeft, setVotesLeft] = useState(partyData.config.nvotes);
+  const [votesLeft, setVotesLeft] = useState(null);
   const [invalidVotesLeft, setInvalidVotesLeft] = useState(false);
+
+  useEffect(() => {
+    try {
+      setVotesData(partyData.candidates.reduce((o, key) => ({ ...o, [key]: 0 }), {}));
+      setVotesLeft(partyData.config.nvotes);
+    } catch {
+      // Do something? 
+    }
+
+  }, [partyData])
 
   const handleVotesChange = (event, adr) => {
     votesData[adr] = Number(event);
@@ -97,7 +108,9 @@ export const VoteTable = ({
   };
 
   const candidates = useMemo(() => {
-    return partyData?.candidates.map(d => {
+    let c; 
+    try {
+     c = partyData.candidates.map(d => {
       return (
         <Tbody key={`vote-row-${d}`}>
           <Tr>
@@ -131,6 +144,10 @@ export const VoteTable = ({
         </Tbody>
       );
     });
+  } catch {
+    c = [];
+  }
+    return c
   }, [partyData, votesLeft]);
 
   return (

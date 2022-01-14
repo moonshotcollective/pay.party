@@ -27,6 +27,7 @@ import {
   HStack,
   Flex,
   Spacer,
+  Text,
   IconButton,
   Select,
   Menu,
@@ -429,7 +430,9 @@ function App(props) {
   const networkSelect = (
     <Menu closeOnSelect={false}>
       <MenuButton as={Button} variant="ghost">
+        <Text fontSize="sm">{targetNetwork.name}
         <ChevronDownIcon />
+        </Text>
       </MenuButton>
       <MenuList>
         <MenuOptionGroup value={targetNetwork.name} title="select network" type="radio">

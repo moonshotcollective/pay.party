@@ -53,7 +53,6 @@ export const Distribute = ({
         }
       },
     );
-    setHasApprovedAllowance(false);
   };
 
   const handleApproval = res => {
@@ -69,7 +68,7 @@ export const Distribute = ({
 
   // Approve total token amount
   const approve = async () => {
-    // setIsApprovalLoading(true);
+    setIsApprovalLoading(true);
     tx(tokenInstance?.approve(readContracts.Distributor.address, total), handleApproval);
   };
 
@@ -101,6 +100,11 @@ export const Distribute = ({
       setAmounts(amts);
       setAddresses(adrs);
     }
+    // Check ERC20 allowance
+    // if (total && tokenInstance) {
+    //   const allowance = await tokenInstance.allowance(address, readContracts.Distributor.address);
+    //   setHasApprovedAllowance(allowance.gte(total));
+    // }
   };
 
   const handleReceipt = res => {
@@ -159,15 +163,14 @@ export const Distribute = ({
   const DistributeButton = () => {
     return (
       <>
-        {tokenInstance && !hasApprovedAllowance ? (
+        {tokenInstance && (
           <Button onClick={approve} isLoading={isApprovalLoading}>
             Approve
           </Button>
-        ) : (
-          <Button onClick={distribute} isLoading={isDistributionLoading}>
-            Distribute
-          </Button>
         )}
+        <Button onClick={distribute} isLoading={isDistributionLoading}>
+          Distribute
+        </Button>
       </>
     );
   };
