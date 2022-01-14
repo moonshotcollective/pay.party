@@ -37,7 +37,7 @@ export const ViewTable = ({ partyData, mainnetProvider, votesData, distribution,
                 <Center>{ballotVotes && ballotVotes[d]}</Center>
               </Td>
               <Td>
-                <Center>{dist && (dist[d] * 100).toFixed(2)}%</Center>
+                <Center>{!isNaN(dist[d] * 1) && dist && (dist[d] * 100).toFixed(2)}%</Center>
               </Td>
             </Tr>
           </Tbody>

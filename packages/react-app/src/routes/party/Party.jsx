@@ -98,6 +98,20 @@ export default function Party({
     }
   }, [partyData, strategy]);
 
+  const cachedVoteTable = useMemo(() => {
+    return (
+      <VoteTable
+      dbInstance={db}
+      partyData={partyData}
+      address={address}
+      userSigner={userSigner}
+      targetNetwork={targetNetwork}
+      readContracts={readContracts}
+      mainnetProvider={mainnetProvider}
+    />
+    )
+  }, [partyData])
+
   const StrategySelect = () => {
     return (
       <Menu>
@@ -156,15 +170,7 @@ export default function Party({
             strategy={strategy}
           />
           {canVote ? (
-            <VoteTable
-              dbInstance={db}
-              partyData={partyData}
-              address={address}
-              userSigner={userSigner}
-              targetNetwork={targetNetwork}
-              readContracts={readContracts}
-              mainnetProvider={mainnetProvider}
-            />
+            cachedVoteTable
           ) : (
             <Box>
               <Center pb="2" pt="3">
