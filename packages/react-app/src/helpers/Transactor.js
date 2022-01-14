@@ -12,7 +12,7 @@ const callbacks = {};
 const DEBUG = false;
 
 export default function Transactor(providerOrSigner, gasPrice, etherscan) {
-  console.log("!!!!!!!!! TRANSACTOR !!!!!!!!!!!");
+  console.log("USING TRANSACTOR");
   if (typeof providerOrSigner !== "undefined") {
     // eslint-disable-next-line consistent-return
     return async (tx, callback) => {

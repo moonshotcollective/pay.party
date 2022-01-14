@@ -19,7 +19,7 @@ const callbacks = {};
 const DEBUG = true;
 
 export default function SafeTransactor(providerOrSigner, gasPrice, etherscan) {
-  console.log("!!!!!!!!! SAFE TRANSACTOR !!!!!!!!!!!");
+  console.log("USING SAFE TRANSACTOR");
 
   if (typeof providerOrSigner !== "undefined") {
     // eslint-disable-next-line consistent-return
@@ -68,6 +68,12 @@ export default function SafeTransactor(providerOrSigner, gasPrice, etherscan) {
       if (network.chainId === 100) {
         etherscanTxUrl = "https://blockscout.com/poa/xdai/tx/";
       }
+
+      const txs = [tx];
+
+      const params = {
+        safeTxGas: 500000,
+      };
 
       try {
         let result;
