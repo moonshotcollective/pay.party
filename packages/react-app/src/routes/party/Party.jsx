@@ -1,16 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   Button,
   Box,
   Center,
   Menu,
-  MenuOptionGroup,
   MenuButton,
   MenuList,
-  MenuItemOption,
-  Spacer,
+  MenuItem,
   Text,
-  HStack,
 } from "@chakra-ui/react";
 import { ArrowBackIcon, ChevronDownIcon } from "@chakra-ui/icons";
 import { useParams, useHistory } from "react-router-dom";
@@ -37,86 +34,94 @@ export default function Party({
   const [canVote, setCanVote] = useState(false);
   const [isParticipant, setIsParticipant] = useState(false);
   const [distribution, setDistribution] = useState();
-  const [strategy, setStrategy] = useState("linear");
+  const [strategy, setStrategy] = useState("quadratic");
   const [isPaid, setIsPaid] = useState(false);
 
   const db = new MongoDBController();
 
   useEffect(async () => {
-    db.fetchParty(id)
-      .then(res => {
-        setPartyData(res.data);
-        const votes = res?.data?.ballots?.filter(b => b.data.ballot.address === address);
-        const participating = res.data.participants.includes(address);
-        setAccountVoteData(votes);
-        setCanVote(votes.length === 0 && participating ? true : false);
-        setIsParticipant(participating);
-        setIsPaid(res.data.receipts.length > 0);
-      })
-      .catch(err => {
-        console.log(err);
-      });
-  }, [id]);
+    const party = await db.fetchParty(id);
+    const votes = party.data.ballots.filter(b => b.data.ballot.address === address);
+    const participating = party.data.participants.includes(address);
+    setAccountVoteData(votes);
+    setCanVote(votes.length === 0 && participating);
+    setPartyData(party.data);
+  }, []);
 
-  // Calculate percent distribution from submitted ballots
-  const calcDistribution = () => {
-    if (partyData && partyData.ballots && partyData.ballots.length > 0) {
-      const votes = partyData.ballots.map(b => JSON.parse(b.data.ballot.votes.replace(/[ \n\r]/g, "")));
-      let sum = 0;
-      let processed = [];
-      // let strategy = partyData.config.strategy;
-      if (!strategy || strategy === "") {
-        strategy = "linear";
-        console.log("Reverted to linear strategy");
+  // Calculate percent distribution from submitted ballots and memo table
+  const calculateDistribution = () => { 
+    const votes = partyData.ballots.map(b => JSON.parse(b.data.ballot.votes.replace(/[ \n\r]/g, "")));
+    let sum = 0;
+    let processed = [];
+    let result;
+    for (let i = 0; i < partyData.candidates.length; i++) {
+      const candidate = partyData.candidates[i];
+      switch (strategy.toLowerCase()) {
+        default:
+          result = votes.reduce((total, vote) => vote[candidate] + total, 0);
+          break;
+        case "linear":
+          result = votes.reduce((total, vote) => vote[candidate] + total, 0);
+          break;
+        case "quadratic":
+          result = votes.reduce((total, vote) => vote[candidate] ** 0.5 + total, 0);
+          break;
       }
-      for (let i = 0; i < partyData.candidates.length; i++) {
-        const candidate = partyData.candidates[i];
-        // Strategy handling
-        // TODO: Switch statement
-        if (strategy === "linear") {
-          let c = votes.reduce((total, vote) => vote[candidate] + total, 0);
-          sum += c;
-          processed.push({ address: candidate, reduced: c });
-        } else if (strategy === "quadratic") {
-          let c = votes.reduce((total, vote) => vote[candidate] ** 0.5 + total, 0);
-          sum += c;
-          processed.push({ address: candidate, reduced: c });
-        }
-      }
-      let final = [];
-      for (let i = 0; i < partyData.candidates.length; i++) {
-        const candidate = partyData.candidates[i];
-        final.push({ address: candidate, score: processed[i].reduced / sum });
-      }
-      setDistribution(final);
+      sum += result;
+      processed.push({ address: candidate, reduced: result });
     }
-  };
+    let final = [];
+    for (let i = 0; i < partyData.candidates.length; i++) {
+      const candidate = partyData.candidates[i];
+      final.push({ address: candidate, score: processed[i].reduced / sum });
+    }
+    return final;
+  }
+
+  // Cache the calculated distribution and table component
+  const cachedViewTable = useMemo(() => {
+    try {
+      const dist = calculateDistribution();
+      setDistribution(dist);
+      return (
+        <ViewTable
+          partyData={partyData}
+          mainnetProvider={mainnetProvider}
+          votesData={accountVoteData}
+          distribution={dist}
+          strategy={strategy}
+        />
+      );
+    } catch {
+      return null;
+    }
+  }, [partyData, strategy]);
 
   const StrategySelect = () => {
     return (
-      <Menu closeOnSelect={false}>
+      <Menu>
         <MenuButton as={Button} variant="link" rightIcon={<ChevronDownIcon />}>
           {strategy}
         </MenuButton>
         <MenuList>
-          <MenuOptionGroup title="select strategy" type="radio" onChange={e => setStrategy(e)}>
-            <MenuItemOption key="linear-select" value="linear">
-              Linear
-            </MenuItemOption>
-            ,
-            <MenuItemOption key="quadratic-select" value="quadratic">
-              Quadratic
-            </MenuItemOption>
-          </MenuOptionGroup>
+          <MenuItem
+            onClick={() => {
+              setStrategy("quadratic");
+            }}
+          >
+            Quadratic
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              setStrategy("linear");
+            }}
+          >
+            Linear
+          </MenuItem>
         </MenuList>
       </Menu>
     );
   };
-
-  // Calculate the distribution on load
-  useEffect(() => {
-    calcDistribution();
-  }, [partyData, strategy]);
 
   return (
     <Box>
@@ -165,13 +170,7 @@ export default function Party({
                 <Text pr="3">Strategy:</Text>
                 <StrategySelect />
               </Center>
-              <ViewTable
-                partyData={partyData}
-                mainnetProvider={mainnetProvider}
-                votesData={accountVoteData}
-                distribution={distribution}
-                strategy={strategy}
-              />
+              {cachedViewTable}
             </Box>
           )}
           <Distribute
