@@ -35,7 +35,7 @@ export default function Party({
   const [isParticipant, setIsParticipant] = useState(false);
   const [distribution, setDistribution] = useState();
   const [strategy, setStrategy] = useState("quadratic");
-  const [isPaid, setIsPaid] = useState(false);
+  const [isPaid, setIsPaid] = useState(true);
 
   const db = new MongoDBController();
 
@@ -45,6 +45,7 @@ export default function Party({
     const participating = party.data.participants.includes(address);
     setAccountVoteData(votes);
     setCanVote(votes.length === 0 && participating);
+    setIsPaid(party.data.receipts.length > 0)
     setPartyData(party.data);
   }, []);
 
