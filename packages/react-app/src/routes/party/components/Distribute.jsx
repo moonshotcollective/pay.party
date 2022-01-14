@@ -1,8 +1,13 @@
 import { NumberInput, NumberInputField, Box, Button, Input, HStack, Spacer, Text, Center } from "@chakra-ui/react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { toWei } from "web3-utils";
 import { BigNumber, ethers } from "ethers";
 import $ from "jquery";
+
+
+import { useSafeAppsSDK } from '@gnosis.pm/safe-apps-react-sdk';
+
+
 
 export const Distribute = ({
   dbInstance,
@@ -14,6 +19,7 @@ export const Distribute = ({
   tx,
   distribution,
   strategy,
+  isSmartContract
 }) => {
   const [tokenInstance, setTokenInstance] = useState(null);
   const [amounts, setAmounts] = useState(null);
@@ -115,6 +121,20 @@ export const Distribute = ({
     setIsDistributionLoading(false);
   };
 
+  const handleSafeReceipt = res => {
+    if (res && res.hash && (res.status === "confirmed" || res.status === 1)) {
+      console.log(" 🍾 Transaction " + res.hash + " finished!");
+      const receipt = {
+        account: address,
+        amount: total.toHexString(),
+        token: tokenInstance?.address,
+        txn: res.hash,
+      };
+      dbInstance.addPartyReceipt(partyData.id, receipt);
+    }
+    setIsDistributionLoading(false);
+  };
+
   // Distribute either Eth, or loaded erc20
   const distribute = () => {
     try {
@@ -122,11 +142,13 @@ export const Distribute = ({
         setIsDistributionLoading(true);
         // Distribute the funds
         if (tokenInstance && amounts && addresses) {
+          // Distribute Token
           tx(
             writeContracts.Distributor.distributeToken(tokenInstance.address, addresses, amounts, partyData.id),
             handleReceipt,
           );
         } else {
+          // Distribute Ether
           tx(
             writeContracts.Distributor.distributeEther(addresses, amounts, partyData.id, { value: total }),
             handleReceipt,
@@ -152,6 +174,23 @@ export const Distribute = ({
       </>
     );
   };
+
+  //   const { sdk, connected, safe } = useSafeAppsSDK();
+  // useEffect(async () => {
+  //   console.log(sdk, connected, safe)
+  
+  //   const txs = [
+  //     {
+  //       to: address,
+  //       value: '0',
+  //       data: '0xbaddad',
+  //     },
+  //     //...
+  //   ];
+  //   // Returns a hash to identify the Safe transaction
+  //   const safeTxHash = await sdk.txs.send({ txs });
+  // }, [])
+ 
 
   return (
     <Box>
