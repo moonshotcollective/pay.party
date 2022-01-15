@@ -212,6 +212,7 @@ function App(props) {
           { walletName: "metamask" },
           { walletName: "gnosis" },
           { walletName: "walletConnect", infuraKey: INFURA_ID },
+          { walletName: "tally" }
         ],
       },
       subscriptions: {
