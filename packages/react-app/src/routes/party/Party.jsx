@@ -46,32 +46,37 @@ export default function Party({
 
   // Calculate percent distribution from submitted ballots and memo table
   const calculateDistribution = () => {
-    const votes = partyData.ballots.map(b => JSON.parse(b.data.ballot.votes.replace(/[ \n\r]/g, "")));
-    let sum = 0;
-    let processed = [];
-    let result;
-    for (let i = 0; i < partyData.candidates.length; i++) {
-      const candidate = partyData.candidates[i];
-      switch (strategy.toLowerCase()) {
-        default:
-          result = votes.reduce((total, vote) => vote[candidate] + total, 0);
-          break;
-        case "linear":
-          result = votes.reduce((total, vote) => vote[candidate] + total, 0);
-          break;
-        case "quadratic":
-          result = votes.reduce((total, vote) => vote[candidate] ** 0.5 + total, 0);
-          break;
+    try {
+      const votes = partyData.ballots.map(b => JSON.parse(b.data.ballot.votes.replace(/[ \n\r]/g, "")));
+      let sum = 0;
+      let processed = [];
+      let result;
+      for (let i = 0; i < partyData.candidates.length; i++) {
+        const candidate = partyData.candidates[i];
+        switch (strategy.toLowerCase()) {
+          default:
+            result = votes.reduce((total, vote) => vote[candidate] + total, 0);
+            break;
+          case "linear":
+            result = votes.reduce((total, vote) => vote[candidate] + total, 0);
+            break;
+          case "quadratic":
+            result = votes.reduce((total, vote) => vote[candidate] ** 0.5 + total, 0);
+            break;
+        }
+        sum += result;
+        processed.push({ address: candidate, reduced: result });
       }
-      sum += result;
-      processed.push({ address: candidate, reduced: result });
+      let final = [];
+      for (let i = 0; i < partyData.candidates.length; i++) {
+        const candidate = partyData.candidates[i];
+        final.push({ address: candidate, score: processed[i].reduced / sum });
+      }
+      return final;
+    } catch (error) {
+      console.log("Error: calculating distribution failed!");
+      console.log(error);
     }
-    let final = [];
-    for (let i = 0; i < partyData.candidates.length; i++) {
-      const candidate = partyData.candidates[i];
-      final.push({ address: candidate, score: processed[i].reduced / sum });
-    }
-    return final;
   };
 
   // Cache the calculated distribution and table component
@@ -88,24 +93,30 @@ export default function Party({
           strategy={strategy}
         />
       );
-    } catch {
+    } catch (error) {
+      console.log(error);
       return null;
     }
-  }, [partyData, strategy, address]);
+  }, [partyData, strategy]);
 
   const cachedVoteTable = useMemo(() => {
-    return (
-      <VoteTable
-        dbInstance={db}
-        partyData={partyData}
-        address={address}
-        userSigner={userSigner}
-        targetNetwork={targetNetwork}
-        readContracts={readContracts}
-        mainnetProvider={mainnetProvider}
-      />
-    );
-  }, [partyData, address]);
+    try {
+      return (
+        <VoteTable
+          dbInstance={db}
+          partyData={partyData}
+          address={address}
+          userSigner={userSigner}
+          targetNetwork={targetNetwork}
+          readContracts={readContracts}
+          mainnetProvider={mainnetProvider}
+        />
+      );
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }, [partyData, readContracts]);
 
   const StrategySelect = () => {
     return (
