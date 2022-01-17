@@ -1,14 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import {
-  Button,
-  Box,
-  Center,
-  Menu,
-  MenuButton,
-  MenuList,
-  MenuItem,
-  Text,
-} from "@chakra-ui/react";
+import { Button, Box, Center, Menu, MenuButton, MenuList, MenuItem, Text } from "@chakra-ui/react";
 import { ArrowBackIcon, ChevronDownIcon } from "@chakra-ui/icons";
 import { useParams, useHistory } from "react-router-dom";
 import MongoDBController from "../../controllers/mongodbController";
@@ -23,7 +14,7 @@ export default function Party({
   readContracts,
   writeContracts,
   yourLocalBalance,
-  isSmartContract
+  isSmartContract,
 }) {
   const routeHistory = useHistory();
   let { id } = useParams();
@@ -40,18 +31,21 @@ export default function Party({
 
   const db = new MongoDBController();
 
-  useEffect(async () => {
-    const party = await db.fetchParty(id);
-    const votes = party.data.ballots.filter(b => b.data.ballot.address === address);
-    const participating = party.data.participants.includes(address);
-    setAccountVoteData(votes);
-    setCanVote(votes.length === 0 && participating);
-    setIsPaid(party.data.receipts.length > 0)
-    setPartyData(party.data);
+  useEffect(() => {
+    (async () => {
+      const party = await db.fetchParty(id);
+      const submitted = party.data.ballots.filter(b => b.data.ballot.address.toLowerCase() === address);
+      const participating = party.data.participants.map(adr => adr.toLowerCase()).includes(address);
+      setAccountVoteData(submitted);
+      setCanVote(submitted.length === 0 && participating);
+      setIsPaid(party.data.receipts.length > 0);
+      setIsParticipant(participating);
+      setPartyData(party.data);
+    })();
   }, []);
 
   // Calculate percent distribution from submitted ballots and memo table
-  const calculateDistribution = () => { 
+  const calculateDistribution = () => {
     const votes = partyData.ballots.map(b => JSON.parse(b.data.ballot.votes.replace(/[ \n\r]/g, "")));
     let sum = 0;
     let processed = [];
@@ -78,7 +72,7 @@ export default function Party({
       final.push({ address: candidate, score: processed[i].reduced / sum });
     }
     return final;
-  }
+  };
 
   // Cache the calculated distribution and table component
   const cachedViewTable = useMemo(() => {
@@ -97,21 +91,21 @@ export default function Party({
     } catch {
       return null;
     }
-  }, [partyData, strategy]);
+  }, [partyData, strategy, address]);
 
   const cachedVoteTable = useMemo(() => {
     return (
       <VoteTable
-      dbInstance={db}
-      partyData={partyData}
-      address={address}
-      userSigner={userSigner}
-      targetNetwork={targetNetwork}
-      readContracts={readContracts}
-      mainnetProvider={mainnetProvider}
-    />
-    )
-  }, [partyData])
+        dbInstance={db}
+        partyData={partyData}
+        address={address}
+        userSigner={userSigner}
+        targetNetwork={targetNetwork}
+        readContracts={readContracts}
+        mainnetProvider={mainnetProvider}
+      />
+    );
+  }, [partyData, address]);
 
   const StrategySelect = () => {
     return (
