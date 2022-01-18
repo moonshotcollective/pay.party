@@ -4,7 +4,6 @@ import React, { useState, useMemo, useEffect } from "react";
 import { useHistory } from "react-router-dom";
 import MongoDBController from "../../controllers/mongodbController";
 import { AddressChakra } from "../../components";
-import { isDisabled } from "@chakra-ui/theme-tools/node_modules/@chakra-ui/utils";
 
 const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, writeContracts, targetNetwork }) => {
   /***** Routes *****/
