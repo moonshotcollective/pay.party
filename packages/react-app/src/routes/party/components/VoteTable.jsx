@@ -97,7 +97,11 @@ export const VoteTable = ({
             }
           })
           .then(b => {
-            dbInstance.addPartyBallot(partyData.id, b);
+            fetch(`${process.env.REACT_APP_API_URL}/party/${partyData.id}/vote`, {
+              method: "put",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(b),
+            });
           })
           .catch(err => {
             console.log(err);

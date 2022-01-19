@@ -2,14 +2,12 @@ import { Box, Button, FormControl, FormLabel, Input, Textarea, Select, Center, T
 import { ArrowBackIcon, EditIcon } from "@chakra-ui/icons";
 import React, { useState, useMemo, useEffect } from "react";
 import { useHistory } from "react-router-dom";
-import MongoDBController from "../../controllers/mongodbController";
 import { AddressChakra } from "../../components";
 
 const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, writeContracts, targetNetwork }) => {
   /***** Routes *****/
   const routeHistory = useHistory();
 
-  const db = new MongoDBController();
 
   const [isLoading, setIsLoading] = useState(false);
   const [loadingText, setLoadingText] = useState("Loading...");
@@ -38,14 +36,19 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
         .signMessage(`Create party:\n${partyObj.name}`)
         .then(sig => {
           // TODO: Do something with this
-          db.newParty(partyObj)
-            .then(d => {
-              routeHistory.push(`/party/${d.data.id}`);
-              setIsLoading(false);
-            })
-            .catch(err => {
-              console.log(err);
-            });
+          // db.newParty(partyObj)
+          //   .then(d => {
+          //     routeHistory.push(`/party/${d.data.id}`);
+          //     setIsLoading(false);
+          //   })
+          //   .catch(err => {
+          //     console.log(err);
+          //   });
+          fetch(`${process.env.REACT_APP_API_URL}/party`, {
+            method: "post",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(partyObj),
+          });
         })
         .catch(err => {
           setIsLoading(false);
