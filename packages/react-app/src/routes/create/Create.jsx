@@ -231,25 +231,25 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
           </Box>
           <FormLabel pt="3">Participants:</FormLabel>
           <Box p="4" borderWidth="1px" w="min-content">
-            {resolvedParticipantAdrs.map(d => {
+            {!isLoading ? (resolvedParticipantAdrs.map(d => {
               return (
                 <Text p="0.5" key={d}>
                   {d}
                 </Text>
               );
               // return <AddressChakra address={d} ensProvider={mainnetProvider} />;
-            })}
+            })):(<Text>Loading...</Text>)}
           </Box>
           <FormLabel pt="3">Candidates:</FormLabel>
           <Box p="4" borderWidth="1px" w="min-content">
-            {resolvedCandidateAdrs.map(d => {
+            {!isLoading ? (resolvedCandidateAdrs.map(d => {
               return (
                 <Text p="0.5" key={d}>
                   {d}
                 </Text>
               );
               // return <AddressChakra address={d} ensProvider={mainnetProvider} />;
-            })}
+            })):(<Text>Loading...</Text>)}
           </Box>
           <Center pt={10}>
             <Button

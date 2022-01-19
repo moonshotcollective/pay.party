@@ -11,13 +11,13 @@ import { colorModeConfig, theme } from "./styles/customTheme";
 import SafeProvider from "@gnosis.pm/safe-apps-react-sdk";
 
 ReactDOM.render(
-  <>
-    <ColorModeScript initialColorMode={colorModeConfig.initialColorMode} />
+  <React.StrictMode>
     <ChakraProvider theme={theme}>
+      <ColorModeScript initialColorMode={colorModeConfig.initialColorMode} />
       <SafeProvider>
         <App />
       </SafeProvider>
     </ChakraProvider>
-  </>,
+  </React.StrictMode>,
   document.getElementById("root"),
 );
