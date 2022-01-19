@@ -19,7 +19,7 @@ const callbacks = {};
 const DEBUG = true;
 
 export default function SafeTransactor(providerOrSigner, gasPrice, etherscan) {
-  console.log("USING SAFE TRANSACTOR");
+  // console.log("USING SAFE TRANSACTOR");
 
   if (typeof providerOrSigner !== "undefined") {
     // eslint-disable-next-line consistent-return

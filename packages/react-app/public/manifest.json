@@ -2,7 +2,7 @@
   "short_name": "pay.party",
   "name": "pay.party",
   "description": "Democratizing team rewards.",
-  "iconPath": "favicon.svg",
+  "iconPath": "logo.svg",
   "icons": [
     {
       "src": "favicon.ico",
