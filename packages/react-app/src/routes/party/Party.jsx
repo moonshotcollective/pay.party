@@ -3,7 +3,6 @@ import { Button, Box, Center, Menu, MenuButton, MenuList, MenuItem, Text } from 
 import { ArrowBackIcon, ChevronDownIcon } from "@chakra-ui/icons";
 import { useParams, useHistory } from "react-router-dom";
 import { VoteTable, ViewTable, ReceiptsTable, Distribute, Metadata } from "./components";
-import LocaleProvider from "antd/lib/locale-provider";
 
 export default function Party({
   address,
