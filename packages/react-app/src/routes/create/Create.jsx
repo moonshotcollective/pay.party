@@ -179,7 +179,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
             setPartyDescription(e.currentTarget.value);
           }}
         />
-        <FormLabel>Participants</FormLabel>
+        <FormLabel>Voters</FormLabel>
         <Textarea
           size="lg"
           placeholder="ex: alice.eth, 0x6b541b78349097714B9D1aB6A788dB5e0dCF21a3, ..."
