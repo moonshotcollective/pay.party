@@ -36,14 +36,6 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
         .signMessage(`Create party:\n${partyObj.name}`)
         .then(sig => {
           // TODO: Do something with this
-          // db.newParty(partyObj)
-          //   .then(d => {
-          //     routeHistory.push(`/party/${d.data.id}`);
-          //     setIsLoading(false);
-          //   })
-          //   .catch(err => {
-          //     console.log(err);
-          //   });
           fetch(`${process.env.REACT_APP_API_URL}/party`, {
             method: "post",
             headers: { "Content-Type": "application/json" },
