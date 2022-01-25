@@ -116,7 +116,6 @@ export const Distribute = ({
         token: tokenInstance?.address,
         txn: res.hash,
       };
-      // dbInstance.addPartyReceipt(partyData.id, receipt);
     }
     setIsDistributionLoading(false);
   };
