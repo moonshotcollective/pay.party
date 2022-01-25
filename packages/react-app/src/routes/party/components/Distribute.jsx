@@ -1,12 +1,10 @@
-import { NumberInput, NumberInputField, Box, Button, Input, HStack, Spacer, Text, Center } from "@chakra-ui/react";
-import React, { useState, useEffect } from "react";
+import { Box, Button, Text, Center } from "@chakra-ui/react";
+import { useColorModeValue } from "@chakra-ui/color-mode";
+import { InputNumber } from "antd";
+import React, { useState } from "react";
 import { toWei } from "web3-utils";
 import { BigNumber, ethers } from "ethers";
-import $ from "jquery";
 import TokenSelect from "./TokenSelect";
-
-import { useSafeAppsSDK } from "@gnosis.pm/safe-apps-react-sdk";
-import { TestArbCustomToken } from "arb-ts/dist/lib/abi";
 
 export const Distribute = ({
   partyData,
@@ -30,37 +28,6 @@ export const Distribute = ({
   const [hasApprovedAllowance, setHasApprovedAllowance] = useState(false);
   const [addresses, setAddresses] = useState([]);
 
-  // const [toAddress, setToAddress] = useState(null);
-
-  // const handleTokenChange = e => {
-  //   setToken(e.target.value);
-  // };
-
-  // load an erc20
-  // TODO: add capability for other block explorers
-  // const loadToken = async () => {
-  //   setIsTokenLoading(true);
-  //   $.getJSON(
-  //     `https://api.etherscan.io/api?module=contract&action=getabi&address=${token}&${process.env.REACT_APP_ETHERSCAN_KEY}`,
-  //     data => {
-  //       if (data.status === "0") {
-  //         setTokenInstance(null);
-  //         setIsTokenLoading(false);
-  //       } else if (data.status === "1") {
-  //         const ABI = JSON.parse(data.result);
-  //         let contractInstance = new ethers.Contract(token, ABI, userSigner);
-  //         setTokenInstance(contractInstance);
-  //         setIsTokenLoading(false);
-  //       }
-  //     },
-  //   );
-  // };
-
-  useEffect(() => {
-    // console.log("set token:" + token)
-  
-  }, [token])
-
   const handleApproval = res => {
     if (res && (res.status === "confirmed" || res.status === 1)) {
       console.log(" 🍾 Transaction " + res.hash + " finished!");
@@ -75,7 +42,20 @@ export const Distribute = ({
   // Approve total token amount
   const approve = async () => {
     setIsApprovalLoading(true);
-    tx(tokenInstance?.approve(readContracts.Distributor.address, total), handleApproval);
+    const abi = [
+      "function approve(address spender, uint256 amount) public returns (bool)",
+      "function allowance(address owner, address spender) external view returns (uint256)",
+    ];
+    const erc20_rw = new ethers.Contract(token, abi, userSigner);
+    const erc20_r = new ethers.Contract(token, abi, localProvider);
+    const validAllowance = await erc20_r.allowance(address, readContracts.Distributor.address);
+    if (validAllowance.gte(total)) {
+      setHasApprovedAllowance(true);
+      setIsApprovalLoading(false);
+    } else {
+      console.log("Not enough allowance!");
+      tx(erc20_rw.approve(readContracts.Distributor.address, total), handleApproval);
+    }
   };
 
   // Update the distrubtion amounts when input total changes
@@ -105,12 +85,8 @@ export const Distribute = ({
       setTotal(tot);
       setAmounts(amts);
       setAddresses(adrs);
+      setHasApprovedAllowance(false);
     }
-    // Check ERC20 allowance
-    // if (total && tokenInstance) {
-    //   const allowance = await tokenInstance.allowance(address, readContracts.Distributor.address);
-    //   setHasApprovedAllowance(allowance.gte(total));
-    // }
   };
 
   const handleReceipt = res => {
@@ -151,12 +127,9 @@ export const Distribute = ({
       if (partyData && partyData.ballots.length > 0) {
         setIsDistributionLoading(true);
         // Distribute the funds
-        if (tokenInstance && amounts && addresses) {
+        if (token && amounts && addresses && hasApprovedAllowance) {
           // Distribute Token
-          tx(
-            writeContracts.Distributor.distributeToken(tokenInstance.address, addresses, amounts, partyData.id),
-            handleReceipt,
-          );
+          tx(writeContracts.Distributor.distributeToken(token, addresses, amounts, partyData.id), handleReceipt);
         } else {
           // Distribute Ether
           tx(
@@ -165,7 +138,8 @@ export const Distribute = ({
           );
         }
       }
-    } catch {
+    } catch (error) {
+      console.log(error);
       setIsDistributionLoading(false);
     }
   };
@@ -173,14 +147,19 @@ export const Distribute = ({
   const DistributeButton = () => {
     return (
       <>
-        {token && (
-          <Button onClick={approve} isLoading={isApprovalLoading}>
-            Approve
-          </Button>
+        {token && !hasApprovedAllowance ? (
+          <Box p="2">
+            <Button onClick={approve} isLoading={isApprovalLoading}>
+              Approve
+            </Button>
+          </Box>
+        ) : (
+          <Box p="2">
+            <Button onClick={distribute} isLoading={isDistributionLoading}>
+              Distribute
+            </Button>
+          </Box>
         )}
-        <Button onClick={distribute} isLoading={isDistributionLoading}>
-          Distribute
-        </Button>
       </>
     );
   };
@@ -206,19 +185,35 @@ export const Distribute = ({
       <Center pb="10" pt="10">
         <Text fontSize="lg">Distribute Funds</Text>
       </Center>
-      <TokenSelect
-        chainId={1}
-        onChange={setToken}
-        localProvider={localProvider}
-        nativeToken={{ name: "Native token", symbol: "ETH" }}
-      />
-      <HStack pt={4}>
-        <Spacer />
-        <NumberInput onChange={handleAmountChange}>
-          <NumberInputField placeholder="1" />
-        </NumberInput>
-        <DistributeButton />
-      </HStack>
+      <Center>
+        <Box p="6" bg={useColorModeValue("whiteAlpha.900", "purple.900")} borderRadius={24}>
+          <Box>
+            <Text>Amount</Text>
+            <InputNumber
+              size="large"
+              min={0}
+              placeholder={0.0}
+              step="0.1"
+              onChange={handleAmountChange}
+              bordered={false}
+              style={{ width: "calc(100%)", color: useColorModeValue("black", "lightgray") }}
+            ></InputNumber>
+          </Box>
+          <Box>
+            <Text>Select a Token (optional)</Text>
+            <TokenSelect
+              chainId={userSigner?.provider?._network?.chainId}
+              onChange={setToken}
+              localProvider={localProvider}
+              nativeToken={{ name: "Ethereum", symbol: "ETH" }}
+              style={{ color: useColorModeValue("black", "lightgray"), width: "calc(100%)" }}
+            />
+          </Box>
+          <Center p="2">
+            <DistributeButton />
+          </Center>
+        </Box>
+      </Center>
     </Box>
   );
 };

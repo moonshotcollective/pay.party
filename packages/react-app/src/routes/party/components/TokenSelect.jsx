@@ -71,7 +71,7 @@ export default function TokenSelect({ onChange, chainId = 1, nativeToken = {}, l
           decimals: 18,
           name: "Native Token",
           symbol: "ETH",
-          address: "0x0000000000000000000000000000000000000000",
+          address: "",
           logoURI: "https://assets.coingecko.com/coins/images/279/thumb/ethereum.png?1595348880",
           ...nativeToken,
         };
@@ -142,7 +142,8 @@ export default function TokenSelect({ onChange, chainId = 1, nativeToken = {}, l
         value={value}
         onChange={handleOnChange}
         notFoundContent={null}
-        style={{ width: "100%" }}
+        style={props.style ? props.style : {}}
+        bordered={false}
       >
         {children}
       </Select>
