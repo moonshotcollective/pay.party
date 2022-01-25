@@ -3,11 +3,10 @@ import React, { useState, useEffect } from "react";
 import { toWei } from "web3-utils";
 import { BigNumber, ethers } from "ethers";
 import $ from "jquery";
+import TokenSelect from "./TokenSelect";
 
-
-import { useSafeAppsSDK } from '@gnosis.pm/safe-apps-react-sdk';
-
-
+import { useSafeAppsSDK } from "@gnosis.pm/safe-apps-react-sdk";
+import { TestArbCustomToken } from "arb-ts/dist/lib/abi";
 
 export const Distribute = ({
   partyData,
@@ -18,7 +17,8 @@ export const Distribute = ({
   tx,
   distribution,
   strategy,
-  isSmartContract
+  isSmartContract,
+  localProvider,
 }) => {
   const [tokenInstance, setTokenInstance] = useState(null);
   const [amounts, setAmounts] = useState(null);
@@ -30,29 +30,36 @@ export const Distribute = ({
   const [hasApprovedAllowance, setHasApprovedAllowance] = useState(false);
   const [addresses, setAddresses] = useState([]);
 
-  const handleTokenChange = e => {
-    setToken(e.target.value);
-  };
+  // const [toAddress, setToAddress] = useState(null);
+
+  // const handleTokenChange = e => {
+  //   setToken(e.target.value);
+  // };
 
   // load an erc20
   // TODO: add capability for other block explorers
-  const loadToken = async () => {
-    setIsTokenLoading(true);
-    $.getJSON(
-      `https://api.etherscan.io/api?module=contract&action=getabi&address=${token}&${process.env.REACT_APP_ETHERSCAN_KEY}`,
-      data => {
-        if (data.status === "0") {
-          setTokenInstance(null);
-          setIsTokenLoading(false);
-        } else if (data.status === "1") {
-          const ABI = JSON.parse(data.result);
-          let contractInstance = new ethers.Contract(token, ABI, userSigner);
-          setTokenInstance(contractInstance);
-          setIsTokenLoading(false);
-        }
-      },
-    );
-  };
+  // const loadToken = async () => {
+  //   setIsTokenLoading(true);
+  //   $.getJSON(
+  //     `https://api.etherscan.io/api?module=contract&action=getabi&address=${token}&${process.env.REACT_APP_ETHERSCAN_KEY}`,
+  //     data => {
+  //       if (data.status === "0") {
+  //         setTokenInstance(null);
+  //         setIsTokenLoading(false);
+  //       } else if (data.status === "1") {
+  //         const ABI = JSON.parse(data.result);
+  //         let contractInstance = new ethers.Contract(token, ABI, userSigner);
+  //         setTokenInstance(contractInstance);
+  //         setIsTokenLoading(false);
+  //       }
+  //     },
+  //   );
+  // };
+
+  useEffect(() => {
+    // console.log("set token:" + token)
+  
+  }, [token])
 
   const handleApproval = res => {
     if (res && (res.status === "confirmed" || res.status === 1)) {
@@ -133,7 +140,7 @@ export const Distribute = ({
         token: tokenInstance?.address,
         txn: res.hash,
       };
-      dbInstance.addPartyReceipt(partyData.id, receipt);
+      // dbInstance.addPartyReceipt(partyData.id, receipt);
     }
     setIsDistributionLoading(false);
   };
@@ -166,7 +173,7 @@ export const Distribute = ({
   const DistributeButton = () => {
     return (
       <>
-        {tokenInstance && (
+        {token && (
           <Button onClick={approve} isLoading={isApprovalLoading}>
             Approve
           </Button>
@@ -181,7 +188,7 @@ export const Distribute = ({
   //   const { sdk, connected, safe } = useSafeAppsSDK();
   // useEffect(async () => {
   //   console.log(sdk, connected, safe)
-  
+
   //   const txs = [
   //     {
   //       to: address,
@@ -193,20 +200,18 @@ export const Distribute = ({
   //   // Returns a hash to identify the Safe transaction
   //   const safeTxHash = await sdk.txs.send({ txs });
   // }, [])
- 
 
   return (
     <Box>
       <Center pb="10" pt="10">
         <Text fontSize="lg">Distribute Funds</Text>
       </Center>
-      <HStack>
-        <Input onChange={handleTokenChange} placeholder="ex: 0xde30da39c46104798bb5aa3fe8b9e0e1f348163f"></Input>
-        <Spacer />
-        <Button onClick={loadToken} isLoading={isTokenLoading}>
-          Load Token
-        </Button>
-      </HStack>
+      <TokenSelect
+        chainId={1}
+        onChange={setToken}
+        localProvider={localProvider}
+        nativeToken={{ name: "Native token", symbol: "ETH" }}
+      />
       <HStack pt={4}>
         <Spacer />
         <NumberInput onChange={handleAmountChange}>

@@ -21,7 +21,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import AddressChakra from "../../../components/AddressChakra";
 
 export const VoteTable = ({
-  dbInstance,
+  // dbInstance,
   partyData,
   address,
   userSigner,

@@ -3,17 +3,19 @@ import { Button, Box, Center, Menu, MenuButton, MenuList, MenuItem, Text } from 
 import { ArrowBackIcon, ChevronDownIcon } from "@chakra-ui/icons";
 import { useParams, useHistory } from "react-router-dom";
 import { VoteTable, ViewTable, ReceiptsTable, Distribute, Metadata } from "./components";
+import LocaleProvider from "antd/lib/locale-provider";
 
 export default function Party({
   address,
   mainnetProvider,
+  localProvider,
   userSigner,
   targetNetwork,
   tx,
   readContracts,
   writeContracts,
   yourLocalBalance,
-  isSmartContract,
+  isSmartContract
 }) {
   const routeHistory = useHistory();
   let { id } = useParams();
@@ -103,7 +105,7 @@ export default function Party({
     try {
       return (
         <VoteTable
-          dbInstance={db}
+          // dbInstance={db}
           partyData={partyData}
           address={address}
           userSigner={userSigner}
@@ -196,6 +198,7 @@ export default function Party({
             distribution={distribution}
             strategy={strategy}
             isSmartContract={isSmartContract}
+            localProvider={localProvider}
           />
           {isPaid && <ReceiptsTable partyData={partyData} />}
         </Box>
