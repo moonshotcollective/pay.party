@@ -47,6 +47,8 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(partyObj),
       });
+      const json = await res.json();
+      routeHistory.push(`/party/${json.id}`);
       setIsLoading(false);
     } catch {
       setIsLoading(false);
