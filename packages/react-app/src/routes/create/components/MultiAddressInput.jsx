@@ -1,35 +1,17 @@
-// import { Select } from "antd";
-// import { useLookupAddress } from "eth-hooks/dapps/ens";
-// import React, { useCallback, useState } from "react";
-// import QrReader from "react-qr-reader";
 import Blockie from "../../../components/Blockie";
-import { ethers } from "ethers";
-// import { useMemo } from "react";
 
 import {
   Box,
-  Button,
-  FormControl,
-  FormLabel,
-  Input,
   Textarea,
-  Select,
-  Center,
-  Text,
-  Link,
   HStack,
   Tag,
   TagLabel,
   TagCloseButton,
-  TagLeftIcon,
-  Flex,
   Wrap,
   Spinner,
 } from "@chakra-ui/react";
-import { ArrowBackIcon, EditIcon } from "@chakra-ui/icons";
-import React, { useState, useMemo, useEffect, useCallback } from "react";
-import { useHistory } from "react-router-dom";
-// import { AddressChakra, Blockie } from "../../components";
+import React, { useState, useEffect } from "react";
+import { useColorModeValue } from "@chakra-ui/color-mode";
 
 // probably we need to change value={toAddress} to address={toAddress}
 
@@ -106,7 +88,7 @@ export default function MultiAddressInput(props) {
   };
 
   return (
-    <Box bg="whiteAlpha.800" borderRadius={24} p={6}>
+    <Box bg={useColorModeValue("whiteAlpha.900", "purple.900")} borderRadius={24} p={6}>
       <Wrap>{input.map(fun)}</Wrap>
       <Textarea
         variant="unstyled"
