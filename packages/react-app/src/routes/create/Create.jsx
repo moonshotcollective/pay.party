@@ -5,27 +5,19 @@ import {
   FormLabel,
   Input,
   Textarea,
-  Select,
   Center,
   Text,
-  Link,
   HStack,
   Tag,
   TagLabel,
-  TagCloseButton,
-  TagLeftIcon,
-  Flex,
-  Wrap,
-  Spinner,
 } from "@chakra-ui/react";
 import { ArrowBackIcon, EditIcon } from "@chakra-ui/icons";
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useHistory } from "react-router-dom";
-import { AddressChakra, Blockie } from "../../components";
 import { default as MultiAddressInput } from "./components/MultiAddressInput";
+import { useColorModeValue } from "@chakra-ui/color-mode";
 
 const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, writeContracts, targetNetwork }) => {
-  /***** Routes *****/
   const routeHistory = useHistory();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -44,55 +36,53 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
     ballots: [],
   });
 
-
   const onSubmit = async event => {
     try {
       event.preventDefault();
       setLoadingText("Submitting...");
       setIsLoading(true);
-      userSigner
-        .signMessage(`Create party:\n${partyObj.name}`)
-        .then(sig => {
-          fetch(`${process.env.REACT_APP_API_URL}/party`, {
-            method: "post",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(partyObj),
-          });
-        })
-        .catch(err => {
-          setIsLoading(false);
-        });
-    } catch {}
+      const sig = await userSigner.signMessage(`Create party:\n${partyObj.name}`);
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/party`, {
+        method: "post",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(partyObj),
+      });
+      setIsLoading(false);
+    } catch {
+      setIsLoading(false);
+    }
   };
 
   const onContinue = () => {
     setIsReview(true);
   };
 
-  const [participantInput, setParticipantInput] = useState([]);
-  const [def, setDef] = useState(null);
-  const [isLookingUp, setIsLookingUp] = useState(true);
-  const [blockie, setBlockie] = useState(null);
-
   const [isReview, setIsReview] = useState(false);
-
   const [voters, setVoters] = useState([]);
   const [candidates, setCandidates] = useState([]);
   const [description, setDescription] = useState("");
   const [name, setName] = useState("");
-  const [config, setConfig] = useState({});
 
   useEffect(() => {
+    const voterAddresses = voters.map(d => d.address);
+    const candidateAddresses = candidates.map(d => d.address);
+    const config = {
+      strategy: "",
+      nvotes: candidateAddresses.length * 5,
+    };
+    if (name !== "" && candidateAddresses.length > 0 && voterAddresses.length > 0) {
+      setIsConfirmDisabled(false);
+    }
     setPartyObj({
       name: name,
       description: description,
       receipts: [],
       config: config,
-      participants: voters,
-      candidates: candidates,
+      participants: voterAddresses,
+      candidates: candidateAddresses,
       ballots: [],
     });
-  }, [voters, candidates, description, name, config]);
+  }, [voters, candidates, description, name]);
 
   const createForm = (
     <Box borderWidth={"1px"} shadow="xl" rounded="md" p="10" w="4xl" minW="sm">
@@ -101,7 +91,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
       </Center>
       <FormControl id="create">
         <FormLabel>Name:</FormLabel>
-        <Box bg="whiteAlpha.800" borderRadius={24} p={6}>
+        <Box bg={useColorModeValue("whiteAlpha.900", "purple.900")} borderRadius={24} p={6}>
           <Input
             defaultValue={name}
             variant="unstyled"
@@ -112,7 +102,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
           />
         </Box>
         <FormLabel>Description:</FormLabel>
-        <Box bg="whiteAlpha.800" borderRadius={24} p={6}>
+        <Box bg={useColorModeValue("whiteAlpha.900", "purple.900")} borderRadius={24} p={6}>
           <Textarea
             defaultValue={description}
             variant="unstyled"
@@ -123,9 +113,8 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
           />
         </Box>
         <FormLabel>Voters: </FormLabel>
-
         <MultiAddressInput
-        defaultValue={voters}
+          // defaultValue={voters}
           ensProvider={mainnetProvider}
           placeholder="Enter voter address/ens"
           value={voters}
@@ -133,7 +122,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
         />
         <FormLabel>Candidates:</FormLabel>
         <MultiAddressInput
-        defaultValue={candidates}
+          // defaultValue={candidates}
           ensProvider={mainnetProvider}
           placeholder="Enter candidate address/ens"
           value={candidates}
