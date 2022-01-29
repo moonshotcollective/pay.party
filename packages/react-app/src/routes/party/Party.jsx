@@ -103,7 +103,6 @@ export default function Party({
     try {
       return (
         <VoteTable
-          dbInstance={db}
           partyData={partyData}
           address={address}
           userSigner={userSigner}

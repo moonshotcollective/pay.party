@@ -21,7 +21,6 @@ import React, { useState, useMemo, useEffect } from "react";
 import AddressChakra from "../../../components/AddressChakra";
 
 export const VoteTable = ({
-  dbInstance,
   partyData,
   address,
   userSigner,
@@ -83,7 +82,7 @@ export const VoteTable = ({
 
       // NOTE: sign typed data for eip712 is underscored because it's in public beta
       if (partyData.participants.map(adr => adr.toLowerCase()).includes(address) && !invalidVotesLeft) {
-        userSigner
+        return userSigner
           ?._signTypedData(domain, types, ballot)
           .then(sig => {
             const ballots = partyData.ballots;
