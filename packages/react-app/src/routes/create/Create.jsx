@@ -226,21 +226,6 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
     </Box>
   );
 
-  // return (
-  // <Box>
-  //   <Button
-  //     size="lg"
-  //     variant="ghost"
-  //     onClick={() => {
-  //       routeHistory.push("/");
-  //     }}
-  //     leftIcon={<ArrowBackIcon />}
-  //   >
-  //     Back
-  //   </Button>
-  //     <Center p="5">{isReview ? reviewForm : createForm}</Center>
-  //   </Box>
-  // );
   return (
     <Box>
       <Button
