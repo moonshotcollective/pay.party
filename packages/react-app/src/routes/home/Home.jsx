@@ -5,21 +5,19 @@ import { useColorModeValue } from "@chakra-ui/color-mode";
 import { Wrap, WrapItem, Stack, Center } from "@chakra-ui/react";
 import React, { useEffect, useState, useMemo } from "react";
 import { useHistory, Link } from "react-router-dom";
-import MongoDbController from "../../controllers/mongodbController";
 import { PartyCard, EmptyCard } from "./components";
 
 function Home({ address, mainnetProvider, tx, readContracts, writeContracts, targetNetwork }) {
   /***** Load Data from db *****/
   const [data, setData] = useState(null);
-  const db = new MongoDbController();
+
   useEffect(() => {
-    db.fetchAllParties()
-      .then(res => {
-        setData(res.data);
-      })
-      .catch(err => {
-        console.log(err);
-      });
+    (async () => {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/parties`);
+      const data = await res.json();
+      setData(data);
+      return res;
+    })();
   }, []);
 
   /***** Routes *****/
@@ -38,7 +36,7 @@ function Home({ address, mainnetProvider, tx, readContracts, writeContracts, tar
         </Box>
       ));
 
-      return c
+    return c;
   }, [data]);
 
   const createElection = () => {

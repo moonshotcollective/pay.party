@@ -10,7 +10,6 @@ import { useSafeAppsSDK } from '@gnosis.pm/safe-apps-react-sdk';
 
 
 export const Distribute = ({
-  dbInstance,
   partyData,
   address,
   userSigner,
@@ -116,7 +115,11 @@ export const Distribute = ({
         token: tokenInstance?.address,
         txn: res.hash,
       };
-      dbInstance.addPartyReceipt(partyData.id, receipt);
+      fetch(`${process.env.REACT_APP_API_URL}/party/${partyData.id}/distribute`, {
+        method: "put",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(receipt),
+      });
     }
     setIsDistributionLoading(false);
   };

@@ -2,7 +2,6 @@ import React, { useEffect, useState, useMemo } from "react";
 import { Button, Box, Center, Menu, MenuButton, MenuList, MenuItem, Text } from "@chakra-ui/react";
 import { ArrowBackIcon, ChevronDownIcon } from "@chakra-ui/icons";
 import { useParams, useHistory } from "react-router-dom";
-import MongoDBController from "../../controllers/mongodbController";
 import { VoteTable, ViewTable, ReceiptsTable, Distribute, Metadata } from "./components";
 
 export default function Party({
@@ -29,18 +28,18 @@ export default function Party({
   const [strategy, setStrategy] = useState("quadratic");
   const [isPaid, setIsPaid] = useState(true);
 
-  const db = new MongoDBController();
 
   useEffect(() => {
     (async () => {
-      const party = await db.fetchParty(id);
-      const submitted = party.data.ballots.filter(b => b.data.ballot.address.toLowerCase() === address);
-      const participating = party.data.participants.map(adr => adr.toLowerCase()).includes(address);
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/party/${id}`);
+      const party = await res.json();
+      const submitted = party.ballots.filter(b => b.data.ballot.address.toLowerCase() === address);
+      const participating = party.participants.map(adr => adr.toLowerCase()).includes(address);
       setAccountVoteData(submitted);
       setCanVote(submitted.length === 0 && participating);
-      setIsPaid(party.data.receipts.length > 0);
+      setIsPaid(party.receipts.length > 0);
       setIsParticipant(participating);
-      setPartyData(party.data);
+      setPartyData(party);
     })();
   }, []);
 
@@ -74,8 +73,9 @@ export default function Party({
       }
       return final;
     } catch (error) {
-      console.log("Error: calculating distribution failed!");
-      console.log(error);
+      // Silently fail :/
+      // console.log("Error: calculating distribution failed!");
+      // console.log(error);
     }
   };
 
@@ -103,7 +103,6 @@ export default function Party({
     try {
       return (
         <VoteTable
-          dbInstance={db}
           partyData={partyData}
           address={address}
           userSigner={userSigner}
@@ -187,7 +186,6 @@ export default function Party({
             </Box>
           )}
           <Distribute
-            dbInstance={db}
             partyData={partyData}
             address={address}
             userSigner={userSigner}
