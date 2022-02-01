@@ -29,7 +29,7 @@ import { useColorModeValue } from "@chakra-ui/color-mode";
 export default function MultiAddressInput(props) {
   const { ensProvider, value, onChange, defaultValue } = props;
   const [isLoading, setIsLoading] = useState(false);
-  
+
   const addressBadge = d => {
     return (
       <Box p="1" key={d.input}>
@@ -38,7 +38,7 @@ export default function MultiAddressInput(props) {
             <Box p="1">
               <Blockie address={d.address} size={5} scale={3} />
             </Box>
-            <TagLabel color={d.isValid ? 'default' : 'red.300'}>{d.input}</TagLabel>
+            <TagLabel color={d.isValid ? "default" : "red.300"}>{d.input}</TagLabel>
             <TagCloseButton
               onClick={e => {
                 onChange(value.filter(obj => obj.input !== d.input));
@@ -51,7 +51,6 @@ export default function MultiAddressInput(props) {
   };
 
   const handleChange = e => {
-    setIsLoading(true);
     const lastInput = e.target.value[e.target.value.length - 1];
     if (lastInput === "," || lastInput === "\n") {
       if (defaultValue && defaultValue.length > 0) {
@@ -73,14 +72,16 @@ export default function MultiAddressInput(props) {
               val.isValid = true;
             } catch {
               val.isValid = false;
-              console.log("Bad Address: " + uin)
+              console.log("Bad Address: " + uin);
             }
             return val;
           });
-        Promise.all(splitInput).then(d => {
-          setIsLoading(false)
-          onChange([...value, ...d]);
-        });
+        setIsLoading(true);
+        Promise.all(splitInput)
+          .then(d => {
+            onChange([...value, ...d]);
+          })
+          .finally(_ => setIsLoading(false));
         e.target.value = "";
       }
     }
@@ -99,7 +100,7 @@ export default function MultiAddressInput(props) {
       />
       <HStack>
         <Spacer />
-        {isLoading ? <Spinner size='sm'/> : <Text color='gray'>{`Count: ${value.length}`}</Text>}
+        {isLoading ? <Spinner size="sm" /> : <Text color="gray">{`Count: ${value.length}`}</Text>}
       </HStack>
     </Box>
   );
