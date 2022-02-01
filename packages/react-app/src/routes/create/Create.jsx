@@ -16,6 +16,7 @@ import React, { useState, useEffect } from "react";
 import { useHistory } from "react-router-dom";
 import { default as MultiAddressInput } from "./components/MultiAddressInput";
 import { useColorModeValue } from "@chakra-ui/color-mode";
+import Blockie from "../../components/Blockie";
 
 const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, writeContracts, targetNetwork }) => {
   const routeHistory = useHistory();
@@ -87,12 +88,14 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
   }, [voters, candidates, description, name]);
 
   const createForm = (
-    <Box borderWidth={"1px"} shadow="xl" rounded="md" p="10" w="4xl" minW="sm">
+    <Box borderWidth={"1px"} shadow="xl" rounded="md" p="10" w="4xl" minW="sm" borderRadius={24}>
       <Center p="5">
         <Text fontSize="xl">Create Party</Text>
       </Center>
       <FormControl id="create">
-        <FormLabel pl='2' pt='2'>Name:</FormLabel>
+        <FormLabel pl="2" pt="2">
+          Name:
+        </FormLabel>
         <Box bg={useColorModeValue("whiteAlpha.900", "purple.900")} borderRadius={24} p={6}>
           <Input
             defaultValue={name}
@@ -103,7 +106,9 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
             onChange={e => setName(e.target.value)}
           />
         </Box>
-        <FormLabel pl='2' pt='2'>Description:</FormLabel>
+        <FormLabel pl="2" pt="2">
+          Description:
+        </FormLabel>
         <Box bg={useColorModeValue("whiteAlpha.900", "purple.900")} borderRadius={24} p={6}>
           <Textarea
             defaultValue={description}
@@ -114,17 +119,19 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
             onChange={e => setDescription(e.target.value)}
           />
         </Box>
-        <FormLabel pl='2' pt='2'>Voters: </FormLabel>
+        <FormLabel pl="2" pt="2">
+          Voters:{" "}
+        </FormLabel>
         <MultiAddressInput
-          // defaultValue={voters}
           ensProvider={mainnetProvider}
           placeholder="Enter voter address/ens"
           value={voters}
           onChange={setVoters}
         />
-        <FormLabel pl='2' pt='2'>Candidates:</FormLabel>
+        <FormLabel pl="2" pt="2">
+          Candidates:
+        </FormLabel>
         <MultiAddressInput
-          // defaultValue={candidates}
           ensProvider={mainnetProvider}
           placeholder="Enter candidate address/ens"
           value={candidates}
@@ -140,7 +147,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
   );
 
   const reviewForm = (
-    <Box borderWidth={"1px"} shadow="xl" rounded="md" p="10" w="4xl" minW="sm">
+    <Box borderWidth={"1px"} shadow="xl" rounded="md" p="10" w="4xl" minW="sm" borderRadius={24}>
       <Center p="5">
         <Text fontSize="xl">Review</Text>
       </Center>
@@ -165,41 +172,39 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
           <Box p="4" borderWidth="1px">
             <Text fontSize="lg">{description}</Text>
           </Box>
-          <FormLabel pt="3">Participants:</FormLabel>
+          <FormLabel pt="3">Voters:</FormLabel>
           <Box p="4" borderWidth="1px" w="min-content">
-            {!isLoading ? (
-              voters.map(d => {
-                return (
-                  <Box p="1">
-                    <HStack spacing={4}>
-                      <Tag size="md" key={d.input} borderRadius="full" variant="solid">
-                        <TagLabel>{d.input}</TagLabel>
-                      </Tag>
-                    </HStack>
-                  </Box>
-                );
-              })
-            ) : (
-              <Text>Loading...</Text>
-            )}
+            {voters.map(d => {
+              return (
+                <Box p="1">
+                  <HStack spacing={4}>
+                    <Tag size="md" key={d.input} borderRadius="full" variant="solid">
+                      <Box p="1">
+                        <Blockie address={d.address} size={5} scale={3} />
+                      </Box>
+                      <TagLabel>{d.input}</TagLabel>
+                    </Tag>
+                  </HStack>
+                </Box>
+              );
+            })}
           </Box>
           <FormLabel pt="3">Candidates:</FormLabel>
           <Box p="4" borderWidth="1px" w="min-content">
-            {!isLoading ? (
-              candidates.map(d => {
-                return (
-                  <Box p="1">
-                    <HStack spacing={4}>
-                      <Tag size="md" key={d.input} borderRadius="full" variant="solid">
-                        <TagLabel>{d.input}</TagLabel>
-                      </Tag>
-                    </HStack>
-                  </Box>
-                );
-              })
-            ) : (
-              <Text>Loading...</Text>
-            )}
+            {candidates.map(d => {
+              return (
+                <Box p="1">
+                  <HStack spacing={4}>
+                    <Tag size="md" key={d.input} borderRadius="full" variant="solid">
+                      <Box p="1">
+                        <Blockie address={d.address} size={5} scale={3} />
+                      </Box>
+                      <TagLabel>{d.input}</TagLabel>
+                    </Tag>
+                  </HStack>
+                </Box>
+              );
+            })}
           </Box>
           <Center pt={10}>
             <Button

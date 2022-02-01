@@ -126,7 +126,6 @@ function App(props) {
   // If you want to bring in the mainnet DAI contract it would look like:
   const mainnetContracts = useContractLoader(mainnetProvider, contractConfig);
 
-
   const { colorMode, toggleColorMode } = useColorMode();
 
   const switchNetwork = e => {
@@ -209,10 +208,11 @@ function App(props) {
       dappId: BLOCKNATIVE_DAPPID,
       walletSelect: {
         wallets: [
+          { walletName: "walletConnect", infuraKey: INFURA_ID },
           { walletName: "metamask" },
           { walletName: "gnosis" },
-          { walletName: "walletConnect", infuraKey: INFURA_ID },
-          { walletName: "tally" }
+          { walletName: "tally" },
+          { walletName: "frame"}
         ],
       },
       subscriptions: {
@@ -285,7 +285,6 @@ function App(props) {
   useEffect(() => {
     setLb(yourLocalBalance);
   }, [yourLocalBalance]);
-
 
   return (
     <div>

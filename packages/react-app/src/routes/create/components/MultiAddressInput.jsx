@@ -27,7 +27,7 @@ import { useColorModeValue } from "@chakra-ui/color-mode";
 */
 
 export default function MultiAddressInput(props) {
-  const { ensProvider, value, onChange, defaultValue } = props;
+  const { ensProvider, value, onChange } = props;
   const [isLoading, setIsLoading] = useState(false);
 
   const addressBadge = d => {
@@ -53,8 +53,6 @@ export default function MultiAddressInput(props) {
   const handleChange = e => {
     const lastInput = e.target.value[e.target.value.length - 1];
     if (lastInput === "," || lastInput === "\n") {
-      if (defaultValue && defaultValue.length > 0) {
-      } else {
         const splitInput = e.currentTarget.value
           .split(/[ ,\n]+/)
           .filter(c => c !== "")
@@ -83,7 +81,6 @@ export default function MultiAddressInput(props) {
           })
           .finally(_ => setIsLoading(false));
         e.target.value = "";
-      }
     }
   };
 
