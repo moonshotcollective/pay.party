@@ -38,7 +38,7 @@ export default function MultiAddressInput(props) {
             <Box p="1">
               <Blockie address={d.address} size={5} scale={3} />
             </Box>
-            <TagLabel>{d.input}</TagLabel>
+            <TagLabel color={d.isValid ? 'default' : 'red.300'}>{d.input}</TagLabel>
             <TagCloseButton
               onClick={e => {
                 onChange(value.filter(obj => obj.input !== d.input));
@@ -73,6 +73,7 @@ export default function MultiAddressInput(props) {
               val.isValid = true;
             } catch {
               val.isValid = false;
+              console.log("Bad Address: " + uin)
             }
             return val;
           });

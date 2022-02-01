@@ -92,7 +92,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
         <Text fontSize="xl">Create Party</Text>
       </Center>
       <FormControl id="create">
-        <FormLabel>Name:</FormLabel>
+        <FormLabel pl='2' pt='2'>Name:</FormLabel>
         <Box bg={useColorModeValue("whiteAlpha.900", "purple.900")} borderRadius={24} p={6}>
           <Input
             defaultValue={name}
@@ -103,7 +103,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
             onChange={e => setName(e.target.value)}
           />
         </Box>
-        <FormLabel>Description:</FormLabel>
+        <FormLabel pl='2' pt='2'>Description:</FormLabel>
         <Box bg={useColorModeValue("whiteAlpha.900", "purple.900")} borderRadius={24} p={6}>
           <Textarea
             defaultValue={description}
@@ -114,7 +114,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
             onChange={e => setDescription(e.target.value)}
           />
         </Box>
-        <FormLabel>Voters: </FormLabel>
+        <FormLabel pl='2' pt='2'>Voters: </FormLabel>
         <MultiAddressInput
           // defaultValue={voters}
           ensProvider={mainnetProvider}
@@ -122,7 +122,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
           value={voters}
           onChange={setVoters}
         />
-        <FormLabel>Candidates:</FormLabel>
+        <FormLabel pl='2' pt='2'>Candidates:</FormLabel>
         <MultiAddressInput
           // defaultValue={candidates}
           ensProvider={mainnetProvider}
