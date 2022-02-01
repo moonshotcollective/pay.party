@@ -1,15 +1,6 @@
 import Blockie from "../../../components/Blockie";
 
-import {
-  Box,
-  Textarea,
-  HStack,
-  Tag,
-  TagLabel,
-  TagCloseButton,
-  Wrap,
-  Spinner,
-} from "@chakra-ui/react";
+import { Box, Textarea, HStack, Text, Tag, TagLabel, Spacer, TagCloseButton, Wrap, Spinner } from "@chakra-ui/react";
 import React, { useState, useEffect } from "react";
 import { useColorModeValue } from "@chakra-ui/color-mode";
 
@@ -36,49 +27,21 @@ import { useColorModeValue } from "@chakra-ui/color-mode";
 */
 
 export default function MultiAddressInput(props) {
-  const { ensProvider, onChange, defaultValue } = props;
-  const [input, setInput] = useState([]);
-  const [voters, setVoters] = useState([]);
-
-  useEffect(() => {
-    input.map(async uin => {
-      if (voters.some(d => d.input === uin)) {
-        //
-      } else {
-        const voter = { input: uin, isValid: null, address: null, ens: null };
-        try {
-          if (uin.endsWith(".eth") || uin.endsWith(".xyz")) {
-            voter.address = await ensProvider.resolveName(uin);
-            voter.ens = uin;
-          } else {
-            voter.ens = await ensProvider.lookupAddress(uin);
-            voter.address = uin;
-          }
-          voter.isValid = true;
-        } catch {
-          voter.isValid = false;
-        }
-        setVoters([...voters, voter]);
-      }
-    });
-  }, [input]);
-
-  useEffect(() => {
-    onChange(voters);
-  }, [voters]);
-
-  const fun = d => {
-    const voter = voters.filter(v => v.input === d)[0];
+  const { ensProvider, value, onChange, defaultValue } = props;
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const addressBadge = d => {
     return (
-      <Box p="1" key={d}>
+      <Box p="1" key={d.input}>
         <HStack spacing={4}>
           <Tag size="md" key="md" borderRadius="full" variant="solid">
-            <Box p="1">{voter ? <Blockie address={voter.address} size={5} scale={3} /> : <Spinner size="xs" />}</Box>
-            <TagLabel>{d}</TagLabel>
+            <Box p="1">
+              <Blockie address={d.address} size={5} scale={3} />
+            </Box>
+            <TagLabel>{d.input}</TagLabel>
             <TagCloseButton
               onClick={e => {
-                setInput(input.filter(adr => adr !== d));
-                setVoters(voters.filter(obj => obj.input !== d));
+                onChange(value.filter(obj => obj.input !== d.input));
               }}
             />
           </Tag>
@@ -87,28 +50,56 @@ export default function MultiAddressInput(props) {
     );
   };
 
+  const handleChange = e => {
+    setIsLoading(true);
+    const lastInput = e.target.value[e.target.value.length - 1];
+    if (lastInput === "," || lastInput === "\n") {
+      if (defaultValue && defaultValue.length > 0) {
+      } else {
+        const splitInput = e.currentTarget.value
+          .split(/[ ,\n]+/)
+          .filter(c => c !== "")
+          .map(async uin => {
+            // Data model
+            let val = { input: uin, isValid: null, address: null, ens: null };
+            try {
+              if (uin.endsWith(".eth") || uin.endsWith(".xyz")) {
+                val.address = await ensProvider.resolveName(uin);
+                val.ens = uin;
+              } else {
+                val.ens = await ensProvider.lookupAddress(uin);
+                val.address = uin;
+              }
+              val.isValid = true;
+            } catch {
+              val.isValid = false;
+            }
+            return val;
+          });
+        Promise.all(splitInput).then(d => {
+          setIsLoading(false)
+          onChange([...value, ...d]);
+        });
+        e.target.value = "";
+      }
+    }
+  };
+
   return (
     <Box bg={useColorModeValue("whiteAlpha.900", "purple.900")} borderRadius={24} p={6}>
-      <Wrap>{input.map(fun)}</Wrap>
+      <Wrap>{value && value.map(addressBadge)}</Wrap>
       <Textarea
+        resize="none"
         variant="unstyled"
         size="lg"
         rows="1"
         placeholder={props.placeholder}
-        onChange={e => {
-          const lastInput = e.target.value[e.target.value.length - 1];
-          if (lastInput === "," || lastInput === "\n") {
-            if (defaultValue && defaultValue.length > 0) {
-              setInput(defaultValue);
-              // e.target.value = "";
-            } else {
-              const splitInput = e.currentTarget.value.split(/[ ,\n]+/).filter(c => c !== "");
-              setInput([...input, ...splitInput]);
-              e.target.value = "";
-            }
-          }
-        }}
+        onChange={handleChange}
       />
+      <HStack>
+        <Spacer />
+        {isLoading ? <Spinner size='sm'/> : <Text color='gray'>{`Count: ${value.length}`}</Text>}
+      </HStack>
     </Box>
   );
 }
