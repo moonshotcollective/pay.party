@@ -60,32 +60,36 @@ export const Distribute = ({
 
   // Update the distrubtion amounts when input total changes
   const handleAmountChange = async e => {
-    if (distribution && distribution.length > 0) {
-      const validDistribution = distribution.filter(d => d.score !== 0);
+    try {
+      if (distribution && distribution.length > 0) {
+        const validDistribution = distribution.filter(d => d.score !== 0);
 
-      const validAdrs = [];
-      const validScores = [];
+        const validAdrs = [];
+        const validScores = [];
 
-      for (let i = 0; i < validDistribution.length; i++) {
-        validAdrs.push(validDistribution[i].address);
-        validScores.push(validDistribution[i].score);
+        for (let i = 0; i < validDistribution.length; i++) {
+          validAdrs.push(validDistribution[i].address);
+          validScores.push(validDistribution[i].score);
+        }
+
+        const amt = Number(e);
+        const adrs = [];
+        const amts = [];
+        let tot = BigNumber.from("0x00");
+        for (let i = 0; i < validAdrs.length; i++) {
+          let pay = (validScores[i] * amt).toFixed(16).toString();
+          const x = BigNumber.from(toWei(pay));
+          amts.push(x);
+          adrs.push(validAdrs[i]);
+          tot = tot.add(x);
+        }
+        setTotal(tot);
+        setAmounts(amts);
+        setAddresses(adrs);
+        setHasApprovedAllowance(false);
       }
-
-      const amt = Number(e);
-      const adrs = [];
-      const amts = [];
-      let tot = BigNumber.from("0x00");
-      for (let i = 0; i < validAdrs.length; i++) {
-        let pay = (validScores[i] * amt).toFixed(16).toString();
-        const x = BigNumber.from(toWei(pay));
-        amts.push(x);
-        adrs.push(validAdrs[i]);
-        tot = tot.add(x);
-      }
-      setTotal(tot);
-      setAmounts(amts);
-      setAddresses(adrs);
-      setHasApprovedAllowance(false);
+    } catch {
+      // Do something
     }
   };
 
@@ -130,11 +134,15 @@ export const Distribute = ({
           // Distribute Token
           tx(writeContracts.Distributor.distributeToken(token, addresses, amounts, partyData.id), handleReceipt);
         } else {
-          // Distribute Ether
-          tx(
-            writeContracts.Distributor.distributeEther(addresses, amounts, partyData.id, { value: total }),
-            handleReceipt,
-          );
+          if (amounts) {
+            // Distribute Ether
+            tx(
+              writeContracts.Distributor.distributeEther(addresses, amounts, partyData.id, { value: total }),
+              handleReceipt,
+            );
+          } else {
+            setIsDistributionLoading(false)
+          }
         }
       }
     } catch (error) {
