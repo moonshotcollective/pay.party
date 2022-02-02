@@ -7,13 +7,14 @@ import { VoteTable, ViewTable, ReceiptsTable, Distribute, Metadata } from "./com
 export default function Party({
   address,
   mainnetProvider,
+  localProvider,
   userSigner,
   targetNetwork,
   tx,
   readContracts,
   writeContracts,
   yourLocalBalance,
-  isSmartContract,
+  isSmartContract
 }) {
   const routeHistory = useHistory();
   let { id } = useParams();
@@ -165,7 +166,7 @@ export default function Party({
         Debug
       </Button> */}
       <Center p="5">
-        <Box borderWidth={"1px"} shadow="xl" rounded="md" p="10" w="4xl">
+        <Box borderWidth={"1px"} shadow="xl" rounded="md" p="10" w="4xl" borderRadius={24}>
           {showDebug && <p>{JSON.stringify(partyData)}</p>}
           <Metadata
             partyData={partyData}
@@ -195,6 +196,7 @@ export default function Party({
             distribution={distribution}
             strategy={strategy}
             isSmartContract={isSmartContract}
+            localProvider={localProvider}
           />
           {isPaid && <ReceiptsTable partyData={partyData} />}
         </Box>

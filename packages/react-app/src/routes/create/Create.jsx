@@ -42,6 +42,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
       event.preventDefault();
       setLoadingText("Submitting...");
       setIsLoading(true);
+
       const sig = await userSigner.signMessage(`Create party:\n${partyObj.name}`);
       const res = await fetch(`${process.env.REACT_APP_API_URL}/party`, {
         method: "post",
