@@ -104,7 +104,6 @@ export default function Party({
     try {
       return (
         <VoteTable
-          // dbInstance={db}
           partyData={partyData}
           address={address}
           userSigner={userSigner}
@@ -167,7 +166,7 @@ export default function Party({
         Debug
       </Button> */}
       <Center p="5">
-        <Box borderWidth={"1px"} shadow="xl" rounded="md" p="10" w="4xl">
+        <Box borderWidth={"1px"} shadow="xl" rounded="md" p="10" w="4xl" borderRadius={24}>
           {showDebug && <p>{JSON.stringify(partyData)}</p>}
           <Metadata
             partyData={partyData}

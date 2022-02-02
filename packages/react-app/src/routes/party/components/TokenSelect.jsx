@@ -33,9 +33,11 @@ export default function TokenSelect({ onChange, chainId = 1, nativeToken = {}, l
   const [list, setList] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
 
-  const listCollection = useMemo(() => {
-    return searchico(list, { keys: ["address", "name", "symbol"] });
-  }, [list.length]);
+  const [listCollection, setListCollection] = useState([]);
+
+  useEffect(() => {
+    setListCollection(searchico(list, { keys: ["address", "name", "symbol"] }));
+  }, [list.length])
 
   const children = useMemo(() => {
     if (searchResults.length < 1) {
@@ -116,14 +118,15 @@ export default function TokenSelect({ onChange, chainId = 1, nativeToken = {}, l
 
   const loadList = async () => {
     // https://tokens.coingecko.com/uniswap/all.json
-    const res = await axios.get("https://tokens.coingecko.com/uniswap/all.json");
-    const { tokens } = res.data;
-
-    setList(tokens);
+    const res = await fetch("https://tokens.coingecko.com/uniswap/all.json");
+    return res.json();
   };
 
   useEffect(() => {
-    loadList();
+    (async () =>{
+      const res = await loadList();
+      setList(res.tokens)
+    })()
   }, []);
 
   return (
