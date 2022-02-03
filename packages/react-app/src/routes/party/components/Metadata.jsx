@@ -1,4 +1,4 @@
-import { Box, Text, Center } from "@chakra-ui/react";
+import { Box, Text, Center, Tooltip } from "@chakra-ui/react";
 import React from "react";
 
 export const Metadata = ({ partyData, mainnetProvider, votesData, distribution, strategy }) => {
@@ -14,10 +14,10 @@ export const Metadata = ({ partyData, mainnetProvider, votesData, distribution, 
         <Text fontSize="sm">{`${partyData.description}`}</Text>
       </Center>
       <Center p="4">
-        <Text
-          fontWeight="semibold"
-          fontSize="lg"
-        >{`Voted: ${partyData?.ballots?.length}/${partyData?.participants?.length}`}</Text>
+        <Text fontWeight="semibold" fontSize="lg">
+          <Tooltip label="Number of people voted">Voted: </Tooltip>
+          {`${partyData?.ballots?.length}/${partyData?.participants?.length}`}
+        </Text>
       </Center>
     </Box>
   );
