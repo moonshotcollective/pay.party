@@ -10,6 +10,7 @@ import {
   HStack,
   Tag,
   TagLabel,
+  Tooltip,
 } from "@chakra-ui/react";
 import { ArrowBackIcon, EditIcon } from "@chakra-ui/icons";
 import React, { useState, useEffect } from "react";
@@ -121,7 +122,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
           />
         </Box>
         <FormLabel pl="2" pt="2">
-          Voters:{" "}
+          <Tooltip label="Voters are persons who vote for the candidates">Voters: </Tooltip>
         </FormLabel>
         <MultiAddressInput
           ensProvider={mainnetProvider}
@@ -130,7 +131,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
           onChange={setVoters}
         />
         <FormLabel pl="2" pt="2">
-          Candidates:
+          <Tooltip label="Candidates are those that are being voted on">Candidates:</Tooltip>
         </FormLabel>
         <MultiAddressInput
           ensProvider={mainnetProvider}

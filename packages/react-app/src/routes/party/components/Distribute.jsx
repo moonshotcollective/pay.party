@@ -1,4 +1,4 @@
-import { Box, Button, Text, Center } from "@chakra-ui/react";
+import { Box, Button, Text, Center, Tooltip } from "@chakra-ui/react";
 import { useColorModeValue } from "@chakra-ui/color-mode";
 import { InputNumber } from "antd";
 import React, { useState } from "react";
@@ -141,7 +141,7 @@ export const Distribute = ({
               handleReceipt,
             );
           } else {
-            setIsDistributionLoading(false)
+            setIsDistributionLoading(false);
           }
         }
       }
@@ -163,7 +163,7 @@ export const Distribute = ({
         ) : (
           <Box p="2">
             <Button onClick={distribute} isLoading={isDistributionLoading}>
-              Distribute
+              <Tooltip label="Amount will be distributed in wei">Distribute</Tooltip>
             </Button>
           </Box>
         )}
@@ -195,7 +195,9 @@ export const Distribute = ({
       <Center>
         <Box p="6" bg={useColorModeValue("whiteAlpha.900", "purple.900")} borderRadius={24}>
           <Box>
-            <Text>Amount</Text>
+            <Text>
+              <Tooltip label="Amount will be distributed in wei">Amount</Tooltip>
+            </Text>
             <InputNumber
               size="large"
               min={0}
