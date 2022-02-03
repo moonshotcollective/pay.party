@@ -82,31 +82,34 @@ export const VoteTable = ({
 
       // NOTE: sign typed data for eip712 is underscored because it's in public beta
       if (partyData.participants.map(adr => adr.toLowerCase()).includes(address) && !invalidVotesLeft) {
-        return userSigner
-          ?._signTypedData(domain, types, ballot)
-          .then(sig => {
-            const ballots = partyData.ballots;
-            const cast = ballots.valueOf(address).filter(d => d.data.ballot.address === address);
-            // TODO: Check if account has already submitted a ballot
-            if (cast.length === 0) {
-              // Push a ballot to the parties sumbitted ballots array
-              return { signature: sig, data: ballot };
-            } else {
-              throw "Error: Account already voted!";
-            }
-          })
-          .then(b => {
-            fetch(`${process.env.REACT_APP_API_URL}/party/${partyData.id}/vote`, {
-              method: "put",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify(b),
-            });
-          })
-          .catch(err => {
-            console.log(err);
-          });
+        const ballots = partyData.ballots;
+        const cast = ballots.valueOf(address).filter(d => d.data.ballot.address === address);
+        if (cast.length === 0) {
+          return (
+            userSigner
+              ?._signTypedData(domain, types, ballot)
+              .then(sig => {
+                return { signature: sig, data: ballot };
+              })
+              .then(b => {
+                fetch(`${process.env.REACT_APP_API_URL}/party/${partyData.id}/vote`, {
+                  method: "put",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(b),
+                });
+              })
+              .then(async _ => {
+                window.location.reload(false);
+              })
+              .catch(err => {
+                console.log(err);
+              })
+          );
+        } else {
+          throw "Error: Account already voted!";
+        }
       } else {
-        console.log("Error: Invalid Ballot!");
+        throw "Error: Invalid Ballot!";
       }
     } catch (error) {
       console.log(error);
@@ -161,7 +164,7 @@ export const VoteTable = ({
   return (
     <Box>
       <Center pt={4}>
-        <Text fontSize="lg">Cast Votes</Text>
+        <Text fontSize="lg">Remaining Votes:</Text>
       </Center>
       <Center pb="3">
         <Text fontWeight="semibold" fontSize="lg">
