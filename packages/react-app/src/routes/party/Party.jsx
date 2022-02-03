@@ -28,6 +28,7 @@ export default function Party({
   const [distribution, setDistribution] = useState();
   const [strategy, setStrategy] = useState("quadratic");
   const [isPaid, setIsPaid] = useState(true);
+  const [amountToDistribute, setAmountToDistribute] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -91,6 +92,7 @@ export default function Party({
           votesData={accountVoteData}
           distribution={dist}
           strategy={strategy}
+          amountToDistribute={amountToDistribute}
         />
       );
     } catch (error) {
@@ -188,19 +190,20 @@ export default function Party({
               {cachedViewTable}
             </Box>
           )}
-          <Box p='6'>
-          <Distribute
-            partyData={partyData}
-            address={address}
-            userSigner={userSigner}
-            writeContracts={writeContracts}
-            readContracts={readContracts}
-            tx={tx}
-            distribution={distribution}
-            strategy={strategy}
-            isSmartContract={isSmartContract}
-            localProvider={localProvider}
-          />
+          <Box p="6">
+            <Distribute
+              partyData={partyData}
+              address={address}
+              userSigner={userSigner}
+              writeContracts={writeContracts}
+              readContracts={readContracts}
+              tx={tx}
+              distribution={distribution}
+              strategy={strategy}
+              isSmartContract={isSmartContract}
+              localProvider={localProvider}
+              setAmountToDistribute={setAmountToDistribute}
+            />
           </Box>
           {isPaid && <ReceiptsTable partyData={partyData} />}
         </Box>

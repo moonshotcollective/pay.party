@@ -12,7 +12,7 @@ import {
 import React, { useState, useMemo } from "react";
 import AddressChakra from "../../../components/AddressChakra";
 
-export const ViewTable = ({ partyData, mainnetProvider, votesData, distribution, strategy }) => {
+export const ViewTable = ({ partyData, mainnetProvider, votesData, distribution, strategy, amountToDistribute }) => {
   const [castVotes, setCastVotes] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -39,6 +39,9 @@ export const ViewTable = ({ partyData, mainnetProvider, votesData, distribution,
               <Td>
                 <Center>{!isNaN(dist[d] * 1) && dist && (dist[d] * 100).toFixed(2)}%</Center>
               </Td>
+              <Td>
+                <Center>{!isNaN(dist[d]) ? (dist[d] * amountToDistribute).toFixed(2) : amountToDistribute}</Center>
+              </Td>
             </Tr>
           </Tbody>
         );
@@ -46,7 +49,7 @@ export const ViewTable = ({ partyData, mainnetProvider, votesData, distribution,
 
     setCastVotes(ballotVotes);
     return row;
-  }, [partyData, votesData, distribution, strategy]); 
+  }, [partyData, votesData, distribution, strategy, amountToDistribute]); 
 
   return (
     <Box>
@@ -61,6 +64,9 @@ export const ViewTable = ({ partyData, mainnetProvider, votesData, distribution,
             </Th>
             <Th>
               <Center>{`Score (${strategy})`}</Center>
+            </Th>
+            <Th>
+              <Center>{"possible payout"}</Center>
             </Th>
           </Tr>
         </Thead>
