@@ -179,17 +179,16 @@ export default function Party({
           ) : (
             <Box>
               <Center pb="2" pt="3">
-                <Text pr="3">
-                  Strategy:
-                  <Tooltip label="There are two strategies: Quadratic and Linear">
-                    <QuestionOutlineIcon w={4} h={4} />
-                  </Tooltip>
-                </Text>
+                <Text pr="3">Strategy:</Text>
                 <StrategySelect />
+                <Tooltip label="There are two strategies: Quadratic and Linear">
+                  <QuestionOutlineIcon w={3.5} h={3.5} />
+                </Tooltip>
               </Center>
               {cachedViewTable}
             </Box>
           )}
+          <Box p='6'>
           <Distribute
             partyData={partyData}
             address={address}
@@ -202,6 +201,7 @@ export default function Party({
             isSmartContract={isSmartContract}
             localProvider={localProvider}
           />
+          </Box>
           {isPaid && <ReceiptsTable partyData={partyData} />}
         </Box>
       </Center>
