@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { Button, Box, Center, Menu, MenuButton, MenuList, MenuItem, Text } from "@chakra-ui/react";
-import { ArrowBackIcon, ChevronDownIcon } from "@chakra-ui/icons";
+import { Button, Box, Center, Menu, MenuButton, MenuList, MenuItem, Text, Tooltip } from "@chakra-ui/react";
+import { ArrowBackIcon, ChevronDownIcon, QuestionOutlineIcon } from "@chakra-ui/icons";
 import { useParams, useHistory } from "react-router-dom";
 import { VoteTable, ViewTable, ReceiptsTable, Distribute, Metadata } from "./components";
 
@@ -14,7 +14,7 @@ export default function Party({
   readContracts,
   writeContracts,
   yourLocalBalance,
-  isSmartContract
+  isSmartContract,
 }) {
   const routeHistory = useHistory();
   let { id } = useParams();
@@ -28,7 +28,6 @@ export default function Party({
   const [distribution, setDistribution] = useState();
   const [strategy, setStrategy] = useState("quadratic");
   const [isPaid, setIsPaid] = useState(true);
-
 
   useEffect(() => {
     (async () => {
@@ -182,10 +181,14 @@ export default function Party({
               <Center pb="2" pt="3">
                 <Text pr="3">Strategy:</Text>
                 <StrategySelect />
+                <Tooltip label="There are two strategies: Quadratic and Linear">
+                  <QuestionOutlineIcon w={3.5} h={3.5} />
+                </Tooltip>
               </Center>
               {cachedViewTable}
             </Box>
           )}
+          <Box p='6'>
           <Distribute
             partyData={partyData}
             address={address}
@@ -198,6 +201,7 @@ export default function Party({
             isSmartContract={isSmartContract}
             localProvider={localProvider}
           />
+          </Box>
           {isPaid && <ReceiptsTable partyData={partyData} />}
         </Box>
       </Center>

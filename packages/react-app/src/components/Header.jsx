@@ -1,6 +1,6 @@
-import React from "react";
-import { Box, Text, HStack } from "@chakra-ui/react";
 import { useColorModeValue } from "@chakra-ui/color-mode";
+import { Box, HStack, Text } from "@chakra-ui/react";
+import React from "react";
 import QDIcon from "./Icons/QDIcon";
 // displays a page header
 
@@ -10,9 +10,9 @@ export default function Header() {
   return (
     <Box pb={0}>
       <HStack>
-        <QDIcon size={24}/>
+        <QDIcon size={24} />
         <Text color={headingColor} fontSize="5xl">
-          pay.party
+            pay.party
         </Text>
       </HStack>
     </Box>

@@ -8,10 +8,12 @@ import {
   Center,
   Text,
   HStack,
+  Spacer,
   Tag,
   TagLabel,
+  Tooltip,
 } from "@chakra-ui/react";
-import { ArrowBackIcon, EditIcon } from "@chakra-ui/icons";
+import { ArrowBackIcon, EditIcon, QuestionOutlineIcon } from "@chakra-ui/icons";
 import React, { useState, useEffect } from "react";
 import { useHistory } from "react-router-dom";
 import { default as MultiAddressInput } from "./components/MultiAddressInput";
@@ -120,18 +122,30 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
             onChange={e => setDescription(e.target.value)}
           />
         </Box>
-        <FormLabel pl="2" pt="2">
-          Voters:{" "}
-        </FormLabel>
+        <HStack>
+          <FormLabel pl="2" pt="2">
+            Voters:
+          </FormLabel>
+          <Spacer />
+          <Tooltip label="Voters are the addresses that are eligible to cast votes.">
+            <QuestionOutlineIcon w={3.5} h={3.5} />
+          </Tooltip>
+        </HStack>
         <MultiAddressInput
           ensProvider={mainnetProvider}
           placeholder="Enter voter address/ens"
           value={voters}
           onChange={setVoters}
         />
-        <FormLabel pl="2" pt="2">
-          Candidates:
-        </FormLabel>
+        <HStack>
+          <FormLabel pl="2" pt="2">
+            Candidates:
+          </FormLabel>
+          <Spacer />
+          <Tooltip label="Candidates are the addresses that are being voted on, and the recipients of distributed funds. This also determines the votes that each voter is able to use.">
+            <QuestionOutlineIcon w={3.5} h={3.5} />
+          </Tooltip>
+        </HStack>
         <MultiAddressInput
           ensProvider={mainnetProvider}
           placeholder="Enter candidate address/ens"
