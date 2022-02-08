@@ -1,6 +1,6 @@
 import { useColorModeValue } from "@chakra-ui/color-mode";
 import { QuestionOutlineIcon } from "@chakra-ui/icons";
-import { Box, Button, Center, Text, Tooltip } from "@chakra-ui/react";
+import { Box, Button, Center, HStack, Text, Tooltip, Spacer } from "@chakra-ui/react";
 import { InputNumber } from "antd";
 import { BigNumber, ethers } from "ethers";
 import React, { useState } from "react";
@@ -165,9 +165,6 @@ export const Distribute = ({
           <Box p="2">
             <Button onClick={distribute} isLoading={isDistributionLoading}>
               Distribute
-              <Tooltip label="Amount will be distributed in wei">
-                <QuestionOutlineIcon w={4} h={4} />
-              </Tooltip>
             </Button>
           </Box>
         )}
@@ -193,18 +190,17 @@ export const Distribute = ({
 
   return (
     <Box>
-      <Center pb="10" pt="10">
-        <Text fontSize="lg">Distribute Funds</Text>
-      </Center>
       <Center>
-        <Box p="6" bg={useColorModeValue("whiteAlpha.900", "purple.900")} borderRadius={24}>
-          <Box>
-            <Text>
-              Amount
-              <Tooltip label="Amount will be distributed in wei">
-                <QuestionOutlineIcon w={4} h={4} />
-              </Tooltip>
-            </Text>
+        <Box p="6" bg={useColorModeValue("whiteAlpha.900", "purple.900")} borderRadius={24} w="calc(65%)">
+          <HStack>
+            <Text fontSize="lg">Distribute Funds</Text>
+            <Spacer />
+            <Tooltip label="Anyone can distribute at any time using their selected distribution strategy. Any ERC-20 Contract is supported.">
+              <QuestionOutlineIcon w={4} h={4} />
+            </Tooltip>
+          </HStack>
+          <Box p='2'>
+            <Text>Amount</Text>
             <InputNumber
               size="large"
               min={0}
@@ -215,7 +211,7 @@ export const Distribute = ({
               style={{ width: "calc(100%)", color: useColorModeValue("black", "lightgray") }}
             ></InputNumber>
           </Box>
-          <Box>
+          <Box p='2'>
             <Text>Select a Token (optional)</Text>
             <TokenSelect
               chainId={userSigner?.provider?._network?.chainId}
