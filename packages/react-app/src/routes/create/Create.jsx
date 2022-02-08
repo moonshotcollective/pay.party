@@ -8,6 +8,7 @@ import {
   Center,
   Text,
   HStack,
+  Spacer,
   Tag,
   TagLabel,
   Tooltip,
@@ -121,24 +122,30 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
             onChange={e => setDescription(e.target.value)}
           />
         </Box>
-        <FormLabel pl="2" pt="2">
-          Voters:{" "}
-          <Tooltip label="Voters are persons who vote for the candidates">
+        <HStack>
+          <FormLabel pl="2" pt="2">
+            Voters:
+          </FormLabel>
+          <Spacer />
+          <Tooltip label="Voters are the addresses that are eligible to cast votes.">
             <QuestionOutlineIcon w={4} h={4} />
           </Tooltip>
-        </FormLabel>
+        </HStack>
         <MultiAddressInput
           ensProvider={mainnetProvider}
           placeholder="Enter voter address/ens"
           value={voters}
           onChange={setVoters}
         />
-        <FormLabel pl="2" pt="2">
-          Candidates:
-          <Tooltip label="Candidates are those that are being voted on">
+        <HStack>
+          <FormLabel pl="2" pt="2">
+            Candidates:
+          </FormLabel>
+          <Spacer />
+          <Tooltip label="Candidates are the addresses that are being voted on, and the recipients of distributed funds.">
             <QuestionOutlineIcon w={4} h={4} />
           </Tooltip>
-        </FormLabel>
+        </HStack>
         <MultiAddressInput
           ensProvider={mainnetProvider}
           placeholder="Enter candidate address/ens"
