@@ -18,6 +18,7 @@ export const Distribute = ({
   strategy,
   isSmartContract,
   localProvider,
+  setAmountToDistribute,
 }) => {
   const [tokenInstance, setTokenInstance] = useState(null);
   const [amounts, setAmounts] = useState(null);
@@ -87,6 +88,7 @@ export const Distribute = ({
         setTotal(tot);
         setAmounts(amts);
         setAddresses(adrs);
+        setAmountToDistribute(amt);
         setHasApprovedAllowance(false);
       }
     } catch {
