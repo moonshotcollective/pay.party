@@ -15,7 +15,10 @@ export const Metadata = ({ partyData, mainnetProvider, votesData, distribution, 
       </Center>
       <Center p="4">
         <Text fontWeight="semibold" fontSize="lg">
-          <Tooltip label="Number of people voted">Voted: </Tooltip>
+          Voted:
+          <Tooltip label="Number of people voted">
+            <QuestionOutlineIcon w={4} h={4} />
+          </Tooltip>
           {`${partyData?.ballots?.length}/${partyData?.participants?.length}`}
         </Text>
       </Center>

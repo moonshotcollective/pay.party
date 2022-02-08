@@ -163,7 +163,10 @@ export const Distribute = ({
         ) : (
           <Box p="2">
             <Button onClick={distribute} isLoading={isDistributionLoading}>
-              <Tooltip label="Amount will be distributed in wei">Distribute</Tooltip>
+              Distribute
+              <Tooltip label="Amount will be distributed in wei">
+                <QuestionOutlineIcon w={4} h={4} />
+              </Tooltip>
             </Button>
           </Box>
         )}
@@ -196,7 +199,10 @@ export const Distribute = ({
         <Box p="6" bg={useColorModeValue("whiteAlpha.900", "purple.900")} borderRadius={24}>
           <Box>
             <Text>
-              <Tooltip label="Amount will be distributed in wei">Amount</Tooltip>
+              Amount
+              <Tooltip label="Amount will be distributed in wei">
+                <QuestionOutlineIcon w={4} h={4} />
+              </Tooltip>
             </Text>
             <InputNumber
               size="large"

@@ -180,7 +180,10 @@ export default function Party({
             <Box>
               <Center pb="2" pt="3">
                 <Text pr="3">
-                  <Tooltip label="There are two strategies: Quadratic and Linear">Strategy:</Tooltip>
+                  Strategy:
+                  <Tooltip label="There are two strategies: Quadratic and Linear">
+                    <QuestionOutlineIcon w={4} h={4} />
+                  </Tooltip>
                 </Text>
                 <StrategySelect />
               </Center>

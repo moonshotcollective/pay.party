@@ -12,7 +12,7 @@ import {
   TagLabel,
   Tooltip,
 } from "@chakra-ui/react";
-import { ArrowBackIcon, EditIcon } from "@chakra-ui/icons";
+import { ArrowBackIcon, EditIcon, QuestionOutlineIcon } from "@chakra-ui/icons";
 import React, { useState, useEffect } from "react";
 import { useHistory } from "react-router-dom";
 import { default as MultiAddressInput } from "./components/MultiAddressInput";
@@ -122,7 +122,10 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
           />
         </Box>
         <FormLabel pl="2" pt="2">
-          <Tooltip label="Voters are persons who vote for the candidates">Voters: </Tooltip>
+          Voters:{" "}
+          <Tooltip label="Voters are persons who vote for the candidates">
+            <QuestionOutlineIcon w={4} h={4} />
+          </Tooltip>
         </FormLabel>
         <MultiAddressInput
           ensProvider={mainnetProvider}
@@ -131,7 +134,10 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
           onChange={setVoters}
         />
         <FormLabel pl="2" pt="2">
-          <Tooltip label="Candidates are those that are being voted on">Candidates:</Tooltip>
+          Candidates:
+          <Tooltip label="Candidates are those that are being voted on">
+            <QuestionOutlineIcon w={4} h={4} />
+          </Tooltip>
         </FormLabel>
         <MultiAddressInput
           ensProvider={mainnetProvider}
