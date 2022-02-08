@@ -99,7 +99,7 @@ export default function Party({
       console.log(error);
       return null;
     }
-  }, [partyData, strategy]);
+  }, [partyData, strategy, amountToDistribute]);
 
   const cachedVoteTable = useMemo(() => {
     try {
