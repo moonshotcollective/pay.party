@@ -1,4 +1,5 @@
 import { Box, Text, Center, Tooltip } from "@chakra-ui/react";
+import { QuestionOutlineIcon } from "@chakra-ui/icons";
 import React from "react";
 
 export const Metadata = ({ partyData, mainnetProvider, votesData, distribution, strategy }) => {

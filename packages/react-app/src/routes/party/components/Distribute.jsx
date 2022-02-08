@@ -1,9 +1,10 @@
-import { Box, Button, Text, Center, Tooltip } from "@chakra-ui/react";
 import { useColorModeValue } from "@chakra-ui/color-mode";
+import { QuestionOutlineIcon } from "@chakra-ui/icons";
+import { Box, Button, Center, Text, Tooltip } from "@chakra-ui/react";
 import { InputNumber } from "antd";
+import { BigNumber, ethers } from "ethers";
 import React, { useState } from "react";
 import { toWei } from "web3-utils";
-import { BigNumber, ethers } from "ethers";
 import TokenSelect from "./TokenSelect";
 
 export const Distribute = ({

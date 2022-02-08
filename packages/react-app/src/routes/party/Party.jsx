@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { Button, Box, Center, Menu, MenuButton, MenuList, MenuItem, Text, Tooltip } from "@chakra-ui/react";
-import { ArrowBackIcon, ChevronDownIcon } from "@chakra-ui/icons";
+import { ArrowBackIcon, ChevronDownIcon, QuestionOutlineIcon } from "@chakra-ui/icons";
 import { useParams, useHistory } from "react-router-dom";
 import { VoteTable, ViewTable, ReceiptsTable, Distribute, Metadata } from "./components";
 
