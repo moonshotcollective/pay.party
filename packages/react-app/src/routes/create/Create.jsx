@@ -142,7 +142,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
             Candidates:
           </FormLabel>
           <Spacer />
-          <Tooltip label="Candidates are the addresses that are being voted on, and the recipients of distributed funds.">
+          <Tooltip label="Candidates are the addresses that are being voted on, and the recipients of distributed funds. This also determines the votes that each voter is able to use.">
             <QuestionOutlineIcon w={3.5} h={3.5} />
           </Tooltip>
         </HStack>
