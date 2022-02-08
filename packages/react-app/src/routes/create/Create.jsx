@@ -128,7 +128,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
           </FormLabel>
           <Spacer />
           <Tooltip label="Voters are the addresses that are eligible to cast votes.">
-            <QuestionOutlineIcon w={4} h={4} />
+            <QuestionOutlineIcon w={3.5} h={3.5} />
           </Tooltip>
         </HStack>
         <MultiAddressInput
@@ -143,7 +143,7 @@ const Create = ({ address, mainnetProvider, userSigner, tx, readContracts, write
           </FormLabel>
           <Spacer />
           <Tooltip label="Candidates are the addresses that are being voted on, and the recipients of distributed funds.">
-            <QuestionOutlineIcon w={4} h={4} />
+            <QuestionOutlineIcon w={3.5} h={3.5} />
           </Tooltip>
         </HStack>
         <MultiAddressInput
