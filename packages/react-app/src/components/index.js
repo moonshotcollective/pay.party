@@ -21,3 +21,5 @@ export { default as Wallet } from "./Wallet";
 export { default as L2Bridge } from "./L2Bridge";
 export { default as Footer } from "./Footer";
 export { default as PayButton } from "./PayButton";
+export { default as NetworkDisplay } from "./NetworkDisplay";
+

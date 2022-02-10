@@ -14,6 +14,7 @@ export default function Account({
   loadWeb3Modal,
   logoutOfWeb3Modal,
   blockExplorer,
+  networkDisplay,
 }) {
   // console.log(address)
   const lookup = useLookupAddress(mainnetProvider, address);
@@ -36,14 +37,17 @@ export default function Account({
     if (address) {
       //web3Modal?.cachedProvider || web3Modal?.provider?.safe) {
       modalButtons.push(
-        <Button key="logoutbutton" size="md" variant="outline" onClick={web3Modal.walletReset}>
-          <Icon viewBox="10 -22 144 144">
-            <svg height="100" width="100">
-              <circle cx="50" cy="50" r="40" fill="#50C878" />
-            </svg>
-          </Icon>
-          {displayAddress}
-        </Button>,
+        <div key="logoutbutton">
+          <Button size="md" variant="outline" onClick={web3Modal.walletReset}>
+            <Icon viewBox="10 -22 144 144">
+              <svg height="100" width="100">
+                <circle cx="50" cy="50" r="40" fill="#50C878" />
+              </svg>
+            </Icon>
+            {displayAddress}
+          </Button>
+          {networkDisplay}
+        </div>
       );
     } else {
       modalButtons.push(
