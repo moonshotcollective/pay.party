@@ -204,7 +204,7 @@ function App(props) {
   let provider;
   useEffect(async () => {
     const onboard = Onboard({
-      networkId: 5,
+      networkId: Number(process.env.REACT_APP_CHAINID),
       dappId: BLOCKNATIVE_DAPPID,
       walletSelect: {
         wallets: [
