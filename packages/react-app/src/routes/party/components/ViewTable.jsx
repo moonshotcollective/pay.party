@@ -1,24 +1,15 @@
-import {
-  Box,
-  Center,
-  Table,
-  Thead,
-  Tbody,
-  Tfoot,
-  Tr,
-  Th,
-  Td,
-} from "@chakra-ui/react";
+import { Box, Center, Table, Thead, Tbody, Tfoot, Tr, Th, Td } from "@chakra-ui/react";
 import React, { useState, useMemo } from "react";
 import AddressChakra from "../../../components/AddressChakra";
 
-export const ViewTable = ({ partyData, mainnetProvider, votesData, distribution, strategy }) => {
+export const ViewTable = ({ partyData, mainnetProvider, votesData, distribution, strategy, amountToDistribute }) => {
   const [castVotes, setCastVotes] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   const candidateRows = useMemo(() => {
     const ballotVotes = votesData && votesData[0] && JSON.parse(votesData[0].data.ballot.votes);
-    const dist = distribution && distribution.reduce((obj, item) => Object.assign(obj, { [item.address]: item.score }), {});
+    const dist =
+      distribution && distribution.reduce((obj, item) => Object.assign(obj, { [item.address]: item.score }), {});
     const row =
       partyData &&
       partyData.candidates &&
@@ -39,6 +30,11 @@ export const ViewTable = ({ partyData, mainnetProvider, votesData, distribution,
               <Td>
                 <Center>{!isNaN(dist[d] * 1) && dist && (dist[d] * 100).toFixed(2)}%</Center>
               </Td>
+              {amountToDistribute ? (
+                <Td>
+                  <Center>{(dist[d] * amountToDistribute).toFixed(2)}</Center>
+                </Td>
+              ) : null}
             </Tr>
           </Tbody>
         );
@@ -46,7 +42,7 @@ export const ViewTable = ({ partyData, mainnetProvider, votesData, distribution,
 
     setCastVotes(ballotVotes);
     return row;
-  }, [partyData, votesData, distribution, strategy]); 
+  }, [partyData, votesData, distribution, strategy, amountToDistribute]);
 
   return (
     <Box>
@@ -62,6 +58,11 @@ export const ViewTable = ({ partyData, mainnetProvider, votesData, distribution,
             <Th>
               <Center>{`Score (${strategy})`}</Center>
             </Th>
+            {amountToDistribute ? (
+              <Th>
+                <Center>{"Payout"}</Center>
+              </Th>
+            ) : null}
           </Tr>
         </Thead>
         {candidateRows}

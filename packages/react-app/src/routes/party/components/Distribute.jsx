@@ -1,9 +1,10 @@
-import { Box, Button, Text, Center } from "@chakra-ui/react";
 import { useColorModeValue } from "@chakra-ui/color-mode";
+import { QuestionOutlineIcon } from "@chakra-ui/icons";
+import { Box, Button, Center, HStack, Text, Tooltip, Spacer } from "@chakra-ui/react";
 import { InputNumber } from "antd";
+import { BigNumber, ethers } from "ethers";
 import React, { useState } from "react";
 import { toWei } from "web3-utils";
-import { BigNumber, ethers } from "ethers";
 import TokenSelect from "./TokenSelect";
 
 export const Distribute = ({
@@ -17,6 +18,7 @@ export const Distribute = ({
   strategy,
   isSmartContract,
   localProvider,
+  setAmountToDistribute,
 }) => {
   const [tokenInstance, setTokenInstance] = useState(null);
   const [amounts, setAmounts] = useState(null);
@@ -86,6 +88,7 @@ export const Distribute = ({
         setTotal(tot);
         setAmounts(amts);
         setAddresses(adrs);
+        setAmountToDistribute(amt);
         setHasApprovedAllowance(false);
       }
     } catch {
@@ -141,7 +144,7 @@ export const Distribute = ({
               handleReceipt,
             );
           } else {
-            setIsDistributionLoading(false)
+            setIsDistributionLoading(false);
           }
         }
       }
@@ -189,12 +192,16 @@ export const Distribute = ({
 
   return (
     <Box>
-      <Center pb="10" pt="10">
-        <Text fontSize="lg">Distribute Funds</Text>
-      </Center>
       <Center>
-        <Box p="6" bg={useColorModeValue("whiteAlpha.900", "purple.900")} borderRadius={24}>
-          <Box>
+        <Box p="6" bg={useColorModeValue("whiteAlpha.900", "purple.900")} borderRadius={24} w="calc(65%)">
+          <HStack>
+            <Text fontSize="lg">Distribute Funds</Text>
+            <Spacer />
+            <Tooltip label="Anyone can distribute at any time using their selected distribution strategy. Any ERC-20 Contract is supported.">
+              <QuestionOutlineIcon w={4} h={4} />
+            </Tooltip>
+          </HStack>
+          <Box p='2'>
             <Text>Amount</Text>
             <InputNumber
               size="large"
@@ -206,7 +213,7 @@ export const Distribute = ({
               style={{ width: "calc(100%)", color: useColorModeValue("black", "lightgray") }}
             ></InputNumber>
           </Box>
-          <Box>
+          <Box p='2'>
             <Text>Select a Token (optional)</Text>
             <TokenSelect
               chainId={userSigner?.provider?._network?.chainId}

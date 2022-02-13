@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { Button, Box, Center, Menu, MenuButton, MenuList, MenuItem, Text } from "@chakra-ui/react";
-import { ArrowBackIcon, ChevronDownIcon } from "@chakra-ui/icons";
+import { Button, Box, Center, Menu, MenuButton, MenuList, MenuItem, Text, Tooltip } from "@chakra-ui/react";
+import { ArrowBackIcon, ChevronDownIcon, QuestionOutlineIcon } from "@chakra-ui/icons";
 import { useParams, useHistory } from "react-router-dom";
 import { VoteTable, ViewTable, ReceiptsTable, Distribute, Metadata } from "./components";
 
@@ -14,7 +14,7 @@ export default function Party({
   readContracts,
   writeContracts,
   yourLocalBalance,
-  isSmartContract
+  isSmartContract,
 }) {
   const routeHistory = useHistory();
   let { id } = useParams();
@@ -28,7 +28,7 @@ export default function Party({
   const [distribution, setDistribution] = useState();
   const [strategy, setStrategy] = useState("quadratic");
   const [isPaid, setIsPaid] = useState(true);
-
+  const [amountToDistribute, setAmountToDistribute] = useState(0);
 
   useEffect(() => {
     (async () => {
@@ -92,13 +92,14 @@ export default function Party({
           votesData={accountVoteData}
           distribution={dist}
           strategy={strategy}
+          amountToDistribute={amountToDistribute}
         />
       );
     } catch (error) {
       console.log(error);
       return null;
     }
-  }, [partyData, strategy]);
+  }, [partyData, strategy, amountToDistribute]);
 
   const cachedVoteTable = useMemo(() => {
     try {
@@ -182,22 +183,28 @@ export default function Party({
               <Center pb="2" pt="3">
                 <Text pr="3">Strategy:</Text>
                 <StrategySelect />
+                <Tooltip label="There are two strategies: Quadratic and Linear">
+                  <QuestionOutlineIcon w={3.5} h={3.5} />
+                </Tooltip>
               </Center>
               {cachedViewTable}
             </Box>
           )}
-          <Distribute
-            partyData={partyData}
-            address={address}
-            userSigner={userSigner}
-            writeContracts={writeContracts}
-            readContracts={readContracts}
-            tx={tx}
-            distribution={distribution}
-            strategy={strategy}
-            isSmartContract={isSmartContract}
-            localProvider={localProvider}
-          />
+          <Box p="6">
+            <Distribute
+              partyData={partyData}
+              address={address}
+              userSigner={userSigner}
+              writeContracts={writeContracts}
+              readContracts={readContracts}
+              tx={tx}
+              distribution={distribution}
+              strategy={strategy}
+              isSmartContract={isSmartContract}
+              localProvider={localProvider}
+              setAmountToDistribute={setAmountToDistribute}
+            />
+          </Box>
           {isPaid && <ReceiptsTable partyData={partyData} />}
         </Box>
       </Center>
