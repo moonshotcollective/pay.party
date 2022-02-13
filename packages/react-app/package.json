@@ -92,6 +92,7 @@
     "react-qr-reader": "^2.2.1",
     "react-router-dom": "^5.2.0",
     "react-scripts": "4.0.0",
+    "react-table": "^7.7.0",
     "searchico": "^1.2.1",
     "uint8arrays": "^3.0.0",
     "walletlink": "^2.1.5",

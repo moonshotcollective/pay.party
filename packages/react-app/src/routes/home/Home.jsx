@@ -5,7 +5,7 @@ import { useColorModeValue } from "@chakra-ui/color-mode";
 import { Wrap, WrapItem, Stack, Center } from "@chakra-ui/react";
 import React, { useEffect, useState, useMemo } from "react";
 import { useHistory, Link } from "react-router-dom";
-import { PartyCard, EmptyCard } from "./components";
+import { PartyCard, EmptyCard, PartyTable } from "./components";
 
 function Home({ address, mainnetProvider, tx, readContracts, writeContracts, targetNetwork }) {
   /***** Load Data from db *****/
@@ -55,7 +55,8 @@ function Home({ address, mainnetProvider, tx, readContracts, writeContracts, tar
         </Button>
       </HStack>
       <Center>
-        <Stack>{cards && cards.length > 0 ? cards : <EmptyCard />}</Stack>
+        {/* <Stack>{cards && cards.length > 0 ? cards : <EmptyCard />}</Stack> */}
+      <PartyTable parties={data} />
       </Center>
     </Box>
   );
