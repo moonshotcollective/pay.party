@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { Button, Box, Center, Menu, MenuButton, MenuList, MenuItem, Text, Tooltip } from "@chakra-ui/react";
+import { Button, Box, Center, Menu, MenuButton, MenuList, MenuItem, Text, Tooltip, Spinner } from "@chakra-ui/react";
 import { ArrowBackIcon, ChevronDownIcon, QuestionOutlineIcon } from "@chakra-ui/icons";
 import { useParams, useHistory } from "react-router-dom";
 import { VoteTable, ViewTable, ReceiptsTable, Distribute, Metadata } from "./components";
@@ -31,6 +31,7 @@ export default function Party({
   const [amountToDistribute, setAmountToDistribute] = useState(0);
 
   useEffect(() => {
+    setLoading(true);
     (async () => {
       const res = await fetch(`${process.env.REACT_APP_API_URL}/party/${id}`);
       const party = await res.json();
@@ -41,6 +42,7 @@ export default function Party({
       setIsPaid(party.receipts.length > 0);
       setIsParticipant(participating);
       setPartyData(party);
+      setLoading(false);
     })();
   }, []);
 
@@ -169,13 +171,19 @@ export default function Party({
       <Center p="5">
         <Box borderWidth={"1px"} shadow="xl" rounded="md" p="10" w="4xl" borderRadius={24}>
           {showDebug && <p>{JSON.stringify(partyData)}</p>}
-          <Metadata
-            partyData={partyData}
-            mainnetProvider={mainnetProvider}
-            votesData={accountVoteData}
-            distribution={distribution}
-            strategy={strategy}
-          />
+          {loading ? (
+            <Center>
+              <Spinner size='xl' />
+            </Center>
+          ) : (
+            <Metadata
+              partyData={partyData}
+              mainnetProvider={mainnetProvider}
+              votesData={accountVoteData}
+              distribution={distribution}
+              strategy={strategy}
+            />
+          )}
           {canVote ? (
             cachedVoteTable
           ) : (

@@ -117,6 +117,6 @@ export const PartyTable = ({ parties }) => {
       </Box>
     </Box>
   ) : (
-    <Spinner />
+    <Spinner size='xl'/>
   );
 };
