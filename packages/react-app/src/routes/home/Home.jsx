@@ -1,5 +1,5 @@
 import { Button } from "@chakra-ui/button";
-import { AddIcon } from "@chakra-ui/icons";
+import { AddIcon, CheckIcon } from "@chakra-ui/icons";
 import { Box, Heading, HStack, Spacer, Flex } from "@chakra-ui/layout";
 import { useColorModeValue } from "@chakra-ui/color-mode";
 import { Wrap, WrapItem, Stack, Center, Text, Input } from "@chakra-ui/react";
@@ -9,7 +9,9 @@ import { PartyCard, EmptyCard, PartyTable } from "./components";
 
 function Home({ address, mainnetProvider, tx, readContracts, writeContracts, targetNetwork }) {
   /***** Load Data from db *****/
-  const [data, setData] = useState(null);
+  const [data, setdata] = useState(null);
+  const [id, setId] = useState(null);
+  const [isInvalidId, setIsInvalidId] = useState(null);
 
   // useEffect(() => {
   //   (async () => {
@@ -20,14 +22,14 @@ function Home({ address, mainnetProvider, tx, readContracts, writeContracts, tar
   //   })();
   // }, []);
   //
-  const fetchParty = useMemo(_ => {
+  const fetchParties = _ => {
     (async () => {
       const res = await fetch(`${process.env.REACT_APP_API_URL}/parties`);
       const data = await res.json();
       setData(data);
       return res;
     })();
-  });
+  };
 
   /***** Routes *****/
   const routeHistory = useHistory();
@@ -52,8 +54,25 @@ function Home({ address, mainnetProvider, tx, readContracts, writeContracts, tar
     routeHistory.push("/create");
   };
 
-  const joinParty = id => {
-    routeHistory.push(`/party/${id}`);
+  const joinParty = async id => {
+    //fetchParties();
+
+    try {
+      // Fetch the party
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/party/${id}`);
+      const data = await res.json();
+      routeHistory.push(`/party/${id}`);
+      //setData(data);
+      //return res;
+
+      if (data) {
+        console.log(data);
+      }
+    } catch (err) {
+      setIsInvalidId(true);
+      console.log(err);
+    }
+    // routeHistory.push(`/party/${id}`);
   };
 
   // return (
@@ -77,14 +96,39 @@ function Home({ address, mainnetProvider, tx, readContracts, writeContracts, tar
 
   return (
     <Center>
-      <Box borderWidth={1} borderRadius={24} shadow="xl">
-        <Text>Join the party</Text>
-        <Input placeholder="Party name"></Input>
+      <Box borderWidth={1} borderRadius={24} shadow="xl" p={10}>
         <Center>
-          <Button onClick={joinParty}>Join</Button>
-          <Button onClick={createParty} rightIcon={<AddIcon />} size="lg" variant="ghost">
-            Create Party
-          </Button>
+          <Text fontSize="xl" fontWeight="semibold" p={6}>
+            Join the party
+          </Text>
+        </Center>
+        <Box bg="whiteAlpha.800" borderRadius={24}>
+          <Input
+            variant="unstyled"
+            p={6}
+            isInvalid={isInvalidId}
+            placeholder="Party name"
+            onChange={e => setId(e.target.value)}
+          ></Input>
+        </Box>
+        <Center>
+          <Box p={2}>
+            <Button
+              rightIcon={<CheckIcon />}
+              onClick={_ => {
+                if (id) {
+                  joinParty(id);
+                }
+              }}
+            >
+              Join Party
+            </Button>
+          </Box>
+          <Box p={2}>
+            <Button onClick={createParty} rightIcon={<AddIcon />} size="lg" variant="ghost">
+              Create Party
+            </Button>
+          </Box>
         </Center>
       </Box>
     </Center>
