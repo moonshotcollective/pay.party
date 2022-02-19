@@ -13,15 +13,6 @@ function Home({ address, mainnetProvider, tx, readContracts, writeContracts, tar
   const [id, setId] = useState(null);
   const [isInvalidId, setIsInvalidId] = useState(null);
 
-  // useEffect(() => {
-  //   (async () => {
-  //     const res = await fetch(`${process.env.REACT_APP_API_URL}/parties`);
-  //     const data = await res.json();
-  //     setData(data);
-  //     return res;
-  //   })();
-  // }, []);
-  //
   const fetchParties = _ => {
     (async () => {
       const res = await fetch(`${process.env.REACT_APP_API_URL}/parties`);
@@ -37,62 +28,25 @@ function Home({ address, mainnetProvider, tx, readContracts, writeContracts, tar
   /***** States *****/
   const headingColor = useColorModeValue("gray.800", "whiteAlpha.900");
 
-  // TODO: Implement a sortable table
-  // const cards = useMemo(() => {
-  //   let c =
-  //     data &&
-  //     data.map(d => (
-  //       <Box p="2" pr="10" key={`party-${d.id}`}>
-  //         <PartyCard name={d.name} desc={d.description} id={d.id} />
-  //       </Box>
-  //     ));
-
-  //   return c;
-  // }, [data]);
-
+  /***** Create a party *****/
   const createParty = _ => {
     routeHistory.push("/create");
   };
 
+  /***** Join a party from ID *****/
   const joinParty = async id => {
-    //fetchParties();
-
     try {
       // Fetch the party
       const res = await fetch(`${process.env.REACT_APP_API_URL}/party/${id}`);
       const data = await res.json();
+      setIsInvalidId(false);
       routeHistory.push(`/party/${id}`);
-      //setData(data);
-      //return res;
-
-      if (data) {
-        console.log(data);
-      }
     } catch (err) {
+      // TODO: User feedback when electionId is invalid/DNE
       setIsInvalidId(true);
       console.log(err);
     }
-    // routeHistory.push(`/party/${id}`);
   };
-
-  // return (
-  //   <Box>
-  //     <HStack>
-  //       <Heading pl={2} as="h1" size="md" color={headingColor}>
-  //         All Parties
-  //       </Heading>
-  //       <Spacer />
-  //       <Button onClick={createElection} rightIcon={<AddIcon />} size="lg" variant="ghost">
-  //         Create Party
-  //       </Button>
-  //     </HStack>
-  //     <Center>
-  //       {/* <Stack>{cards && cards.length > 0 ? cards : <EmptyCard />}</Stack> */}
-  //     <PartyTable parties={data} />
-  //     </Center>
-  //   </Box>
-  // );
-  //
 
   return (
     <Center>
@@ -102,7 +56,7 @@ function Home({ address, mainnetProvider, tx, readContracts, writeContracts, tar
             Join the party
           </Text>
         </Center>
-        <Box bg="whiteAlpha.800" borderRadius={24}>
+        <Box bg={useColorModeValue("whiteAlpha.900", "purple.900")} borderRadius={24}>
           <Input
             variant="unstyled"
             p={6}
