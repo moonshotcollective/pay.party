@@ -6,6 +6,8 @@ import { Wrap, WrapItem, Stack, Center, Text, Input } from "@chakra-ui/react";
 import React, { useEffect, useState, useMemo } from "react";
 import { useHistory, Link } from "react-router-dom";
 import { PartyCard, EmptyCard, PartyTable } from "./components";
+import { Alert, AlertIcon, AlertTitle, AlertDescription } from "@chakra-ui/react";
+import { CloseButton } from "@chakra-ui/react";
 
 function Home({ address, mainnetProvider, tx, readContracts, writeContracts, targetNetwork }) {
   /***** Load Data from db *****/
@@ -48,26 +50,38 @@ function Home({ address, mainnetProvider, tx, readContracts, writeContracts, tar
     }
   };
 
+  const alertInvalidId = _ => {
+    return isInvalidId ? (
+      <Alert status="error">
+        <AlertIcon />
+        <AlertTitle mr={2}>Invalid Party!</AlertTitle>
+        <CloseButton position="absolute" right="8px" top="8px" onClick={_ => setIsInvalidId(false)} />
+      </Alert>
+    ) : null;
+  };
+
   return (
     <Center>
-      <Box borderWidth={1} borderRadius={24} shadow="xl" p={10}>
+      <Box borderWidth={1} borderRadius={24} shadow="xl" pl={10} pr={10} pb={6}>
         <Center>
           <Text fontSize="xl" fontWeight="semibold" p={6}>
             Join the party
           </Text>
         </Center>
         <Box bg={useColorModeValue("whiteAlpha.900", "purple.900")} borderRadius={24}>
+          {alertInvalidId()}
           <Input
             variant="unstyled"
             p={6}
             isInvalid={isInvalidId}
-            placeholder="Party name"
+            placeholder="Party Id"
             onChange={e => setId(e.target.value)}
           ></Input>
         </Box>
         <Center>
-          <Box p={2}>
+          <Box pt={4} pr={2}>
             <Button
+              size="lg"
               rightIcon={<CheckIcon />}
               onClick={_ => {
                 if (id) {
@@ -78,8 +92,8 @@ function Home({ address, mainnetProvider, tx, readContracts, writeContracts, tar
               Join Party
             </Button>
           </Box>
-          <Box p={2}>
-            <Button onClick={createParty} rightIcon={<AddIcon />} size="lg" variant="ghost">
+          <Box pt={4} pl={2}>
+            <Button onClick={createParty} rightIcon={<AddIcon />} size="lg" variant="outline">
               Create Party
             </Button>
           </Box>
