@@ -14,14 +14,12 @@ function Home({ address, mainnetProvider, tx, readContracts, writeContracts, tar
   const [data, setdata] = useState(null);
   const [id, setId] = useState(null);
   const [isInvalidId, setIsInvalidId] = useState(null);
+  const [isLoading, setIsLoading] = useState(null);
 
-  const fetchParties = _ => {
-    (async () => {
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/parties`);
-      const data = await res.json();
-      setData(data);
-      return res;
-    })();
+  const fetchParties = async _ => {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/parties`);
+    const data = await res.json();
+    return data;
   };
 
   /***** Routes *****/
@@ -38,14 +36,20 @@ function Home({ address, mainnetProvider, tx, readContracts, writeContracts, tar
   /***** Join a party from ID *****/
   const joinParty = async id => {
     try {
-      // Fetch the party
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/party/${id}`);
-      const data = await res.json();
-      setIsInvalidId(false);
-      routeHistory.push(`/party/${id}`);
+      setIsLoading(true);
+      const parties = await fetchParties();
+      const match = parties.filter(p => {
+        return p.name === id || p.id === id;
+      });
+      if (match.length === 1) {
+        routeHistory.push(`/party/${match[0].id}`);
+      } else {
+        setIsInvalidId(true);
+      }
+      setIsLoading(false);
     } catch (err) {
-      // TODO: User feedback when electionId is invalid/DNE
       setIsInvalidId(true);
+      setIsLoading(false);
       console.log(err);
     }
   };
@@ -74,13 +78,14 @@ function Home({ address, mainnetProvider, tx, readContracts, writeContracts, tar
             variant="unstyled"
             p={6}
             isInvalid={isInvalidId}
-            placeholder="Party Id"
+            placeholder="Party Name/ID"
             onChange={e => setId(e.target.value)}
           ></Input>
         </Box>
         <Center>
           <Box pt={4} pr={2}>
             <Button
+              isLoading={isLoading}
               size="lg"
               rightIcon={<CheckIcon />}
               onClick={_ => {
