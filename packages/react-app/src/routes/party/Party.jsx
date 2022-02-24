@@ -3,6 +3,7 @@ import { Button, Box, Center, Menu, MenuButton, MenuList, MenuItem, Text, Toolti
 import { ArrowBackIcon, ChevronDownIcon, QuestionOutlineIcon } from "@chakra-ui/icons";
 import { useParams, useHistory } from "react-router-dom";
 import { VoteTable, ViewTable, ReceiptsTable, Distribute, Metadata } from "./components";
+import { utils } from "ethers";
 
 export default function Party({
   address,
@@ -40,6 +41,10 @@ export default function Party({
       setAccountVoteData(submitted);
       setCanVote(submitted.length === 0 && participating);
       setIsPaid(party.receipts.length > 0);
+      const len = party.receipts.length;
+      if(len > 0) {
+        setAmountToDistribute(utils.formatEther(party.receipts[len-1].amount));
+      }
       setIsParticipant(participating);
       setPartyData(party);
       setLoading(false);
