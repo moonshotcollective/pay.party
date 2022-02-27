@@ -70,25 +70,25 @@ module.exports = {
     },
     rinkeby: {
       url: `https://rinkeby.infura.io/v3/${process.env.RINKEBY_INFURA_KEY}`,
-      accounts: [process.env.RINKEBY_DEPLOYER_PRIV_KEY],
+      accounts: process.env.RINKEBY_DEPLOYER_PRIV_KEY ? [`${process.env.RINKEBY_DEPLOYER_PRIV_KEY}`] : [],
     },
     goerli: {
-      url: `https://goerli.infura.io/v3/${process.env.RINKEBY_INFURA_KEY}`,
-      accounts: [process.env.GOERLI_DEPLOYER_PRIV_KEY],
+      url: `https://goerli.infura.io/v3/${process.env.GOERLI_INFURA_KEY}`,
+      accounts: process.env.GOERLI_DEPLOYER_PRIV_KEY ? [`${process.env.GOERLI_DEPLOYER_PRIV_KEY}`] : [],
     },
     mainnet: {
       url: `https://mainnet.infura.io/v3/${process.env.MAINNET_INFURA_KEY}`,
-      accounts: [`${process.env.MAINNET_DEPLOYER_PRIV_KEY}`],
+      accounts: process.env.MAINNET_DEPLOYER_PRIV_KEY ? [`${process.env.MAINNET_DEPLOYER_PRIV_KEY}`] : [],
     },
     xdai: {
       url: "https://dai.poa.network",
       gasPrice: 1000000000,
-      accounts: [`${process.env.XDAI_DEPLOYER_PRIV_KEY}`],
+      accounts: process.env.XDAI_DEPLOYER_PRIV_KEY ? [`${process.env.XDAI_DEPLOYER_PRIV_KEY}`] : [],
     },
     matic: {
       url: `https://polygon-mainnet.infura.io/v3/${process.env.POLYGON_INFURA_KEY}`, // <---- YOUR MORALIS ID! (not limited to infura)
       gasPrice: 1000000000,
-      accounts: [`${process.env.POLYGON_DEPLOYER_PRIV_KEY}`],
+      accounts: process.env.POLYGON_DEPLOYER_PRIV_KEY ? [`${process.env.POLYGON_DEPLOYER_PRIV_KEY}`] : [],
     },
     // matic: {
     //   url: "https://rpc-mainnet.maticvigil.com/",
@@ -201,20 +201,11 @@ module.exports = {
   solidity: {
     compilers: [
       {
-        version: "0.8.9",
+        version: "0.8.12",
         settings: {
           optimizer: {
             enabled: true,
-            runs: 999,
-          },
-        },
-      },
-      {
-        version: "0.6.7",
-        settings: {
-          optimizer: {
-            enabled: true,
-            runs: 200,
+            runs: 9999,
           },
         },
       },
