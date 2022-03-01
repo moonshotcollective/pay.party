@@ -9,18 +9,32 @@ import { PartyCard, EmptyCard, PartyTable } from "./components";
 import { Alert, AlertIcon, AlertTitle, AlertDescription } from "@chakra-ui/react";
 import { CloseButton } from "@chakra-ui/react";
 
-function Home({ address, mainnetProvider, tx, readContracts, writeContracts, targetNetwork }) {
+function Home({
+  address,
+  mainnetProvider,
+  tx,
+  readContracts,
+  writeContracts,
+  targetNetwork,
+  setPartyName,
+  partyName,
+  partyJson,
+  setPartyJson,
+}) {
   /***** Load Data from db *****/
   const [data, setdata] = useState(null);
   const [id, setId] = useState(null);
   const [isInvalidId, setIsInvalidId] = useState(null);
   const [isLoading, setIsLoading] = useState(null);
 
-  const fetchParties = async _ => {
-    const res = await fetch(`${process.env.REACT_APP_API_URL}/parties`);
-    const data = await res.json();
-    return data;
-  };
+  useEffect(_ => {
+    (async _ => {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/parties`);
+      const data = await res.json();
+      setPartyJson(data);
+      return data;
+    })();
+  });
 
   /***** Routes *****/
   const routeHistory = useHistory();
@@ -30,6 +44,7 @@ function Home({ address, mainnetProvider, tx, readContracts, writeContracts, tar
 
   /***** Create a party *****/
   const createParty = _ => {
+    setPartyName(id);
     routeHistory.push("/create");
   };
 
@@ -37,7 +52,7 @@ function Home({ address, mainnetProvider, tx, readContracts, writeContracts, tar
   const joinParty = async id => {
     try {
       setIsLoading(true);
-      const parties = await fetchParties();
+      const parties = partyJson;
       const match = parties.filter(p => {
         return p.name === id || p.id === id;
       });
@@ -65,8 +80,8 @@ function Home({ address, mainnetProvider, tx, readContracts, writeContracts, tar
   };
 
   return (
-    <Center>
-      <Box borderWidth={1} borderRadius={24} shadow="xl" pl={10} pr={10} pb={6}>
+    <Center pt={10}>
+      <Box borderWidth={1} borderRadius={24} shadow="xl" pl={10} pr={10} pb={6} pt={2}>
         <Center>
           <Text fontSize="xl" fontWeight="semibold" p={6}>
             Join the party
@@ -82,8 +97,14 @@ function Home({ address, mainnetProvider, tx, readContracts, writeContracts, tar
             onChange={e => setId(e.target.value)}
           ></Input>
         </Box>
-        <Center>
+        <Center pt={4}>
           <Box pt={4} pr={2}>
+            <Button onClick={createParty} rightIcon={<AddIcon />} size="lg" variant="outline">
+              Create Party
+            </Button>
+          </Box>
+          <Text pt="1em">or</Text>
+          <Box pt={4} pl={2}>
             <Button
               isLoading={isLoading}
               size="lg"
@@ -95,11 +116,6 @@ function Home({ address, mainnetProvider, tx, readContracts, writeContracts, tar
               }}
             >
               Join Party
-            </Button>
-          </Box>
-          <Box pt={4} pl={2}>
-            <Button onClick={createParty} rightIcon={<AddIcon />} size="lg" variant="outline">
-              Create Party
             </Button>
           </Box>
         </Center>
