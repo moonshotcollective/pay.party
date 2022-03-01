@@ -212,7 +212,7 @@ function App(props) {
           { walletName: "metamask" },
           { walletName: "gnosis" },
           { walletName: "tally" },
-          { walletName: "frame"}
+          { walletName: "frame" },
         ],
       },
       subscriptions: {
@@ -286,6 +286,9 @@ function App(props) {
     setLb(yourLocalBalance);
   }, [yourLocalBalance]);
 
+  const [partyName, setPartyName] = useState("");
+  const [partyJson, setPartyJson] = useState(null);
+
   return (
     <div>
       <Box mb={8} pl={"14vw"} pr={"14vw"}>
@@ -331,6 +334,10 @@ function App(props) {
                   readContracts={readContracts}
                   writeContracts={writeContracts}
                   mainnetProvider={mainnetProvider}
+                  setPartyName={setPartyName}
+                  partyName={partyName}
+                  partyJson={partyJson}
+                  setPartyJson={setPartyJson}
                 />
               </Route>
               <Route path="/create">
@@ -345,6 +352,9 @@ function App(props) {
                   targetNetwork={targetNetwork}
                   writeContracts={writeContracts}
                   readContracts={readContracts}
+                  partyName={partyName}
+                  partyJson={partyJson}
+                  setPartyJson={setPartyJson}
                 />
               </Route>
               <Route path="/party/:id">
