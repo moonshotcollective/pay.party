@@ -213,7 +213,10 @@ export default function Party({
               setAmountToDistribute={setAmountToDistribute}
             />
           </Box>
-          {isPaid && <ReceiptsTable partyData={partyData} />}
+          {isPaid && <ReceiptsTable 
+            partyData={partyData}
+            targetNetwork={targetNetwork}
+          />}
         </Box>
       </Center>
     </Box>

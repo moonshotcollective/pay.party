@@ -17,7 +17,7 @@ import { ExternalLinkIcon } from "@chakra-ui/icons";
 import React, { useState, useMemo } from "react";
 import { utils } from "ethers";
 
-export const ReceiptsTable = ({ partyData }) => {
+export const ReceiptsTable = ({ partyData, targetNetwork }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   const receiptRows = useMemo(() => {
@@ -45,7 +45,7 @@ export const ReceiptsTable = ({ partyData }) => {
                     <HStack p="1">
                       <Text>ERC-20:</Text>
                       <Badge w="min">
-                        <Link href={`https://etherscan.io/address/${r.token}`} isExternal>
+                        <Link href={`${targetNetwork.blockExplorer}address/${r.token}`} isExternal>
                           {r.token}
                           <ExternalLinkIcon mx="2px" />
                         </Link>
@@ -55,7 +55,7 @@ export const ReceiptsTable = ({ partyData }) => {
                   <HStack p="1">
                     <Text>Txn:</Text>
                     <Badge colorScheme="green" w="min">
-                      <Link href={`https://etherscan.io/tx/${r.txn}`} isExternal>
+                      <Link href={`${targetNetwork.blockExplorer}tx/${r.txn}`} isExternal>
                         {r.txn}
                         <ExternalLinkIcon mx="2px" />
                       </Link>
