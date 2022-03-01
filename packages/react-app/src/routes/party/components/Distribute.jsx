@@ -2,7 +2,7 @@ import { useColorModeValue } from "@chakra-ui/color-mode";
 import { QuestionOutlineIcon } from "@chakra-ui/icons";
 import { Box, Button, Center, HStack, Text, Tooltip, Spacer } from "@chakra-ui/react";
 import { InputNumber } from "antd";
-import { BigNumber, ethers } from "ethers";
+import { BigNumber, ethers, utils } from "ethers";
 import React, { useState } from "react";
 import { toWei } from "web3-utils";
 import TokenSelect from "./TokenSelect";
@@ -88,7 +88,12 @@ export const Distribute = ({
         setTotal(tot);
         setAmounts(amts);
         setAddresses(adrs);
-        setAmountToDistribute(amt);
+        const len = partyData.receipts.length;
+        if(len > 0) {
+          amt > 0 ? setAmountToDistribute(amt) : setAmountToDistribute(utils.formatEther(partyData.receipts[len-1].amount));
+        } else {
+         amt > 0 ? setAmountToDistribute(amt) : setAmountToDistribute(0);
+        }
         setHasApprovedAllowance(false);
       }
     } catch {
