@@ -300,8 +300,10 @@ function App(props) {
           </WrapItem>
           <Spacer />
           <WrapItem>
-            <Box pt={5}>{networkSelect}</Box>
-            <Box pt={5}>
+            <Box pt={8} pr={2}>
+              {networkSelect}
+            </Box>
+            <Box pt={8} pr={2}>
               <Account
                 address={address}
                 localProvider={localProvider}
@@ -314,7 +316,7 @@ function App(props) {
                 blockExplorer={blockExplorer}
               />
             </Box>
-            <Box pt={5}>
+            <Box pt={8}>
               <IconButton
                 variant="ghost"
                 icon={colorMode === "light" ? <MoonIcon /> : <SunIcon />}

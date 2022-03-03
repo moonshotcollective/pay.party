@@ -20,29 +20,25 @@ import {
 import React, { useState, useMemo, useEffect } from "react";
 import AddressChakra from "../../../components/AddressChakra";
 
-export const VoteTable = ({
-  partyData,
-  address,
-  userSigner,
-  targetNetwork,
-  readContracts,
-  mainnetProvider,
-}) => {
+export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readContracts, mainnetProvider }) => {
   // Init votes data to 0 votes for each candidate
   const [votesData, setVotesData] = useState(null);
   // Init votes left to nvotes
   const [votesLeft, setVotesLeft] = useState(null);
   const [invalidVotesLeft, setInvalidVotesLeft] = useState(false);
 
-  useEffect(() => {
-    try {
-      setVotesData(partyData.candidates.reduce((o, key) => ({ ...o, [key]: 0 }), {}));
-      setVotesLeft(partyData.config.nvotes);
-    } catch (error) {
-      // Do something?
-      console.log(error);
-    }
-  }, [partyData]);
+  useEffect(
+    _ => {
+      try {
+        setVotesData(partyData.candidates.reduce((o, key) => ({ ...o, [key]: 0 }), {}));
+        setVotesLeft(partyData.config.nvotes);
+      } catch (error) {
+        // Do something?
+        console.log(error);
+      }
+    },
+    [partyData],
+  );
 
   const handleVotesChange = (event, adr) => {
     votesData[adr] = Number(event);
@@ -51,7 +47,7 @@ export const VoteTable = ({
     setInvalidVotesLeft(spent > partyData.config.nvotes);
   };
 
-  const vote = async () => {
+  const vote = async _ => {
     try {
       // EIP-712 Typed Data
       // See: https://eips.ethereum.org/EIPS/eip-712
@@ -85,26 +81,24 @@ export const VoteTable = ({
         const ballots = partyData.ballots;
         const cast = ballots.valueOf(address).filter(d => d.data.ballot.address === address);
         if (cast.length === 0) {
-          return (
-            userSigner
-              ?._signTypedData(domain, types, ballot)
-              .then(sig => {
-                return { signature: sig, data: ballot };
-              })
-              .then(b => {
-                fetch(`${process.env.REACT_APP_API_URL}/party/${partyData.id}/vote`, {
-                  method: "put",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(b),
-                });
-              })
-              .then(async _ => {
-                window.location.reload(false);
-              })
-              .catch(err => {
-                console.log(err);
-              })
-          );
+          return userSigner
+            ?._signTypedData(domain, types, ballot)
+            .then(sig => {
+              return { signature: sig, data: ballot };
+            })
+            .then(async b => {
+              await fetch(`${process.env.REACT_APP_API_URL}/party/${partyData.id}/vote`, {
+                method: "put",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(b),
+              });
+            })
+            .then(_ => {
+              window.location.reload(false);
+            })
+            .catch(err => {
+              console.log(err);
+            });
         } else {
           throw "Error: Account already voted!";
         }
@@ -117,49 +111,52 @@ export const VoteTable = ({
     }
   };
 
-  const candidates = useMemo(() => {
-    let c;
-    try {
-      c = partyData.candidates.map(d => {
-        return (
-          <Tbody key={`vote-row-${d}`}>
-            <Tr>
-              <Td>
-                <AddressChakra
-                  address={d}
-                  ensProvider={mainnetProvider}
-                  // blockExplorer={blockExplorer}
-                />
-              </Td>
-              <Td>
-                <NumberInput
-                  defaultValue={0}
-                  min={0}
-                  max={partyData.config.nvotes}
-                  onChange={e => {
-                    handleVotesChange(e, d);
-                  }}
-                  width="6em"
-                  size="lg"
-                  isInvalid={invalidVotesLeft}
-                >
-                  <NumberInputField />
-                  <NumberInputStepper>
-                    <NumberIncrementStepper />
-                    <NumberDecrementStepper />
-                  </NumberInputStepper>
-                </NumberInput>
-              </Td>
-            </Tr>
-          </Tbody>
-        );
-      });
-    } catch (error) {
-      console.log(error);
-      c = [];
-    }
-    return c;
-  }, [partyData, votesLeft]);
+  const candidates = useMemo(
+    _ => {
+      let c;
+      try {
+        c = partyData.candidates.map(d => {
+          return (
+            <Tbody key={`vote-row-${d}`}>
+              <Tr>
+                <Td>
+                  <AddressChakra
+                    address={d}
+                    ensProvider={mainnetProvider}
+                    // blockExplorer={blockExplorer}
+                  />
+                </Td>
+                <Td>
+                  <NumberInput
+                    defaultValue={0}
+                    min={0}
+                    max={partyData.config.nvotes}
+                    onChange={e => {
+                      handleVotesChange(e, d);
+                    }}
+                    width="6em"
+                    size="lg"
+                    isInvalid={invalidVotesLeft}
+                  >
+                    <NumberInputField />
+                    <NumberInputStepper>
+                      <NumberIncrementStepper />
+                      <NumberDecrementStepper />
+                    </NumberInputStepper>
+                  </NumberInput>
+                </Td>
+              </Tr>
+            </Tbody>
+          );
+        });
+      } catch (error) {
+        console.log(error);
+        c = [];
+      }
+      return c;
+    },
+    [partyData, votesLeft],
+  );
 
   return (
     <Box>

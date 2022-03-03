@@ -83,8 +83,11 @@ function Home({
     <Center pt={10}>
       <Box borderWidth={1} borderRadius={24} shadow="xl" pl={10} pr={10} pb={6} pt={2}>
         <Center>
-          <Text fontSize="xl" fontWeight="semibold" p={6}>
+          <Text fontSize="xl" fontWeight="semibold" pt={6} pb={6} pr={3}>
             Join the party
+          </Text>
+          <Text fontSize="2xl" fontWeight="semibold" pt={1}>
+            🎊
           </Text>
         </Center>
         <Box bg={useColorModeValue("whiteAlpha.900", "purple.900")} borderRadius={24}>
@@ -93,7 +96,7 @@ function Home({
             variant="unstyled"
             p={6}
             isInvalid={isInvalidId}
-            placeholder="Party Name/ID"
+            placeholder="Party Name or UID"
             onChange={e => setId(e.target.value)}
           ></Input>
         </Box>

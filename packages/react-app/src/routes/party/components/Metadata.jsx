@@ -3,7 +3,7 @@ import { QuestionOutlineIcon, CopyIcon } from "@chakra-ui/icons";
 import React, { useState } from "react";
 
 export const Metadata = ({ partyData, mainnetProvider, votesData, distribution, strategy }) => {
-  const [cpText, setCpText] = useState("Copy URL");
+  const [cpText, setCpText] = useState("Copy Party URL");
   const toast = useToast();
   return (
     <Box>
@@ -25,7 +25,7 @@ export const Metadata = ({ partyData, mainnetProvider, votesData, distribution, 
               navigator.clipboard.writeText(window.location.href);
             }}
           >
-            {window.location.href}
+            Share Party
           </Button>
         </Tooltip>
       </Center>
