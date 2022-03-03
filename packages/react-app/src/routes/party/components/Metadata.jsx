@@ -20,7 +20,7 @@ export const Metadata = ({ partyData, mainnetProvider, votesData, distribution, 
           <Button
             size="xs"
             rightIcon={<CopyIcon />}
-            variant="outline"
+            variant="link"
             onClick={_ => {
               navigator.clipboard.writeText(window.location.href);
             }}
