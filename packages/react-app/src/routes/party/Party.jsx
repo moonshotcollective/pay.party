@@ -36,18 +36,45 @@ export default function Party({
     (async () => {
       const res = await fetch(`${process.env.REACT_APP_API_URL}/party/${id}`);
       const party = await res.json();
-      const submitted = party.ballots.filter(b => b.data.ballot.address.toLowerCase() === address);
+      // DEBUG
+      //const submitted = party.ballots.filter(b => b.data.ballot.address.toLowerCase() === address);
+
+      // EIP-712 Typed Data
+      // See: https://eips.ethereum.org/EIPS/eip-712
+      const domain = {
+        name: "pay-party",
+        version: "1",
+        chainId: targetNetwork.chainId,
+        verifyingContract: "0x14313eB3823D0268C49d2D977b6Fb1eE2233Ef20", //readContracts?.Distributor?.address,
+      };
+      const types = {
+        Party: [{ name: "ballot", type: "Ballot" }],
+        Ballot: [
+          { name: "votes", type: "string" },
+          { name: "timestamp", type: "string" },
+          { name: "partySignature", type: "string" },
+        ],
+      };
+
+      const submitted = party.ballots.filter(b => {
+        // Reconstruct the signer from the data
+        return utils.verifyTypedData(domain, types, b.data, b.signature).toLowerCase() === address.toLowerCase();
+      });
+
+      console.log(submitted);
       const participating = party.participants.map(adr => adr.toLowerCase()).includes(address);
       setAccountVoteData(submitted);
       setCanVote(submitted.length === 0 && participating);
       setIsPaid(party.receipts.length > 0);
       const len = party.receipts.length;
-      if(len > 0) {
-        setAmountToDistribute(utils.formatEther(party.receipts[len-1].amount));
+      if (len > 0) {
+        setAmountToDistribute(utils.formatEther(party.receipts[len - 1].amount));
       }
       setIsParticipant(participating);
       setPartyData(party);
       setLoading(false);
+
+      console.log(distribution);
     })();
   }, []);
 
@@ -178,7 +205,7 @@ export default function Party({
           {showDebug && <p>{JSON.stringify(partyData)}</p>}
           {loading ? (
             <Center>
-              <Spinner size='xl' />
+              <Spinner size="xl" />
             </Center>
           ) : (
             <Metadata
@@ -218,10 +245,7 @@ export default function Party({
               setAmountToDistribute={setAmountToDistribute}
             />
           </Box>
-          {isPaid && <ReceiptsTable 
-            partyData={partyData}
-            targetNetwork={targetNetwork}
-          />}
+          {isPaid && <ReceiptsTable partyData={partyData} targetNetwork={targetNetwork} />}
         </Box>
       </Center>
     </Box>

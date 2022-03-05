@@ -58,23 +58,23 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
         verifyingContract: readContracts?.Distributor?.address,
       };
       const types = {
-        Party: [
-          { name: "party", type: "string" },
-          { name: "ballot", type: "Ballot" },
-        ],
+        Party: [{ name: "ballot", type: "Ballot" }],
         Ballot: [
-          { name: "address", type: "address" },
           { name: "votes", type: "string" },
+          { name: "timestamp", type: "string" },
+          { name: "partySignature", type: "string" },
         ],
       };
 
       const ballot = {
-        party: partyData.name,
         ballot: {
-          address: address,
           votes: JSON.stringify(votesData, null, 2),
+          timestamp: "",
+          partySignature: partyData.signed.signature,
         },
       };
+
+      //console.log(domain, types);
 
       // NOTE: sign typed data for eip712 is underscored because it's in public beta
       if (partyData.participants.map(adr => adr.toLowerCase()).includes(address) && !invalidVotesLeft) {
