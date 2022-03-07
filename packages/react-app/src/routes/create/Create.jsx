@@ -13,13 +13,25 @@ import {
   TagLabel,
   Tooltip,
 } from "@chakra-ui/react";
+import {
+  useDisclosure,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
+  AlertDialogCloseButton,
+} from '@chakra-ui/react';
 import { ArrowBackIcon, EditIcon, QuestionOutlineIcon, WarningIcon } from "@chakra-ui/icons";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useHistory } from "react-router-dom";
 import { default as MultiAddressInput } from "./components/MultiAddressInput";
 import { useColorModeValue } from "@chakra-ui/color-mode";
 import Blockie from "../../components/Blockie";
 import { ethers } from "ethers";
+
+
 
 const Create = ({
   address,
@@ -39,6 +51,8 @@ const Create = ({
   const [loadingText, setLoadingText] = useState("Loading...");
   const [isConfirmDisabled, setIsConfirmDisabled] = useState(true);
   const [isInvalidName, setIsInvalidName] = useState(false);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const cancelRef = React.useRef();
   const [partyObj, setPartyObj] = useState({
     version: "1.0",
     name: "",
@@ -107,7 +121,7 @@ const Create = ({
   const [candidates, setCandidates] = useState([]);
   const [description, setDescription] = useState("");
   const [name, setName] = useState(partyName);
-
+  
   useEffect(_ => {
     if (!partyJson) {
       (async _ => {
@@ -245,17 +259,6 @@ const Create = ({
       <Center p="5">
         <Text fontSize="xl">Review</Text>
       </Center>
-      <Center>
-        <Button
-          variant="link"
-          onClick={() => {
-            setIsReview(false);
-          }}
-          rightIcon={<EditIcon />}
-        >
-          Edit
-        </Button>
-      </Center>
       <form onSubmit={onSubmit}>
         <FormControl id="Review">
           <FormLabel pt="3">Name:</FormLabel>
@@ -316,18 +319,66 @@ const Create = ({
     </Box>
   );
 
+  const goHomeAlert = (
+      <AlertDialog
+        motionPreset='slideInBottom'
+        leastDestructiveRef={cancelRef}
+        onClose={onClose}
+        isOpen={isOpen}
+        isCentered
+      >
+        <AlertDialogOverlay />
+
+        <AlertDialogContent>
+          <AlertDialogHeader>Go to home page?</AlertDialogHeader>
+          <AlertDialogCloseButton />
+          <AlertDialogBody>
+            Are you sure? All the details entered will be deleted.
+          </AlertDialogBody>
+          <AlertDialogFooter>
+            <Button ref={cancelRef} onClick={onClose}>
+              No
+            </Button>
+            <Button 
+            colorScheme='red' 
+            ml={3}
+            onClick={() => {
+              routeHistory.push("/");
+            }}
+             >
+              Yes
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    );
+
+
   return (
     <Box>
+    {isReview ? (
       <Button
         size="lg"
         variant="ghost"
         onClick={() => {
-          routeHistory.push("/");
-        }}
+            setIsReview(false);
+          }}
         leftIcon={<ArrowBackIcon />}
       >
-        Back
+        Edit
       </Button>
+      ) : (
+        <Button
+        size="lg"
+        variant="ghost"
+        onClick={onOpen}
+        leftIcon={<ArrowBackIcon />}
+      >
+        Home
+      </Button>
+        )
+      }
+      {goHomeAlert}
       <Center p="5">{isReview ? reviewForm : createForm}</Center>
     </Box>
   );
