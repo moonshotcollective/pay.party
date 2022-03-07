@@ -49,12 +49,13 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
 
   const vote = async _ => {
     try {
+      // TODO: Put this data model in a seperate file for organization
       // EIP-712 Typed Data
       // See: https://eips.ethereum.org/EIPS/eip-712
       const domain = {
         name: "pay-party",
         version: "1",
-        chainId: targetNetwork.chainId,
+        chainId: partyData.config.chainId,
         verifyingContract: readContracts?.Distributor?.address,
       };
       const types = {
@@ -65,7 +66,6 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
           { name: "partySignature", type: "string" },
         ],
       };
-
       const ballot = {
         ballot: {
           votes: JSON.stringify(votesData, null, 2),

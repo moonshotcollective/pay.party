@@ -129,6 +129,7 @@ const Create = ({
         const config = {
           strategy: "",
           nvotes: candidateAddresses.length * 5,
+          chainId: targetNetwork.chainId,
         };
         if (name !== "" && candidateAddresses.length > 0 && voterAddresses.length > 0) {
           setIsConfirmDisabled(false);
