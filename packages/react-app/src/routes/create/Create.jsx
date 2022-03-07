@@ -29,6 +29,7 @@ import { useHistory } from "react-router-dom";
 import { default as MultiAddressInput } from "./components/MultiAddressInput";
 import { useColorModeValue } from "@chakra-ui/color-mode";
 import Blockie from "../../components/Blockie";
+import { ethers } from "ethers";
 
 
 
@@ -53,7 +54,10 @@ const Create = ({
   const { isOpen, onOpen, onClose } = useDisclosure();
   const cancelRef = React.useRef();
   const [partyObj, setPartyObj] = useState({
+    version: "1.0",
     name: "",
+    timestamp: "",
+    nonce: "",
     description: "",
     receipts: [],
     config: {
@@ -63,6 +67,9 @@ const Create = ({
     participants: [],
     candidates: [],
     ballots: [],
+    notes: [],
+    ipfs: "",
+    signature: "",
   });
 
   const onSubmit = async event => {
@@ -71,7 +78,26 @@ const Create = ({
       setLoadingText("Submitting...");
       setIsLoading(true);
 
-      const sig = await userSigner.signMessage(`Create party:\n${partyObj.name}`);
+      const partySignatureData = {
+        version: "1.0",
+        name: partyObj.name,
+        timestamp: "",
+        nonce: "",
+        description: partyObj.description,
+        participants: partyObj.participants,
+        candidates: partyObj.candidates,
+      };
+
+      const signedParty = {
+        data: partySignatureData,
+        signature: "",
+      };
+
+      const sig = await userSigner.signMessage(ethers.utils.keccak256(ethers.utils.id(partySignatureData)));
+      signedParty.signature = sig;
+
+      partyObj.signed = signedParty;
+
       const res = await fetch(`${process.env.REACT_APP_API_URL}/party`, {
         method: "post",
         headers: { "Content-Type": "application/json" },
@@ -80,7 +106,8 @@ const Create = ({
       const json = await res.json();
       routeHistory.push(`/party/${json.id}`);
       setIsLoading(false);
-    } catch {
+    } catch (err) {
+      console.log(err);
       setIsLoading(false);
     }
   };
@@ -116,19 +143,26 @@ const Create = ({
         const config = {
           strategy: "",
           nvotes: candidateAddresses.length * 5,
+          chainId: targetNetwork.chainId,
         };
         if (name !== "" && candidateAddresses.length > 0 && voterAddresses.length > 0) {
           setIsConfirmDisabled(false);
         }
         setIsInvalidName(false);
         setPartyObj({
+          version: "1.0",
           name: name,
+          timestamp: "",
+          nonce: "",
           description: description,
           receipts: [],
           config: config,
           participants: voterAddresses,
           candidates: candidateAddresses,
           ballots: [],
+          notes: [],
+          ipfs: "",
+          signature: "",
         });
       } catch (err) {
         setIsConfirmDisabled(true);
@@ -164,7 +198,7 @@ const Create = ({
           {isInvalidName ? (
             <HStack>
               <WarningIcon />
-              <Text>Name has already been used. Please try another.</Text>
+              <Text>Name already taken. Please try another.</Text>
             </HStack>
           ) : null}
         </Box>

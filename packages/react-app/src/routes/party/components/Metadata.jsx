@@ -15,6 +15,15 @@ export const Metadata = ({ partyData, mainnetProvider, votesData, distribution, 
       <Center pt={4}>
         <Text fontSize="xl">{`${partyData.name}`}</Text>
       </Center>
+      <Center pt={4} pl="5%" pr="5%">
+        <Text fontSize="xs">{`Signature: ${partyData.signed.signature.substr(
+          0,
+          6,
+        )}...${partyData.signed.signature.substr(
+          partyData.signed.signature.length - 4,
+          partyData.signed.signature.length,
+        )}`}</Text>
+      </Center>
       <Center pt={4}>
         <Tooltip label={cpText}>
           <Button

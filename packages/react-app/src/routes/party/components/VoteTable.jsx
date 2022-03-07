@@ -26,6 +26,10 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
   // Init votes left to nvotes
   const [votesLeft, setVotesLeft] = useState(null);
   const [invalidVotesLeft, setInvalidVotesLeft] = useState(false);
+  const [blockNumber, setBlockNumber] = useState("-1");
+  mainnetProvider.on("block", bn => {
+    setBlockNumber(bn.toString());
+  });
 
   useEffect(
     _ => {
@@ -49,32 +53,32 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
 
   const vote = async _ => {
     try {
+      // TODO: Put this data model in a seperate file for organization
       // EIP-712 Typed Data
       // See: https://eips.ethereum.org/EIPS/eip-712
       const domain = {
         name: "pay-party",
         version: "1",
-        chainId: targetNetwork.chainId,
+        chainId: partyData.config.chainId,
         verifyingContract: readContracts?.Distributor?.address,
       };
       const types = {
-        Party: [
-          { name: "party", type: "string" },
-          { name: "ballot", type: "Ballot" },
-        ],
+        Party: [{ name: "ballot", type: "Ballot" }],
         Ballot: [
-          { name: "address", type: "address" },
           { name: "votes", type: "string" },
+          { name: "timestamp", type: "string" },
+          { name: "partySignature", type: "string" },
         ],
       };
-
       const ballot = {
-        party: partyData.name,
         ballot: {
-          address: address,
           votes: JSON.stringify(votesData, null, 2),
+          timestamp: blockNumber,
+          partySignature: partyData.signed.signature,
         },
       };
+
+      //console.log(domain, types);
 
       // NOTE: sign typed data for eip712 is underscored because it's in public beta
       if (partyData.participants.map(adr => adr.toLowerCase()).includes(address) && !invalidVotesLeft) {
