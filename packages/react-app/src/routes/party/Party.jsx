@@ -56,12 +56,10 @@ export default function Party({
         ],
       };
 
-      const submitted = party.ballots.filter(b => {
-        // Reconstruct the signer from the data
-        return utils.verifyTypedData(domain, types, b.data, b.signature).toLowerCase() === address.toLowerCase();
-      });
+      const submitted = party.ballots.filter(
+        b => utils.verifyTypedData(domain, types, b.data, b.signature).toLowerCase() === address.toLowerCase(),
+      );
 
-      console.log(submitted);
       const participating = party.participants.map(adr => adr.toLowerCase()).includes(address);
       setAccountVoteData(submitted);
       setCanVote(submitted.length === 0 && participating);
