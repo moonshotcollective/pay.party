@@ -32,8 +32,8 @@ contract Distributor {
 
   using SafeTransferLib for ERC20;
 
-  event ethDistributed(address indexed sender, string indexed id);
-  event tokenDistributed(address indexed sender, address indexed token, string indexed id);
+  event DistributeETH(address indexed sender, string indexed id);
+  event DistributeERC20(address indexed sender, address indexed token, string indexed id);
 
   function distributeEther(
     address[] memory recipients,
@@ -44,21 +44,18 @@ contract Distributor {
 
     uint256 total = 0;
     for (uint256 i = 0; i < recipients.length; i++) {
-      require(recipients[i] != address(0), "INVALID_ADDRESS");
-      require(values[i] > 0, "INVALID_ZERO_VALUE_TRANSFER");
       total += values[i];
-    }
-    require(msg.value >= total, "NOT_ENOUGH_ETH");
-
-    for (uint256 i = 0; i < recipients.length; i++) {
+      if (total > msg.value) {
+        revert("NOT_ENOUGH_ETH");
+      }
       SafeTransferLib.safeTransferETH(recipients[i], values[i]);
     }
 
-    if (msg.value > total) {
+    if (msg.value - total > 0) {
       SafeTransferLib.safeTransferETH(msg.sender, msg.value - total);
     }
 
-    emit ethDistributed(msg.sender, id);
+    emit DistributeETH(msg.sender, id);
   }
 
   function distributeToken(
@@ -69,18 +66,11 @@ contract Distributor {
   ) external {
     require(recipients.length == values.length, "DISTRIBUTE_LENGTH_MISMATCH");
 
-    uint256 total = 0;
-    for (uint256 i = 0; i < recipients.length; i++) {
-      require(recipients[i] != address(0), "INVALID_ADDRESS");
-      require(values[i] > 0, "INVALID_ZERO_VALUE_TRANSFER");
-      total += values[i];
-    }
-
     for (uint256 i = 0; i < recipients.length; i++) {
       token.safeTransferFrom(msg.sender, recipients[i], values[i]);
     }
 
-    emit tokenDistributed(msg.sender, address(token), id);
+    emit DistributeERC20(msg.sender, address(token), id);
   }
 }
 
