@@ -112,25 +112,28 @@ export default function Party({
   };
 
   // Cache the calculated distribution and table component
-  const cachedViewTable = useMemo(() => {
-    try {
-      const dist = calculateDistribution();
-      setDistribution(dist);
-      return (
-        <ViewTable
-          partyData={partyData}
-          mainnetProvider={mainnetProvider}
-          votesData={accountVoteData}
-          distribution={dist}
-          strategy={strategy}
-          amountToDistribute={amountToDistribute}
-        />
-      );
-    } catch (error) {
-      console.log(error);
-      return null;
-    }
-  }, [partyData, strategy, amountToDistribute]);
+  const cachedViewTable = useMemo(
+    _ => {
+      try {
+        const dist = calculateDistribution();
+        setDistribution(dist);
+        return (
+          <ViewTable
+            partyData={partyData}
+            mainnetProvider={mainnetProvider}
+            votesData={accountVoteData}
+            distribution={dist}
+            strategy={strategy}
+            amountToDistribute={amountToDistribute}
+          />
+        );
+      } catch (error) {
+        console.log(error);
+        return null;
+      }
+    },
+    [partyData, strategy, amountToDistribute],
+  );
 
   const cachedVoteTable = useMemo(() => {
     try {
@@ -236,10 +239,13 @@ export default function Party({
               readContracts={readContracts}
               tx={tx}
               distribution={distribution}
+              setDistribution={setDistribution}
               strategy={strategy}
+              setStrategy={setStrategy}
               isSmartContract={isSmartContract}
               localProvider={localProvider}
               setAmountToDistribute={setAmountToDistribute}
+              targetNetwork={targetNetwork}
             />
           </Box>
           {isPaid && <ReceiptsTable partyData={partyData} targetNetwork={targetNetwork} />}

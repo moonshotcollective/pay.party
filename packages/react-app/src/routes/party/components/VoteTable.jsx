@@ -26,6 +26,10 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
   // Init votes left to nvotes
   const [votesLeft, setVotesLeft] = useState(null);
   const [invalidVotesLeft, setInvalidVotesLeft] = useState(false);
+  const [blockNumber, setBlockNumber] = useState("-1");
+  mainnetProvider.on("block", bn => {
+    setBlockNumber(bn.toString());
+  });
 
   useEffect(
     _ => {
@@ -69,7 +73,7 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
       const ballot = {
         ballot: {
           votes: JSON.stringify(votesData, null, 2),
-          timestamp: "",
+          timestamp: blockNumber,
           partySignature: partyData.signed.signature,
         },
       };
