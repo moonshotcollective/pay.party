@@ -15,6 +15,15 @@ export const Metadata = ({ partyData, mainnetProvider, votesData, distribution, 
       <Center pt={4}>
         <Text fontSize="xl">{`${partyData.name}`}</Text>
       </Center>
+      <Center pt={4} pl="5%" pr="5%">
+        <Text fontSize="xs">{`Signature: ${partyData.signed.signature.substr(
+          0,
+          6,
+        )}...${partyData.signed.signature.substr(
+          partyData.signed.signature.length - 4,
+          partyData.signed.signature.length,
+        )}`}</Text>
+      </Center>
       <Center pt={4}>
         <Tooltip label={cpText}>
           <Button
@@ -33,7 +42,7 @@ export const Metadata = ({ partyData, mainnetProvider, votesData, distribution, 
         <Text fontSize="sm">{`${partyData.description}`}</Text>
       </Center>
       <Center pt={4} pl="5%" pr="5%">
-        <Text>To know more about how voting, voting strategy etc works, check out our  
+        <Text>To know more about how voting, distribution strategy etc works, check out our  
           <Link href='https://pay.party' isExternal m="2">
               FAQ page <ExternalLinkIcon mx='2px' />
           </Link> 
