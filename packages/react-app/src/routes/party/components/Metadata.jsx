@@ -42,7 +42,7 @@ export const Metadata = ({ partyData, mainnetProvider, votesData, distribution, 
         <Text fontSize="sm">{`${partyData.description}`}</Text>
       </Center>
       <Center pt={4} pl="5%" pr="5%">
-        <Text>To know more about how voting, distribution strategy etc works, check out our  
+        <Text>To know more about how voting, distribution etc works, check out our  
           <Link href='https://pay.party' isExternal m="2">
               FAQ page <ExternalLinkIcon mx='2px' />
           </Link> 
