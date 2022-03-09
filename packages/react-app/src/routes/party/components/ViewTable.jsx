@@ -1,10 +1,12 @@
-import { Box, Center, Table, Thead, Tbody, Tfoot, Tr, Th, Td } from "@chakra-ui/react";
+import { Box, Center, Table, Thead, Tbody, Tfoot, Tr, Th, Td, Text, Button } from "@chakra-ui/react";
+import { EditIcon, CheckIcon } from "@chakra-ui/icons";
 import React, { useState, useMemo } from "react";
 import AddressChakra from "../../../components/AddressChakra";
 
-export const ViewTable = ({ partyData, mainnetProvider, votesData, distribution, strategy, amountToDistribute }) => {
+export const ViewTable = ({ partyData, mainnetProvider, votesData, distribution, strategy, amountToDistribute, address }) => {
   const [castVotes, setCastVotes] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [editNote, setEditNote] = useState(false);
 
   const candidateRows = useMemo(() => {
     const ballotVotes = votesData && votesData[0] && JSON.parse(votesData[0].data.ballot.votes);
@@ -23,6 +25,24 @@ export const ViewTable = ({ partyData, mainnetProvider, votesData, distribution,
                   ensProvider={mainnetProvider}
                   // blockExplorer={blockExplorer}
                 />
+              </Td>
+              <Td>
+              <Center>
+              <Text>Test</Text>
+              {d==address ? ( 
+
+                   <Button
+                    size="xs"
+                    rightIcon={<EditIcon />}
+                    variant="ghost"
+                    ml="1"
+                    onClick={() => {
+                    setEditNote(true);
+                    }}
+                    >
+                    </Button>
+                  ) : null}
+              </Center>
               </Td>
               <Td>
                 <Center>{ballotVotes && ballotVotes[d]}</Center>
@@ -51,6 +71,11 @@ export const ViewTable = ({ partyData, mainnetProvider, votesData, distribution,
           <Tr>
             <Th>
               <Center>Address</Center>
+            </Th>
+            <Th>
+              <Center>
+                Note
+              </Center>
             </Th>
             <Th>
               <Center>{castVotes ? "Your Ballot" : ""}</Center>

@@ -17,6 +17,8 @@ import {
   Td,
   TableCaption,
 } from "@chakra-ui/react";
+import { EditIcon, CheckIcon } from "@chakra-ui/icons";
+
 import React, { useState, useMemo, useEffect } from "react";
 import AddressChakra from "../../../components/AddressChakra";
 
@@ -26,6 +28,7 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
   // Init votes left to nvotes
   const [votesLeft, setVotesLeft] = useState(null);
   const [invalidVotesLeft, setInvalidVotesLeft] = useState(false);
+  const [editNote, setEditNote] = useState(false);
   const [blockNumber, setBlockNumber] = useState("-1");
   mainnetProvider.on("block", bn => {
     setBlockNumber(bn.toString());
@@ -131,6 +134,22 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
                   />
                 </Td>
                 <Td>
+                <Text>Test</Text> 
+                {d==address ? ( 
+
+                   <Button
+                    size="xs"
+                    rightIcon={<EditIcon />}
+                    variant="ghost"
+                    ml="1"
+                    onClick={() => {
+                    setEditNote(true);
+                    }}
+                    >
+                    </Button>
+                  ) : null}
+                </Td>
+                <Td>
                   <NumberInput
                     defaultValue={0}
                     min={0}
@@ -162,6 +181,7 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
     [partyData, votesLeft],
   );
 
+
   return (
     <Box>
       <Center pt={4}>
@@ -176,6 +196,7 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
         <Thead>
           <Tr>
             <Th>Address</Th>
+            <Th>Note</Th>
             <Th>Score</Th>
           </Tr>
         </Thead>
