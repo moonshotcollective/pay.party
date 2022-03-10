@@ -15,7 +15,6 @@ export const ViewTable = ({ partyData, mainnetProvider, votesData, distribution,
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
-    console.log({ queryParams });
     const showConfetti = queryParams.get("confetti");
     if (showConfetti) {
       setShowConfetti(true);
