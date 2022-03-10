@@ -34,7 +34,7 @@ function Home({
       setPartyJson(data);
       return data;
     })();
-  });
+  }, []);
 
   /***** Routes *****/
   const routeHistory = useHistory();
