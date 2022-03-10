@@ -17,9 +17,23 @@ import {
   Td,
   TableCaption,
 } from "@chakra-ui/react";
+import {
+  useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  FormControl,
+  FormLabel,
+  FormErrorMessage,
+  FormHelperText,
+  Input,
+} from '@chakra-ui/react';
 import { EditIcon, CheckIcon } from "@chakra-ui/icons";
-
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import AddressChakra from "../../../components/AddressChakra";
 
 export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readContracts, mainnetProvider }) => {
@@ -28,8 +42,10 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
   // Init votes left to nvotes
   const [votesLeft, setVotesLeft] = useState(null);
   const [invalidVotesLeft, setInvalidVotesLeft] = useState(false);
-  const [editNote, setEditNote] = useState(false);
   const [blockNumber, setBlockNumber] = useState("-1");
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const initialRef = React.useRef()
+  const finalRef = React.useRef()
   mainnetProvider.on("block", bn => {
     setBlockNumber(bn.toString());
   });
@@ -134,20 +150,7 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
                   />
                 </Td>
                 <Td>
-                <Text>Test</Text> 
-                {d==address ? ( 
-
-                   <Button
-                    size="xs"
-                    rightIcon={<EditIcon />}
-                    variant="ghost"
-                    ml="1"
-                    onClick={() => {
-                    setEditNote(true);
-                    }}
-                    >
-                    </Button>
-                  ) : null}
+                <Text>This is a test note</Text> 
                 </Td>
                 <Td>
                   <NumberInput
@@ -171,7 +174,8 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
               </Tr>
             </Tbody>
           );
-        });
+
+      });
       } catch (error) {
         console.log(error);
         c = [];
@@ -180,6 +184,32 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
     },
     [partyData, votesLeft],
   );
+
+  const editNoteModal = (
+      <Modal
+        initialFocusRef={initialRef}
+        finalFocusRef={finalRef}
+        isOpen={isOpen}
+        onClose={onClose}
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Update your Note</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={6}>
+            <FormControl>
+              <Input ref={initialRef} placeholder='Enter your note here' />
+            </FormControl>
+          </ModalBody>
+          <ModalFooter>
+            <Button mr={3}>
+              Submit
+            </Button>
+            <Button onClick={onClose}>Cancel</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    );
 
 
   return (
@@ -196,7 +226,17 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
         <Thead>
           <Tr>
             <Th>Address</Th>
-            <Th>Note</Th>
+            <Th>
+            Note
+            <Button
+              size="xs"
+              rightIcon={<EditIcon />}
+              variant="ghost"
+              ml="1"
+              onClick={onOpen}
+              >
+            </Button>
+            </Th>
             <Th>Score</Th>
           </Tr>
         </Thead>
@@ -206,6 +246,7 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
           </Button>
         </TableCaption>
         {candidates}
+        {editNoteModal}
       </Table>
     </Box>
   );

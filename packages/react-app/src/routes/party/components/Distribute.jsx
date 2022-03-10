@@ -125,7 +125,8 @@ export const Distribute = ({
       });
     }
     setIsDistributionLoading(false);
-    //window.location.reload(false);
+    await new Promise(r => setTimeout(r, 5000));
+    window.location.reload(false);
   };
 
   // const handleSafeReceipt = res => {

@@ -1,12 +1,29 @@
 import { Box, Center, Table, Thead, Tbody, Tfoot, Tr, Th, Td, Text, Button } from "@chakra-ui/react";
+import {
+  useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  FormControl,
+  FormLabel,
+  FormErrorMessage,
+  FormHelperText,
+  Input,
+} from '@chakra-ui/react';
 import { EditIcon, CheckIcon } from "@chakra-ui/icons";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import AddressChakra from "../../../components/AddressChakra";
 
 export const ViewTable = ({ partyData, mainnetProvider, votesData, distribution, strategy, amountToDistribute, address }) => {
   const [castVotes, setCastVotes] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [editNote, setEditNote] = useState(false);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const initialRef = React.useRef()
+  const finalRef = React.useRef()
 
   const candidateRows = useMemo(() => {
     const ballotVotes = votesData && votesData[0] && JSON.parse(votesData[0].data.ballot.votes);
@@ -28,20 +45,7 @@ export const ViewTable = ({ partyData, mainnetProvider, votesData, distribution,
               </Td>
               <Td>
               <Center>
-              <Text>Test</Text>
-              {d==address ? ( 
-
-                   <Button
-                    size="xs"
-                    rightIcon={<EditIcon />}
-                    variant="ghost"
-                    ml="1"
-                    onClick={() => {
-                    setEditNote(true);
-                    }}
-                    >
-                    </Button>
-                  ) : null}
+              <Text>This is a test note</Text>
               </Center>
               </Td>
               <Td>
@@ -64,6 +68,32 @@ export const ViewTable = ({ partyData, mainnetProvider, votesData, distribution,
     return row;
   }, [partyData, votesData, distribution, strategy, amountToDistribute]);
 
+  const editNoteModal = (
+      <Modal
+        initialFocusRef={initialRef}
+        finalFocusRef={finalRef}
+        isOpen={isOpen}
+        onClose={onClose}
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Update your Note</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody pb={6}>
+            <FormControl>
+              <Input ref={initialRef} placeholder='Enter your note here' />
+            </FormControl>
+          </ModalBody>
+          <ModalFooter>
+            <Button mr={3}>
+              Submit
+            </Button>
+            <Button onClick={onClose}>Cancel</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    );
+
   return (
     <Box>
       <Table borderWidth="1px">
@@ -75,6 +105,14 @@ export const ViewTable = ({ partyData, mainnetProvider, votesData, distribution,
             <Th>
               <Center>
                 Note
+              <Button
+              size="xs"
+              rightIcon={<EditIcon />}
+              variant="ghost"
+              ml="1"
+              onClick={onOpen}
+              >
+              </Button>
               </Center>
             </Th>
             <Th>
@@ -91,6 +129,7 @@ export const ViewTable = ({ partyData, mainnetProvider, votesData, distribution,
           </Tr>
         </Thead>
         {candidateRows}
+        {editNoteModal}
         <Tfoot></Tfoot>
       </Table>
     </Box>
