@@ -18,6 +18,7 @@ import {
   TableCaption,
 } from "@chakra-ui/react";
 import React, { useState, useMemo, useEffect } from "react";
+import { useHistory } from "react-router-dom";
 import AddressChakra from "../../../components/AddressChakra";
 
 export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readContracts, mainnetProvider }) => {
@@ -30,6 +31,7 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
   mainnetProvider.on("block", bn => {
     setBlockNumber(bn.toString());
   });
+  const history = useHistory();
 
   useEffect(
     _ => {
@@ -98,7 +100,7 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
               });
             })
             .then(_ => {
-              window.location.reload(false);
+              window.open(`/party/${partyData.id}?confetti=true`, "_self");
             })
             .catch(err => {
               console.log(err);
