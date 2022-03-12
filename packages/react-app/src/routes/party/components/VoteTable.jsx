@@ -31,7 +31,7 @@ import {
   FormErrorMessage,
   FormHelperText,
   Input,
-} from '@chakra-ui/react';
+} from "@chakra-ui/react";
 import { EditIcon, CheckIcon } from "@chakra-ui/icons";
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import AddressChakra from "../../../components/AddressChakra";
@@ -44,8 +44,8 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
   const [invalidVotesLeft, setInvalidVotesLeft] = useState(false);
   const [blockNumber, setBlockNumber] = useState("-1");
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const initialRef = React.useRef()
-  const finalRef = React.useRef()
+  const initialRef = React.useRef();
+  const finalRef = React.useRef();
   mainnetProvider.on("block", bn => {
     setBlockNumber(bn.toString());
   });
@@ -150,7 +150,12 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
                   />
                 </Td>
                 <Td>
-                <Text>This is a test note</Text> 
+                  <Text>This is a test note</Text>
+                  {d.toLowerCase() === address.toLowerCase() ? (
+                    <Button size="xs" rightIcon={<EditIcon />} variant="link" ml="1" onClick={onOpen}>
+                      Edit
+                    </Button>
+                  ) : null}
                 </Td>
                 <Td>
                   <NumberInput
@@ -174,43 +179,34 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
               </Tr>
             </Tbody>
           );
-
-      });
+        });
       } catch (error) {
         console.log(error);
         c = [];
       }
       return c;
     },
-    [partyData, votesLeft],
+    [partyData, votesLeft, address],
   );
 
   const editNoteModal = (
-      <Modal
-        initialFocusRef={initialRef}
-        finalFocusRef={finalRef}
-        isOpen={isOpen}
-        onClose={onClose}
-      >
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Update your Note</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody pb={6}>
-            <FormControl>
-              <Input ref={initialRef} placeholder='Enter your note here' />
-            </FormControl>
-          </ModalBody>
-          <ModalFooter>
-            <Button mr={3}>
-              Submit
-            </Button>
-            <Button onClick={onClose}>Cancel</Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-    );
-
+    <Modal initialFocusRef={initialRef} finalFocusRef={finalRef} isOpen={isOpen} onClose={onClose}>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader>Update your Note</ModalHeader>
+        <ModalCloseButton />
+        <ModalBody pb={6}>
+          <FormControl>
+            <Input ref={initialRef} placeholder="Enter your note here" />
+          </FormControl>
+        </ModalBody>
+        <ModalFooter>
+          <Button mr={3}>Submit</Button>
+          <Button onClick={onClose}>Cancel</Button>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
+  );
 
   return (
     <Box>
@@ -226,17 +222,7 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
         <Thead>
           <Tr>
             <Th>Address</Th>
-            <Th>
-            Note
-            <Button
-              size="xs"
-              rightIcon={<EditIcon />}
-              variant="ghost"
-              ml="1"
-              onClick={onOpen}
-              >
-            </Button>
-            </Th>
+            <Th>Note</Th>
             <Th>Score</Th>
           </Tr>
         </Thead>
