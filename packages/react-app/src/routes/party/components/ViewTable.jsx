@@ -1,10 +1,32 @@
 import { Box, Center, Table, Thead, Tbody, Tfoot, Tr, Th, Td } from "@chakra-ui/react";
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import AddressChakra from "../../../components/AddressChakra";
+import Confetti from "react-confetti";
+import { useLocation } from "react-router-dom";
+import { useScreenDimensions } from "../../../hooks/useScreenDimensions";
 
 export const ViewTable = ({ partyData, mainnetProvider, votesData, distribution, strategy, amountToDistribute }) => {
   const [castVotes, setCastVotes] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+
+  const [showConfetti, setShowConfetti] = useState(false);
+  const location = useLocation();
+  const { width, height } = useScreenDimensions();
+
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const showConfetti = queryParams.get("confetti");
+    if (showConfetti) {
+      setShowConfetti(true);
+    }
+  }, [location]);
+
+  useEffect(() => {
+    let confettiTimer = setTimeout(() => {
+      setShowConfetti(false);
+    }, 10000); // Hide the confetti after 10 seconds
+    return () => clearTimeout(confettiTimer);
+  }, [showConfetti]);
 
   const candidateRows = useMemo(() => {
     const ballotVotes = votesData && votesData[0] && JSON.parse(votesData[0].data.ballot.votes);
@@ -46,6 +68,7 @@ export const ViewTable = ({ partyData, mainnetProvider, votesData, distribution,
 
   return (
     <Box>
+      {showConfetti && <Confetti height={height} width={width} />}
       <Table borderWidth="1px">
         <Thead>
           <Tr>
