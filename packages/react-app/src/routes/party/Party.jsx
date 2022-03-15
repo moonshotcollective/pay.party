@@ -34,22 +34,46 @@ export default function Party({
   useEffect(() => {
     setLoading(true);
     (async () => {
-      const res = await fetch(`${process.env.REACT_APP_API_URL}/party/${id}`);
-      const party = await res.json();
-      const submitted = party.ballots.filter(b => b.data.ballot.address.toLowerCase() === address);
-      const participating = party.participants.map(adr => adr.toLowerCase()).includes(address);
-      setAccountVoteData(submitted);
-      setCanVote(submitted.length === 0 && participating);
-      setIsPaid(party.receipts.length > 0);
-      const len = party.receipts.length;
-      if(len > 0) {
-        setAmountToDistribute(utils.formatEther(party.receipts[len-1].amount));
+      if (readContracts && readContracts.Distributor.address) {
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/party/${id}`);
+        const party = await res.json();
+
+        // TODO: Put this data model in a seperate file for organization
+        // EIP-712 Typed Data
+        // See: https://eips.ethereum.org/EIPS/eip-712
+        const domain = {
+          name: "pay-party",
+          version: "1",
+          chainId: targetNetwork.chainId,
+          verifyingContract: readContracts.Distributor.address,
+        };
+        const types = {
+          Party: [{ name: "ballot", type: "Ballot" }],
+          Ballot: [
+            { name: "votes", type: "string" },
+            { name: "timestamp", type: "string" },
+            { name: "partySignature", type: "string" },
+          ],
+        };
+
+        const submitted = party.ballots.filter(
+          b => utils.verifyTypedData(domain, types, b.data, b.signature).toLowerCase() === address.toLowerCase(),
+        );
+
+        const participating = party.participants.map(adr => adr.toLowerCase()).includes(address);
+        setAccountVoteData(submitted);
+        setCanVote(submitted.length === 0 && participating);
+        setIsPaid(party.receipts.length > 0);
+        const len = party.receipts.length;
+        if (len > 0) {
+          setAmountToDistribute(utils.formatEther(party.receipts[len - 1].amount));
+        }
+        setIsParticipant(participating);
+        setPartyData(party);
+        setLoading(false);
       }
-      setIsParticipant(participating);
-      setPartyData(party);
-      setLoading(false);
     })();
-  }, []);
+  }, [readContracts]);
 
   // Calculate percent distribution from submitted ballots and memo table
   const calculateDistribution = () => {
@@ -88,25 +112,29 @@ export default function Party({
   };
 
   // Cache the calculated distribution and table component
-  const cachedViewTable = useMemo(() => {
-    try {
-      const dist = calculateDistribution();
-      setDistribution(dist);
-      return (
-        <ViewTable
-          partyData={partyData}
-          mainnetProvider={mainnetProvider}
-          votesData={accountVoteData}
-          distribution={dist}
-          strategy={strategy}
-          amountToDistribute={amountToDistribute}
-        />
-      );
-    } catch (error) {
-      console.log(error);
-      return null;
-    }
-  }, [partyData, strategy, amountToDistribute]);
+  const cachedViewTable = useMemo(
+    _ => {
+      try {
+        const dist = calculateDistribution();
+        setDistribution(dist);
+        return (
+          <ViewTable
+            partyData={partyData}
+            mainnetProvider={mainnetProvider}
+            votesData={accountVoteData}
+            distribution={dist}
+            strategy={strategy}
+            amountToDistribute={amountToDistribute}
+            address={address}
+          />
+        );
+      } catch (error) {
+        console.log(error);
+        return null;
+      }
+    },
+    [partyData, strategy, amountToDistribute],
+  );
 
   const cachedVoteTable = useMemo(() => {
     try {
@@ -178,7 +206,7 @@ export default function Party({
           {showDebug && <p>{JSON.stringify(partyData)}</p>}
           {loading ? (
             <Center>
-              <Spinner size='xl' />
+              <Spinner size="xl" />
             </Center>
           ) : (
             <Metadata
@@ -192,16 +220,7 @@ export default function Party({
           {canVote ? (
             cachedVoteTable
           ) : (
-            <Box>
-              <Center pb="2" pt="3">
-                <Text pr="3">Strategy:</Text>
-                <StrategySelect />
-                <Tooltip label="There are two strategies: Quadratic and Linear">
-                  <QuestionOutlineIcon w={3.5} h={3.5} />
-                </Tooltip>
-              </Center>
-              {cachedViewTable}
-            </Box>
+            cachedViewTable
           )}
           <Box p="6">
             <Distribute
@@ -212,16 +231,16 @@ export default function Party({
               readContracts={readContracts}
               tx={tx}
               distribution={distribution}
+              setDistribution={setDistribution}
               strategy={strategy}
+              setStrategy={setStrategy}
               isSmartContract={isSmartContract}
               localProvider={localProvider}
               setAmountToDistribute={setAmountToDistribute}
+              targetNetwork={targetNetwork}
             />
           </Box>
-          {isPaid && <ReceiptsTable 
-            partyData={partyData}
-            targetNetwork={targetNetwork}
-          />}
+          {isPaid && <ReceiptsTable partyData={partyData} targetNetwork={targetNetwork} />}
         </Box>
       </Center>
     </Box>

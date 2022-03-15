@@ -372,7 +372,7 @@ function App(props) {
   const [partyJson, setPartyJson] = useState(null);
 
   return (
-    <div>
+    <div id="app-container">
       <Box mb={8} pl={"14vw"} pr={"14vw"}>
         <Wrap pb={"6vh"}>
           <WrapItem>
@@ -382,8 +382,10 @@ function App(props) {
           </WrapItem>
           <Spacer />
           <WrapItem>
-            <Box pt={5}>{networkSelect}</Box>
-            <Box pt={5}>
+            <Box pt={8} pr={2}>
+              {networkSelect}
+            </Box>
+            <Box pt={8} pr={2}>
               <Account
                 address={address}
                 localProvider={localProvider}
@@ -397,7 +399,7 @@ function App(props) {
                 networkDisplay={networkDisplay}
               />
             </Box>
-            <Box pt={5}>
+            <Box pt={8}>
               <IconButton
                 variant="ghost"
                 icon={colorMode === "light" ? <MoonIcon /> : <SunIcon />}

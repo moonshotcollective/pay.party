@@ -13,12 +13,25 @@ import {
   TagLabel,
   Tooltip,
 } from "@chakra-ui/react";
+import {
+  useDisclosure,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
+  AlertDialogCloseButton,
+} from '@chakra-ui/react';
 import { ArrowBackIcon, EditIcon, QuestionOutlineIcon, WarningIcon } from "@chakra-ui/icons";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useHistory } from "react-router-dom";
 import { default as MultiAddressInput } from "./components/MultiAddressInput";
 import { useColorModeValue } from "@chakra-ui/color-mode";
 import Blockie from "../../components/Blockie";
+import { ethers } from "ethers";
+
+
 
 const Create = ({
   address,
@@ -38,8 +51,13 @@ const Create = ({
   const [loadingText, setLoadingText] = useState("Loading...");
   const [isConfirmDisabled, setIsConfirmDisabled] = useState(true);
   const [isInvalidName, setIsInvalidName] = useState(false);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const cancelRef = React.useRef();
   const [partyObj, setPartyObj] = useState({
+    version: "1.0",
     name: "",
+    timestamp: "",
+    nonce: "",
     description: "",
     receipts: [],
     config: {
@@ -49,6 +67,9 @@ const Create = ({
     participants: [],
     candidates: [],
     ballots: [],
+    notes: [],
+    ipfs: "",
+    signature: "",
   });
 
   const onSubmit = async event => {
@@ -57,7 +78,26 @@ const Create = ({
       setLoadingText("Submitting...");
       setIsLoading(true);
 
-      const sig = await userSigner.signMessage(`Create party:\n${partyObj.name}`);
+      const partySignatureData = {
+        version: "1.0",
+        name: partyObj.name,
+        timestamp: "",
+        nonce: "",
+        description: partyObj.description,
+        participants: partyObj.participants,
+        candidates: partyObj.candidates,
+      };
+
+      const signedParty = {
+        data: partySignatureData,
+        signature: "",
+      };
+
+      const sig = await userSigner.signMessage(ethers.utils.keccak256(ethers.utils.id(partySignatureData)));
+      signedParty.signature = sig;
+
+      partyObj.signed = signedParty;
+
       const res = await fetch(`${process.env.REACT_APP_API_URL}/party`, {
         method: "post",
         headers: { "Content-Type": "application/json" },
@@ -66,7 +106,8 @@ const Create = ({
       const json = await res.json();
       routeHistory.push(`/party/${json.id}`);
       setIsLoading(false);
-    } catch {
+    } catch (err) {
+      console.log(err);
       setIsLoading(false);
     }
   };
@@ -80,7 +121,7 @@ const Create = ({
   const [candidates, setCandidates] = useState([]);
   const [description, setDescription] = useState("");
   const [name, setName] = useState(partyName);
-
+  
   useEffect(_ => {
     if (!partyJson) {
       (async _ => {
@@ -102,19 +143,26 @@ const Create = ({
         const config = {
           strategy: "",
           nvotes: candidateAddresses.length * 5,
+          chainId: targetNetwork.chainId,
         };
         if (name !== "" && candidateAddresses.length > 0 && voterAddresses.length > 0) {
           setIsConfirmDisabled(false);
         }
         setIsInvalidName(false);
         setPartyObj({
+          version: "1.0",
           name: name,
+          timestamp: "",
+          nonce: "",
           description: description,
           receipts: [],
           config: config,
           participants: voterAddresses,
           candidates: candidateAddresses,
           ballots: [],
+          notes: [],
+          ipfs: "",
+          signature: "",
         });
       } catch (err) {
         setIsConfirmDisabled(true);
@@ -150,7 +198,7 @@ const Create = ({
           {isInvalidName ? (
             <HStack>
               <WarningIcon />
-              <Text>Name has already been used. Please try another.</Text>
+              <Text>Name already taken. Please try another.</Text>
             </HStack>
           ) : null}
         </Box>
@@ -210,17 +258,6 @@ const Create = ({
     <Box borderWidth={"1px"} shadow="xl" rounded="md" p="10" w="4xl" minW="sm" borderRadius={24}>
       <Center p="5">
         <Text fontSize="xl">Review</Text>
-      </Center>
-      <Center>
-        <Button
-          variant="link"
-          onClick={() => {
-            setIsReview(false);
-          }}
-          rightIcon={<EditIcon />}
-        >
-          Edit
-        </Button>
       </Center>
       <form onSubmit={onSubmit}>
         <FormControl id="Review">
@@ -282,18 +319,66 @@ const Create = ({
     </Box>
   );
 
+  const goHomeAlert = (
+      <AlertDialog
+        motionPreset='slideInBottom'
+        leastDestructiveRef={cancelRef}
+        onClose={onClose}
+        isOpen={isOpen}
+        isCentered
+      >
+        <AlertDialogOverlay />
+
+        <AlertDialogContent>
+          <AlertDialogHeader>Go to home page?</AlertDialogHeader>
+          <AlertDialogCloseButton />
+          <AlertDialogBody>
+            Are you sure? All the details entered will be deleted.
+          </AlertDialogBody>
+          <AlertDialogFooter>
+            <Button ref={cancelRef} onClick={onClose}>
+              No
+            </Button>
+            <Button 
+            colorScheme='red' 
+            ml={3}
+            onClick={() => {
+              routeHistory.push("/");
+            }}
+             >
+              Yes
+            </Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    );
+
+
   return (
     <Box>
+    {isReview ? (
       <Button
         size="lg"
         variant="ghost"
         onClick={() => {
-          routeHistory.push("/");
-        }}
+            setIsReview(false);
+          }}
         leftIcon={<ArrowBackIcon />}
       >
-        Back
+        Edit
       </Button>
+      ) : (
+        <Button
+        size="lg"
+        variant="ghost"
+        onClick={onOpen}
+        leftIcon={<ArrowBackIcon />}
+      >
+        Home
+      </Button>
+        )
+      }
+      {goHomeAlert}
       <Center p="5">{isReview ? reviewForm : createForm}</Center>
     </Box>
   );

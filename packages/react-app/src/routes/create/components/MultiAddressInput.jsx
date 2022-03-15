@@ -52,35 +52,35 @@ export default function MultiAddressInput(props) {
 
   const handleChange = e => {
     const lastInput = e.target.value[e.target.value.length - 1];
-    if (lastInput === "," || lastInput === "\n") {
-        const splitInput = e.currentTarget.value
-          .split(/[ ,\n]+/)
-          .filter(c => c !== "")
-          .map(async uin => {
-            // Data model
-            let val = { input: uin, isValid: null, address: null, ens: null };
-            try {
-              if (uin.endsWith(".eth") || uin.endsWith(".xyz")) {
-                val.address = await ensProvider.resolveName(uin);
-                val.ens = uin;
-              } else {
-                val.ens = await ensProvider.lookupAddress(uin);
-                val.address = uin;
-              }
-              val.isValid = true;
-            } catch {
-              val.isValid = false;
-              console.log("Bad Address: " + uin);
+    if (lastInput === "," || lastInput === "\n" || lastInput === " ") {
+      const splitInput = e.currentTarget.value
+        .split(/[ ,\n]+/)
+        .filter(c => c !== "")
+        .map(async uin => {
+          // Data model
+          let val = { input: uin, isValid: null, address: null, ens: null };
+          try {
+            if (uin.endsWith(".eth") || uin.endsWith(".xyz")) {
+              val.address = await ensProvider.resolveName(uin);
+              val.ens = uin;
+            } else {
+              val.ens = await ensProvider.lookupAddress(uin);
+              val.address = uin;
             }
-            return val;
-          });
-        setIsLoading(true);
-        Promise.all(splitInput)
-          .then(d => {
-            onChange([...value, ...d]);
-          })
-          .finally(_ => setIsLoading(false));
-        e.target.value = "";
+            val.isValid = true;
+          } catch {
+            val.isValid = false;
+            console.log("Bad Address: " + uin);
+          }
+          return val;
+        });
+      setIsLoading(true);
+      Promise.all(splitInput)
+        .then(d => {
+          onChange([...value, ...d]);
+        })
+        .finally(_ => setIsLoading(false));
+      e.target.value = "";
     }
   };
 

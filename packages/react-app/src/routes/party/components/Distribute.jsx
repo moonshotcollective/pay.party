@@ -1,6 +1,6 @@
 import { useColorModeValue } from "@chakra-ui/color-mode";
 import { QuestionOutlineIcon } from "@chakra-ui/icons";
-import { Box, Button, Center, HStack, Text, Tooltip, Spacer } from "@chakra-ui/react";
+import { Box, Button, Center, HStack, Text, Tooltip, Spacer, Radio, RadioGroup, Stack } from "@chakra-ui/react";
 import { InputNumber } from "antd";
 import { BigNumber, ethers, utils } from "ethers";
 import React, { useState } from "react";
@@ -15,10 +15,13 @@ export const Distribute = ({
   writeContracts,
   tx,
   distribution,
+  setDistribution,
   strategy,
+  setStrategy,
   isSmartContract,
   localProvider,
   setAmountToDistribute,
+  targetNetwork,
 }) => {
   const [tokenInstance, setTokenInstance] = useState(null);
   const [amounts, setAmounts] = useState(null);
@@ -89,10 +92,12 @@ export const Distribute = ({
         setAmounts(amts);
         setAddresses(adrs);
         const len = partyData.receipts.length;
-        if(len > 0) {
-          amt > 0 ? setAmountToDistribute(amt) : setAmountToDistribute(utils.formatEther(partyData.receipts[len-1].amount));
+        if (len > 0) {
+          amt > 0
+            ? setAmountToDistribute(amt)
+            : setAmountToDistribute(utils.formatEther(partyData.receipts[len - 1].amount));
         } else {
-         amt > 0 ? setAmountToDistribute(amt) : setAmountToDistribute(0);
+          amt > 0 ? setAmountToDistribute(amt) : setAmountToDistribute(0);
         }
         setHasApprovedAllowance(false);
       }
@@ -101,7 +106,7 @@ export const Distribute = ({
     }
   };
 
-  const handleReceipt = res => {
+  const handleReceipt = async res => {
     if (res && res.hash && (res.status === "confirmed" || res.status === 1)) {
       console.log(" 🍾 Transaction " + res.hash + " finished!");
       const receipt = {
@@ -109,28 +114,33 @@ export const Distribute = ({
         amount: total.toHexString(),
         token: tokenInstance?.address,
         txn: res.hash,
+        strategy: strategy,
+        chainId: targetNetwork.chainId,
+        
       };
-      fetch(`${process.env.REACT_APP_API_URL}/party/${partyData.id}/distribute`, {
+      await fetch(`${process.env.REACT_APP_API_URL}/party/${partyData.id}/distribute`, {
         method: "put",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(receipt),
       });
     }
     setIsDistributionLoading(false);
+    await new Promise(r => setTimeout(r, 5000));
+    window.location.reload(false);
   };
 
-  const handleSafeReceipt = res => {
-    if (res && res.hash && (res.status === "confirmed" || res.status === 1)) {
-      console.log(" 🍾 Transaction " + res.hash + " finished!");
-      const receipt = {
-        account: address,
-        amount: total.toHexString(),
-        token: tokenInstance?.address,
-        txn: res.hash,
-      };
-    }
-    setIsDistributionLoading(false);
-  };
+  // const handleSafeReceipt = res => {
+  //   if (res && res.hash && (res.status === "confirmed" || res.status === 1)) {
+  //     console.log(" 🍾 Transaction " + res.hash + " finished!");
+  //     const receipt = {
+  //       account: address,
+  //       amount: total.toHexString(),
+  //       token: tokenInstance?.address,
+  //       txn: res.hash,
+  //     };
+  //   }
+  //   setIsDistributionLoading(false);
+  // };
 
   // Distribute either Eth, or loaded erc20
   const distribute = () => {
@@ -180,7 +190,7 @@ export const Distribute = ({
   };
 
   //   const { sdk, connected, safe } = useSafeAppsSDK();
-  // useEffect(async () => {
+  // useEffect(
   //   console.log(sdk, connected, safe)
 
   //   const txs = [
@@ -193,7 +203,9 @@ export const Distribute = ({
   //   ];
   //   // Returns a hash to identify the Safe transaction
   //   const safeTxHash = await sdk.txs.send({ txs });
-  // }, [])
+  // }, [])\
+
+  const [strat, setStrat] = useState();
 
   return (
     <Box>
@@ -206,7 +218,14 @@ export const Distribute = ({
               <QuestionOutlineIcon w={4} h={4} />
             </Tooltip>
           </HStack>
-          <Box p='2'>
+          <Box p="2">
+            <Text>Select Strategy</Text>
+            <RadioGroup onChange={setStrategy} value={strategy} p={3} size="sm">
+              <Stack>
+                <Radio value="quadratic">Quadratic</Radio>
+                <Radio value="linear">Linear</Radio>
+              </Stack>
+            </RadioGroup>
             <Text>Amount</Text>
             <InputNumber
               size="large"
@@ -218,7 +237,7 @@ export const Distribute = ({
               style={{ width: "calc(100%)", color: useColorModeValue("black", "lightgray") }}
             ></InputNumber>
           </Box>
-          <Box p='2'>
+          <Box p="2">
             <Text>Select a Token (optional)</Text>
             <TokenSelect
               chainId={userSigner?.provider?._network?.chainId}
