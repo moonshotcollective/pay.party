@@ -15,7 +15,7 @@ import {
   Input,
 } from "@chakra-ui/react";
 import { EditIcon, CheckIcon } from "@chakra-ui/icons";
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import AddressChakra from "../../../components/AddressChakra";
 import Confetti from "react-confetti";
 import { useLocation } from "react-router-dom";
