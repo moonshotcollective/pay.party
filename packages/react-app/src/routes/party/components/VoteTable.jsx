@@ -17,8 +17,23 @@ import {
   Td,
   TableCaption,
 } from "@chakra-ui/react";
-import React, { useState, useMemo, useEffect } from "react";
-import { useHistory } from "react-router-dom";
+import {
+  useDisclosure,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalFooter,
+  ModalBody,
+  ModalCloseButton,
+  FormControl,
+  FormLabel,
+  FormErrorMessage,
+  FormHelperText,
+  Input,
+} from "@chakra-ui/react";
+import { EditIcon, CheckIcon } from "@chakra-ui/icons";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import AddressChakra from "../../../components/AddressChakra";
 
 export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readContracts, mainnetProvider }) => {
@@ -26,8 +41,12 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
   const [votesData, setVotesData] = useState(null);
   // Init votes left to nvotes
   const [votesLeft, setVotesLeft] = useState(null);
+  const [candidateNote, setCandidateNote] = useState("");
   const [invalidVotesLeft, setInvalidVotesLeft] = useState(false);
   const [blockNumber, setBlockNumber] = useState("-1");
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const initialRef = React.useRef();
+  const finalRef = React.useRef();
   mainnetProvider.on("block", bn => {
     setBlockNumber(bn.toString());
   });
@@ -51,6 +70,21 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
     const spent = Object.values(votesData).reduce((a, b) => a + b);
     setVotesLeft(partyData.config.nvotes - spent);
     setInvalidVotesLeft(spent > partyData.config.nvotes);
+  };
+
+  const newCandidateNote = async _ => {
+    const note = {
+      candidate: address,
+      message: candidateNote,
+      signature: "",
+    };
+
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/party/${partyData.id}/note`, {
+      method: "put",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(note),
+    });
+    onClose();
   };
 
   const vote = async _ => {
@@ -133,6 +167,16 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
                   />
                 </Td>
                 <Td>
+                <Text>
+                  {partyData.notes?.filter(n => n.candidate.toLowerCase() === d.toLowerCase()).reverse()[0]?.message}
+                </Text>
+                  {d.toLowerCase() === address.toLowerCase() ? (
+                    <Button size="xs" rightIcon={<EditIcon />} variant="link" ml="1" onClick={onOpen}>
+                      Edit
+                    </Button>
+                  ) : null}
+                </Td>
+                <Td>
                   <NumberInput
                     defaultValue={0}
                     min={0}
@@ -161,7 +205,34 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
       }
       return c;
     },
-    [partyData, votesLeft],
+    [partyData, votesLeft, address],
+  );
+
+  const editNoteModal = (
+    <Modal initialFocusRef={initialRef} finalFocusRef={finalRef} isOpen={isOpen} onClose={onClose}>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader>Update your Note</ModalHeader>
+        <ModalCloseButton />
+        <ModalBody pb={6}>
+          <FormControl>
+            <Input
+              onChange={e => {
+                setCandidateNote(e.target.value);
+              }}
+              ref={initialRef}
+              placeholder="Enter your note here"
+            />
+          </FormControl>
+        </ModalBody>
+        <ModalFooter>
+          <Button mr={3} onClick={newCandidateNote}>
+            Submit
+          </Button>
+          <Button onClick={onClose}>Cancel</Button>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
   );
 
   return (
@@ -178,6 +249,7 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
         <Thead>
           <Tr>
             <Th>Address</Th>
+            <Th>Note</Th>
             <Th>Score</Th>
           </Tr>
         </Thead>
@@ -187,6 +259,7 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
           </Button>
         </TableCaption>
         {candidates}
+        {editNoteModal}
       </Table>
     </Box>
   );

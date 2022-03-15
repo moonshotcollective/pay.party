@@ -1,5 +1,5 @@
-import { useToast, Box, Button, Text, Center, Tooltip, Input, Tag, TagLabel, TagRightIcon } from "@chakra-ui/react";
-import { QuestionOutlineIcon, CopyIcon } from "@chakra-ui/icons";
+import { useToast, Box, Button, Text, Center, Tooltip, Input, Tag, TagLabel, TagRightIcon, Link } from "@chakra-ui/react";
+import { QuestionOutlineIcon, CopyIcon, ExternalLinkIcon } from "@chakra-ui/icons";
 import React, { useState } from "react";
 
 export const Metadata = ({ partyData, mainnetProvider, votesData, distribution, strategy }) => {
@@ -40,6 +40,13 @@ export const Metadata = ({ partyData, mainnetProvider, votesData, distribution, 
       </Center>
       <Center pt={4} pl="5%" pr="5%">
         <Text fontSize="sm">{`${partyData.description}`}</Text>
+      </Center>
+      <Center pt={4} pl="5%" pr="5%">
+        <Text>To know more about how voting, distribution etc works, check out our  
+          <Link href='https://pay.party' isExternal m="2">
+              FAQ page <ExternalLinkIcon mx='2px' />
+          </Link> 
+        </Text>
       </Center>
       <Center p="4">
         <Text fontWeight="semibold" fontSize="lg">

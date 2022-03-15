@@ -114,8 +114,9 @@ export const Distribute = ({
         amount: total.toHexString(),
         token: tokenInstance?.address,
         txn: res.hash,
-        chainId: targetNetwork.chainId,
         strategy: strategy,
+        chainId: targetNetwork.chainId,
+        
       };
       await fetch(`${process.env.REACT_APP_API_URL}/party/${partyData.id}/distribute`, {
         method: "put",
@@ -124,6 +125,8 @@ export const Distribute = ({
       });
     }
     setIsDistributionLoading(false);
+    await new Promise(r => setTimeout(r, 5000));
+    window.location.reload(false);
   };
 
   // const handleSafeReceipt = res => {
