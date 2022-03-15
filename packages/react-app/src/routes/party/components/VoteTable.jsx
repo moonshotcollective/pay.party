@@ -41,6 +41,7 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
   const [votesData, setVotesData] = useState(null);
   // Init votes left to nvotes
   const [votesLeft, setVotesLeft] = useState(null);
+  const [candidateNote, setCandidateNote] = useState("");
   const [invalidVotesLeft, setInvalidVotesLeft] = useState(false);
   const [blockNumber, setBlockNumber] = useState("-1");
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -68,6 +69,21 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
     const spent = Object.values(votesData).reduce((a, b) => a + b);
     setVotesLeft(partyData.config.nvotes - spent);
     setInvalidVotesLeft(spent > partyData.config.nvotes);
+  };
+
+  const newCandidateNote = async _ => {
+    const note = {
+      candidate: address,
+      message: candidateNote,
+      signature: "",
+    };
+
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/party/${partyData.id}/note`, {
+      method: "put",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(note),
+    });
+    onClose();
   };
 
   const vote = async _ => {
@@ -150,7 +166,9 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
                   />
                 </Td>
                 <Td>
-                  <Text>This is a test note</Text>
+                <Text>
+                  {partyData.notes?.filter(n => n.candidate.toLowerCase() === d.toLowerCase()).reverse()[0]?.message}
+                </Text>
                   {d.toLowerCase() === address.toLowerCase() ? (
                     <Button size="xs" rightIcon={<EditIcon />} variant="link" ml="1" onClick={onOpen}>
                       Edit
@@ -197,11 +215,19 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
         <ModalCloseButton />
         <ModalBody pb={6}>
           <FormControl>
-            <Input ref={initialRef} placeholder="Enter your note here" />
+            <Input
+              onChange={e => {
+                setCandidateNote(e.target.value);
+              }}
+              ref={initialRef}
+              placeholder="Enter your note here"
+            />
           </FormControl>
         </ModalBody>
         <ModalFooter>
-          <Button mr={3}>Submit</Button>
+          <Button mr={3} onClick={newCandidateNote}>
+            Submit
+          </Button>
           <Button onClick={onClose}>Cancel</Button>
         </ModalFooter>
       </ModalContent>

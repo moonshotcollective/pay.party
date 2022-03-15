@@ -29,6 +29,7 @@ export const ViewTable = ({
 }) => {
   const [castVotes, setCastVotes] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [candidateNote, setCandidateNote] = useState();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const initialRef = React.useRef();
   const finalRef = React.useRef();
@@ -52,14 +53,14 @@ export const ViewTable = ({
                 />
               </Td>
               <Td>
-                <Center>
-                  <Text>This is a test note</Text>
-                </Center>
-                  {d.toLowerCase() === address.toLowerCase() ? (
-                    <Button size="xs" rightIcon={<EditIcon />} variant="link" ml="1" onClick={onOpen}>
-                      Edit
-                    </Button>
-                  ) : null}
+                <Text>
+                  {partyData.notes?.filter(n => n.candidate.toLowerCase() === d.toLowerCase()).reverse()[0]?.message}
+                </Text>
+                {d.toLowerCase() === address.toLowerCase() ? (
+                  <Button size="xs" rightIcon={<EditIcon />} variant="link" ml="1" onClick={onOpen}>
+                    Edit
+                  </Button>
+                ) : null}
               </Td>
               <Td>
                 <Center>{ballotVotes && ballotVotes[d]}</Center>
@@ -81,19 +82,40 @@ export const ViewTable = ({
     return row;
   }, [partyData, votesData, distribution, strategy, amountToDistribute]);
 
+  const newCandidateNote = async _ => {
+    const note = {
+      candidate: address,
+      message: candidateNote,
+      signature: "",
+    };
+
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/party/${partyData.id}/note`, {
+      method: "put",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(note),
+    });
+    onClose();
+  };
+
   const editNoteModal = (
     <Modal initialFocusRef={initialRef} finalFocusRef={finalRef} isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Update your Note</ModalHeader>
+        <ModalHeader>Create a Note</ModalHeader>
         <ModalCloseButton />
         <ModalBody pb={6}>
           <FormControl>
-            <Input ref={initialRef} placeholder="Enter your note here" />
+            <Input
+              onChange={e => setCandidateNote(e.target.value)}
+              ref={initialRef}
+              placeholder="Enter your note here"
+            />
           </FormControl>
         </ModalBody>
         <ModalFooter>
-          <Button mr={3}>Submit</Button>
+          <Button mr={3} onClick={newCandidateNote}>
+            Submit
+          </Button>
           <Button onClick={onClose}>Cancel</Button>
         </ModalFooter>
       </ModalContent>
@@ -109,9 +131,7 @@ export const ViewTable = ({
               <Center>Address</Center>
             </Th>
             <Th>
-              <Center>
-                Note
-              </Center>
+              <Center>Note</Center>
             </Th>
             <Th>
               <Center>{castVotes ? "Your Ballot" : ""}</Center>
