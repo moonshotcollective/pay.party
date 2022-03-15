@@ -290,7 +290,7 @@ function App(props) {
   const [partyJson, setPartyJson] = useState(null);
 
   return (
-    <div>
+    <div id="app-container">
       <Box mb={8} pl={"14vw"} pr={"14vw"}>
         <Wrap pb={"6vh"}>
           <WrapItem>

@@ -50,6 +50,7 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
   mainnetProvider.on("block", bn => {
     setBlockNumber(bn.toString());
   });
+  const history = useHistory();
 
   useEffect(
     _ => {
@@ -133,7 +134,7 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
               });
             })
             .then(_ => {
-              window.location.reload(false);
+              window.open(`/party/${partyData.id}?confetti=true`, "_self");
             })
             .catch(err => {
               console.log(err);
