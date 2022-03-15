@@ -34,6 +34,7 @@ import {
 } from "@chakra-ui/react";
 import { EditIcon, CheckIcon } from "@chakra-ui/icons";
 import React, { useState, useMemo, useEffect, useRef } from "react";
+import { useHistory } from "react-router-dom";
 import AddressChakra from "../../../components/AddressChakra";
 
 export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readContracts, mainnetProvider }) => {
