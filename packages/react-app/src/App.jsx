@@ -1,11 +1,12 @@
 require("dotenv").config();
 import "antd/dist/antd.css";
+import { Alert } from "antd";
 import React, { useEffect, useState } from "react";
 import { BrowserRouter, Route, Switch, useHistory } from "react-router-dom";
 import "./App.css";
 import { Account, Contract, Header } from "./components";
 import Footer from "./components/layout/Footer";
-import { BLOCKNATIVE_DAPPID, INFURA_ID, NETWORKS } from "./constants";
+import { BLOCKNATIVE_DAPPID, INFURA_ID, NETWORK, NETWORKS } from "./constants";
 import { Transactor, SafeTransactor } from "./helpers";
 import { useBalance, useGasPrice } from "eth-hooks";
 import { useExchangeEthPrice } from "eth-hooks/dapps/dex";
@@ -29,6 +30,8 @@ import {
   WrapItem,
 } from "@chakra-ui/react";
 import NotConnectedCard from "./components/Cards/NotConnectedCard";
+import NetworkNotifier from "./components/Cards/NetworkNotifier";
+
 import CenteredFrame from "./components/layout/CenteredFrame";
 import { useColorMode } from "@chakra-ui/color-mode";
 import { MoonIcon, SunIcon, ChevronDownIcon } from "@chakra-ui/icons";
@@ -271,6 +274,87 @@ function App(props) {
     setIsSmartContract(bytecode && bytecode !== "0x");
   }, [address, injectedProvider]);
 
+  //Network Notifier
+  let networkDisplay = "";
+  if (NETWORKCHECK && localChainId && selectedChainId && localChainId !== selectedChainId) {
+    const networkSelected = NETWORK(selectedChainId);
+    const networkLocal = NETWORK(localChainId);
+    if (selectedChainId === 1337 && localChainId === 31337) {
+      networkDisplay = (
+        <div style={{ zIndex: 2, position: "absolute", right: 0, top: 60, padding: 16 }}>
+          <Alert
+            message="⚠️ Wrong Network ID"
+            description={
+              <div>
+                You have <b>chain id 1337</b> for localhost and you need to change it to <b>31337</b> to work with
+                HardHat.
+                <div>(MetaMask -&gt; Settings -&gt; Networks -&gt; Chain ID -&gt; 31337)</div>
+              </div>
+            }
+            type="error"
+            closable={false}
+          />
+        </div>
+      );
+    } else {
+      networkDisplay = (
+        <div style={{ zIndex: 2, position: "absolute", right: 0, top: 60, padding: 16 }}>
+          <Alert
+            message="⚠️ Wrong Network"
+            description={
+              <div>
+                You have <b>{networkSelected && networkSelected.name}</b> selected and you need to be on{" "}
+                <Button
+                  onClick={async () => {
+                    const ethereum = window.ethereum;
+                    const data = [
+                      {
+                        chainId: "0x" + targetNetwork.chainId.toString(16),
+                        chainName: targetNetwork.name,
+                        nativeCurrency: targetNetwork.nativeCurrency,
+                        rpcUrls: [targetNetwork.rpcUrl],
+                        blockExplorerUrls: [targetNetwork.blockExplorer],
+                      },
+                    ];
+                    console.log("data", data);
+
+                    let switchTx;
+                    // https://docs.metamask.io/guide/rpc-api.html#other-rpc-methods
+                    try {
+                      switchTx = await ethereum.request({
+                        method: "wallet_switchEthereumChain",
+                        params: [{ chainId: data[0].chainId }],
+                      });
+                    } catch (switchError) {
+                      // not checking specific error code, because maybe we're not using MetaMask
+                      try {
+                        switchTx = await ethereum.request({
+                          method: "wallet_addEthereumChain",
+                          params: data,
+                        });
+                      } catch (addError) {
+                        // handle "add" error
+                      }
+                    }
+                    setTimeout(window.location.reload(), 2000);
+
+                    if (switchTx) {
+                      console.log("Switch Txn: " + switchTx);
+                    }
+                  }}
+                >
+                  <b>{networkLocal && networkLocal.name}</b>
+                </Button>
+              </div>
+            }
+            type="error"
+            closable={true}
+          />
+        </div>
+      );
+    }
+  }
+
   // The transactor wraps transactions and provides notificiations
   const tx = isSmartContract ? SafeTransactor(userSigner, gasPrice) : Transactor(userSigner, gasPrice);
 
@@ -315,6 +399,7 @@ function App(props) {
                 logoutOfWeb3Modal={onboard && onboard.walletReset} //{logoutOfWeb3Modal}
                 blockExplorer={blockExplorer}
               />
+              {networkDisplay}
             </Box>
             <Box pt={8}>
               <IconButton
@@ -391,6 +476,7 @@ function App(props) {
             <NotConnectedCard />
           </CenteredFrame>
         )}
+        <NetworkNotifier /> {/* Metamask Network chain Notification */}
         <Footer />
       </Box>
     </div>
