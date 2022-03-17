@@ -1,10 +1,12 @@
-import { useToast, Box, Button, Text, Center, Tooltip, Input, Tag, TagLabel, TagRightIcon, Link } from "@chakra-ui/react";
-import { QuestionOutlineIcon, CopyIcon, ExternalLinkIcon } from "@chakra-ui/icons";
+import { useToast, Box, Button, Text, Center, Tooltip, Link } from "@chakra-ui/react";
+import { CopyIcon, ExternalLinkIcon } from "@chakra-ui/icons";
+import { NETWORK } from "../../../constants";
 import React, { useState } from "react";
 
 export const Metadata = ({ partyData, mainnetProvider, votesData, distribution, strategy }) => {
   const [cpText, setCpText] = useState("Copy Party URL");
   const toast = useToast();
+  const partyNetwork = NETWORK(partyData.config.chainId);
   return (
     <Box>
       <Center pt={4}>
@@ -14,6 +16,9 @@ export const Metadata = ({ partyData, mainnetProvider, votesData, distribution, 
       </Center>
       <Center pt={4}>
         <Text fontSize="xl">{`${partyData.name}`}</Text>
+      </Center>
+      <Center pt={4}>
+        <Text fontSize="xl">Party Network: {partyNetwork && partyNetwork.name}</Text>
       </Center>
       <Center pt={4} pl="5%" pr="5%">
         <Text fontSize="xs">{`Signature: ${partyData.signed.signature.substr(
@@ -42,10 +47,11 @@ export const Metadata = ({ partyData, mainnetProvider, votesData, distribution, 
         <Text fontSize="sm">{`${partyData.description}`}</Text>
       </Center>
       <Center pt={4} pl="5%" pr="5%">
-        <Text>To know more about how voting, distribution etc works, check out our  
-          <Link href='https://pay.party' isExternal m="2">
-              FAQ page <ExternalLinkIcon mx='2px' />
-          </Link> 
+        <Text>
+          To know more about how voting, distribution etc works, check out our
+          <Link href="https://pay.party" isExternal m="2">
+            FAQ page <ExternalLinkIcon mx="2px" />
+          </Link>
         </Text>
       </Center>
       <Center p="4">

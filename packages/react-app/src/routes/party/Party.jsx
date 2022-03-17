@@ -217,11 +217,7 @@ export default function Party({
               strategy={strategy}
             />
           )}
-          {canVote ? (
-            cachedVoteTable
-          ) : (
-            cachedViewTable
-          )}
+          {canVote ? cachedVoteTable : cachedViewTable}
           <Box p="6">
             <Distribute
               partyData={partyData}
