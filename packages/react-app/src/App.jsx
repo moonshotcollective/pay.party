@@ -1,6 +1,6 @@
 require("dotenv").config();
 import "antd/dist/antd.css";
-import { Alert } from "antd";
+// import { Alert } from "antd";
 import React, { useEffect, useState } from "react";
 import { BrowserRouter, Route, Switch, useHistory } from "react-router-dom";
 import "./App.css";
@@ -16,7 +16,12 @@ import { useUserProviderAndSigner } from "./hooks";
 import { useContractConfig, useContractLoader } from "./hooks";
 
 import {
+  Alert,
+  AlertIcon,
+  AlertTitle,
+  AlertDescription,
   Box,
+  CloseButton,
   Spacer,
   Text,
   IconButton,
@@ -28,6 +33,7 @@ import {
   MenuOptionGroup,
   Wrap,
   WrapItem,
+  Center,
 } from "@chakra-ui/react";
 import NotConnectedCard from "./components/Cards/NotConnectedCard";
 import NetworkNotifier from "./components/Cards/NetworkNotifier";
@@ -282,28 +288,21 @@ function App(props) {
     if (selectedChainId === 1337 && localChainId === 31337) {
       networkDisplay = (
         <div style={{ zIndex: 2, position: "absolute", right: 0, top: 60, padding: 16 }}>
-          <Alert
-            message="⚠️ Wrong Network ID"
-            description={
-              <div>
-                You have <b>chain id 1337</b> for localhost and you need to change it to <b>31337</b> to work with
-                HardHat.
-                <div>(MetaMask -&gt; Settings -&gt; Networks -&gt; Chain ID -&gt; 31337)</div>
-              </div>
-            }
-            type="error"
-            closable={false}
-          />
+          <div>
+            You have <b>chain id 1337</b> for localhost and you need to change it to <b>31337</b> to work with HardHat.
+            <div>(MetaMask -&gt; Settings -&gt; Networks -&gt; Chain ID -&gt; 31337)</div>
+          </div>
         </div>
       );
     } else {
       networkDisplay = (
-        <div style={{ zIndex: 2, position: "absolute", right: 0, top: 60, padding: 16 }}>
-          <Alert
-            message="⚠️ Wrong Network"
-            description={
+          <Alert status="error">
+            <AlertIcon />
+            <AlertTitle >
+              You have <b>{networkSelected && networkSelected.name}</b> selected and you need to be on{" "}
+            </AlertTitle>
+            <AlertDescription>
               <div>
-                You have <b>{networkSelected && networkSelected.name}</b> selected and you need to be on{" "}
                 <Button
                   onClick={async () => {
                     const ethereum = window.ethereum;
@@ -346,11 +345,10 @@ function App(props) {
                   <b>{networkLocal && networkLocal.name}</b>
                 </Button>
               </div>
-            }
-            type="error"
-            closable={true}
-          />
-        </div>
+            </AlertDescription>
+            <CloseButton position="absolute" right="8px" top="8px" />
+          </Alert>
+        
       );
     }
   }
@@ -376,6 +374,7 @@ function App(props) {
   return (
     <div id="app-container">
       <Box mb={8} pl={"14vw"} pr={"14vw"}>
+              {networkDisplay}
         <Wrap pb={"6vh"}>
           <WrapItem>
             <a href="/">
@@ -399,7 +398,6 @@ function App(props) {
                 logoutOfWeb3Modal={onboard && onboard.walletReset} //{logoutOfWeb3Modal}
                 blockExplorer={blockExplorer}
               />
-              {networkDisplay}
             </Box>
             <Box pt={8}>
               <IconButton
@@ -476,7 +474,6 @@ function App(props) {
             <NotConnectedCard />
           </CenteredFrame>
         )}
-        <NetworkNotifier /> {/* Metamask Network chain Notification */}
         <Footer />
       </Box>
     </div>
