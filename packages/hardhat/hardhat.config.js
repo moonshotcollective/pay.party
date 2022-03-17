@@ -72,19 +72,19 @@ module.exports = {
       url: `https://rinkeby.infura.io/v3/${process.env.RINKEBY_INFURA_KEY}`,
       accounts: [process.env.RINKEBY_DEPLOYER_PRIV_KEY],
     },
-    goerli: {
-      url: `https://goerli.infura.io/v3/${process.env.RINKEBY_INFURA_KEY}`,
-      accounts: [process.env.GOERLI_DEPLOYER_PRIV_KEY],
-    },
+    // goerli: {
+    //   url: `https://goerli.infura.io/v3/${process.env.RINKEBY_INFURA_KEY}`,
+    //   accounts: [process.env.GOERLI_DEPLOYER_PRIV_KEY],
+    // },
     mainnet: {
       url: `https://mainnet.infura.io/v3/${process.env.MAINNET_INFURA_KEY}`,
       accounts: [`${process.env.MAINNET_DEPLOYER_PRIV_KEY}`],
     },
-    xdai: {
-      url: "https://dai.poa.network",
-      gasPrice: 1000000000,
-      accounts: [`${process.env.XDAI_DEPLOYER_PRIV_KEY}`],
-    },
+    // xdai: {
+    //   url: "https://dai.poa.network",
+    //   gasPrice: 1000000000,
+    //   accounts: [`${process.env.XDAI_DEPLOYER_PRIV_KEY}`],
+    // },
     matic: {
       url: `https://polygon-mainnet.infura.io/v3/${process.env.POLYGON_INFURA_KEY}`, // <---- YOUR MORALIS ID! (not limited to infura)
       gasPrice: 1000000000,
