@@ -1,4 +1,4 @@
-import { useToast, Box, Button, Text, Center, Tooltip, Link } from "@chakra-ui/react";
+import { useToast, Box, Button, Text, Center, Tooltip, Link, Tag, HStack } from "@chakra-ui/react";
 import { CopyIcon, ExternalLinkIcon } from "@chakra-ui/icons";
 import { NETWORK } from "../../../constants";
 import React, { useState } from "react";
@@ -17,17 +17,19 @@ export const Metadata = ({ partyData, mainnetProvider, votesData, distribution, 
       <Center pt={4}>
         <Text fontSize="xl">{`${partyData.name}`}</Text>
       </Center>
-      <Center pt={4}>
-        <Text fontSize="xl">Party Network: {partyNetwork && partyNetwork.name}</Text>
-      </Center>
       <Center pt={4} pl="5%" pr="5%">
-        <Text fontSize="xs">{`Signature: ${partyData.signed.signature.substr(
-          0,
-          6,
-        )}...${partyData.signed.signature.substr(
-          partyData.signed.signature.length - 4,
-          partyData.signed.signature.length,
-        )}`}</Text>
+        <HStack>
+          <Text fontSize="xs">{`Signature: ${partyData.signed.signature.substr(
+            0,
+            6,
+          )}...${partyData.signed.signature.substr(
+            partyData.signed.signature.length - 4,
+            partyData.signed.signature.length,
+          )}`}</Text>
+          <Tag variant="outline" size="sm">
+            {partyNetwork && partyNetwork.name}
+          </Tag>
+        </HStack>
       </Center>
       <Center pt={4}>
         <Tooltip label={cpText}>
