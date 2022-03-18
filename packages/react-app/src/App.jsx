@@ -296,59 +296,58 @@ function App(props) {
       );
     } else {
       networkDisplay = (
-          <Alert status="error">
-            <AlertIcon />
-            <AlertTitle >
-              You have <b>{networkSelected && networkSelected.name}</b> selected and you need to be on{" "}
-            </AlertTitle>
-            <AlertDescription>
-              <div>
-                <Button
-                  onClick={async () => {
-                    const ethereum = window.ethereum;
-                    const data = [
-                      {
-                        chainId: "0x" + targetNetwork.chainId.toString(16),
-                        chainName: targetNetwork.name,
-                        nativeCurrency: targetNetwork.nativeCurrency,
-                        rpcUrls: [targetNetwork.rpcUrl],
-                        blockExplorerUrls: [targetNetwork.blockExplorer],
-                      },
-                    ];
-                    console.log("data", data);
+        <Alert status="error">
+          <AlertIcon />
+          <AlertTitle>
+            You have <b>{networkSelected && networkSelected.name}</b> selected and you need to be on{" "}
+          </AlertTitle>
+          <AlertDescription>
+            <div>
+              <Button
+                onClick={async () => {
+                  const ethereum = window.ethereum;
+                  const data = [
+                    {
+                      chainId: "0x" + targetNetwork.chainId.toString(16),
+                      chainName: targetNetwork.name,
+                      nativeCurrency: targetNetwork.nativeCurrency,
+                      rpcUrls: [targetNetwork.rpcUrl],
+                      blockExplorerUrls: [targetNetwork.blockExplorer],
+                    },
+                  ];
+                  console.log("data", data);
 
-                    let switchTx;
-                    // https://docs.metamask.io/guide/rpc-api.html#other-rpc-methods
+                  let switchTx;
+                  // https://docs.metamask.io/guide/rpc-api.html#other-rpc-methods
+                  try {
+                    switchTx = await ethereum.request({
+                      method: "wallet_switchEthereumChain",
+                      params: [{ chainId: data[0].chainId }],
+                    });
+                  } catch (switchError) {
+                    // not checking specific error code, because maybe we're not using MetaMask
                     try {
                       switchTx = await ethereum.request({
-                        method: "wallet_switchEthereumChain",
-                        params: [{ chainId: data[0].chainId }],
+                        method: "wallet_addEthereumChain",
+                        params: data,
                       });
-                    } catch (switchError) {
-                      // not checking specific error code, because maybe we're not using MetaMask
-                      try {
-                        switchTx = await ethereum.request({
-                          method: "wallet_addEthereumChain",
-                          params: data,
-                        });
-                      } catch (addError) {
-                        // handle "add" error
-                      }
+                    } catch (addError) {
+                      // handle "add" error
                     }
-                    setTimeout(window.location.reload(), 2000);
+                  }
+                  setTimeout(window.location.reload(), 2000);
 
-                    if (switchTx) {
-                      console.log("Switch Txn: " + switchTx);
-                    }
-                  }}
-                >
-                  <b>{networkLocal && networkLocal.name}</b>
-                </Button>
-              </div>
-            </AlertDescription>
-            <CloseButton position="absolute" right="8px" top="8px" />
-          </Alert>
-        
+                  if (switchTx) {
+                    console.log("Switch Txn: " + switchTx);
+                  }
+                }}
+              >
+                <b>{networkLocal && networkLocal.name}</b>
+              </Button>
+            </div>
+          </AlertDescription>
+          <CloseButton position="absolute" right="8px" top="8px" />
+        </Alert>
       );
     }
   }
@@ -374,7 +373,7 @@ function App(props) {
   return (
     <div id="app-container">
       <Box mb={8} pl={"14vw"} pr={"14vw"}>
-              {networkDisplay}
+        {networkDisplay}
         <Wrap pb={"6vh"}>
           <WrapItem>
             <a href="/">
@@ -455,6 +454,7 @@ function App(props) {
                   writeContracts={writeContracts}
                   readContracts={readContracts}
                   isSmartContract={isSmartContract}
+                  onboard={onboard}
                 />
               </Route>
               <Route exact path="/debug">

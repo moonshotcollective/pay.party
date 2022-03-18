@@ -45,6 +45,7 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
   const [candidateNote, setCandidateNote] = useState("");
   const [invalidVotesLeft, setInvalidVotesLeft] = useState(false);
   const [blockNumber, setBlockNumber] = useState("-1");
+  const [isCorrectChainId, setIsCorrectChainId] = useState(true);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const initialRef = React.useRef();
   const finalRef = React.useRef();
@@ -63,7 +64,7 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
         console.log(error);
       }
     },
-    [partyData],
+    [partyData, targetNetwork],
   );
 
   const handleVotesChange = (event, adr) => {
@@ -168,9 +169,9 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
                   />
                 </Td>
                 <Td>
-                <Text>
-                  {partyData.notes?.filter(n => n.candidate.toLowerCase() === d.toLowerCase()).reverse()[0]?.message}
-                </Text>
+                  <Text>
+                    {partyData.notes?.filter(n => n.candidate.toLowerCase() === d.toLowerCase()).reverse()[0]?.message}
+                  </Text>
                   {d.toLowerCase() === address.toLowerCase() ? (
                     <Button size="xs" rightIcon={<EditIcon />} variant="link" ml="1" onClick={onOpen}>
                       Edit
@@ -255,7 +256,7 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
           </Tr>
         </Thead>
         <TableCaption>
-          <Button onClick={vote} disabled={invalidVotesLeft}>
+          <Button onClick={vote} disabled={invalidVotesLeft || !isCorrectChainId}>
             Vote
           </Button>
         </TableCaption>

@@ -16,6 +16,7 @@ export default function Party({
   writeContracts,
   yourLocalBalance,
   isSmartContract,
+  onboard,
 }) {
   const routeHistory = useHistory();
   let { id } = useParams();
@@ -110,6 +111,16 @@ export default function Party({
       // console.log(error);
     }
   };
+  const [isCorrectChainId, setIsCorrectChainId] = useState(null);
+  useEffect(
+    _ => {
+      try {
+        let state = onboard.getState();
+        setIsCorrectChainId(state.network === partyData.config.chainId);
+      } catch {}
+    },
+    [partyData],
+  );
 
   // Cache the calculated distribution and table component
   const cachedViewTable = useMemo(
@@ -217,7 +228,7 @@ export default function Party({
               strategy={strategy}
             />
           )}
-          {canVote ? cachedVoteTable : cachedViewTable}
+          {isCorrectChainId ? (canVote ? cachedVoteTable : cachedViewTable) : null}
           <Box p="6">
             <Distribute
               partyData={partyData}
