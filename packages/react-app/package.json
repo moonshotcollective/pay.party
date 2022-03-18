@@ -129,10 +129,10 @@
     "extends": "react-app"
   },
   "scripts": {
-    "build": "npm install && react-scripts build && cp build/index.html build/200.html --max_old_space_size=4096 build",
+    "build": "npm install && react-scripts build && cp build/index.html build/200.html",
     "eject": "react-scripts eject",
     "prestart": "node ./scripts/create_contracts.js",
-    "start": "react-scripts start --max_old_space_size=4096 start",
+    "start": "react-scripts start",
     "test": "react-scripts test",
     "lint": "eslint --config ./.eslintrc.js --ignore-path ./.eslintignore ./src/**/*",
     "ipfs": "node ./scripts/ipfs.js",
