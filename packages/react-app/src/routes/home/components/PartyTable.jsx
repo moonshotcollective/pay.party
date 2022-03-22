@@ -73,7 +73,8 @@ export const PartyTable = ({ parties }) => {
     usePagination,
   );
 
-  return !isLoading ? (
+  return !isLoading ? 
+    (parties.length > 0 ? (
     <Box borderWidth="1px" borderRadius={24} p={6} shadow="xl">
       <Box borderWidth="1px">
         <Table {...getTableProps()} maxW="calc(100%)">
@@ -116,7 +117,7 @@ export const PartyTable = ({ parties }) => {
         </Table>
       </Box>
     </Box>
-  ) : (
+  ) : (<Text>You are not part of any parties yet!</Text>)) : (
     <Spinner size='xl'/>
   );
 };

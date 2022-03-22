@@ -26,6 +26,7 @@ function Home({
   const [id, setId] = useState(null);
   const [isInvalidId, setIsInvalidId] = useState(null);
   const [isLoading, setIsLoading] = useState(null);
+  const [filteredData, setFilteredData] = useState(null);
 
   useEffect(_ => {
     (async _ => {
@@ -47,6 +48,40 @@ function Home({
     setPartyName(id);
     routeHistory.push("/create");
   };
+
+/** Cards ***/
+  const cards = useMemo(() => {
+    
+    let c = partyJson && partyJson.filter(p => {
+        return p.participants.some(q => {
+          return q.toLowerCase() === address.toLowerCase()
+        });
+      });
+    let d = partyJson && partyJson.filter(p => {
+        return p.candidates.some(q => {
+          return q.toLowerCase() === address.toLowerCase()
+        });
+      });
+
+    if(c != null && d != null) {
+      c = c.concat(d)
+      var initial = c;
+      var final = [];
+      for (var i = 0, l = initial.length; i < l; i++) {
+        var unique = true;
+        for (var j = 0, k = final.length; j < k; j++) {
+          if (initial[i].id === final[j].id) {
+            unique = false;
+          }
+        }
+        if (unique) {
+          final.push(initial[i]);
+        }
+      }
+     } 
+    setFilteredData(final);
+    //return c;
+  }, [partyJson]);
 
   /***** Join a party from ID *****/
   const joinParty = async id => {
@@ -80,6 +115,7 @@ function Home({
   };
 
   return (
+    <>
     <Center pt={10}>
       <Box borderWidth={1} borderRadius={24} shadow="xl" pl={10} pr={10} pb={6} pt={2}>
         <Center>
@@ -124,6 +160,23 @@ function Home({
         </Center>
       </Box>
     </Center>
+    <Box m="10">
+      <Center m="5">
+      <HStack>
+        <Heading pl={2} as="h1" size="md" color={headingColor}>
+          My Parties
+        </Heading>
+        <Spacer />
+      </HStack>
+      </Center>
+      <Center>
+        {/* <Stack>{cards && cards.length > 0 ? cards : <EmptyCard />}</Stack> */}
+      <PartyTable parties={filteredData} />
+      {console.log("Check123")}
+      {console.log(filteredData)}
+      </Center>
+    </Box>
+    </>
   );
 }
 
