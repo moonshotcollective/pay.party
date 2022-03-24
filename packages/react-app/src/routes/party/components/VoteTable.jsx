@@ -51,8 +51,10 @@ export const VoteTable = ({
   // Init votes left to nvotes
   const [votesLeft, setVotesLeft] = useState(null);
   const [candidateNote, setCandidateNote] = useState("");
-  const [displayNote, setDisplayNote] = useState("");
-  const [noteSubmitted, setNoteSubmitted] = useState(false);
+  const [noteChars, setNoteChars] = useState(0);
+  // const [displayNote, setDisplayNote] = useState("");
+  // const [noteSubmitted, setNoteSubmitted] = useState(0);
+  const [noteIsLoading, setNoteIsLoading] = useState(false);
   const [invalidVotesLeft, setInvalidVotesLeft] = useState(false);
   const [blockNumber, setBlockNumber] = useState("-1");
   const [isCorrectChainId, setIsCorrectChainId] = useState(true);
@@ -86,32 +88,39 @@ export const VoteTable = ({
   };
 
   const newCandidateNote = async _ => {
+    setNoteIsLoading(true);
     const note = {
       candidate: address,
       message: candidateNote,
       signature: "",
     };
 
-    const res = await fetch(`${process.env.REACT_APP_API_URL}/party/${partyData.id}/note`, {
+    const noteRes = await fetch(`${process.env.REACT_APP_API_URL}/party/${partyData.id}/note`, {
       method: "put",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(note),
     });
+    // TODO: Find a more efficient approach instead of re-requesting the whole party
+    const partyRes = await fetch(`${process.env.REACT_APP_API_URL}/party/${id}`);
+    const data = await partyRes.json();
+    setPartyData(data);
+    setNoteIsLoading(false);
+    // setNoteSubmitted(noteSubmitted + 1);
     onClose();
-    setNoteSubmitted(true);
   };
 
-  useMemo(
-    _ => {
-      // TODO: fix double load
-      (async () => {
-        const res = await fetch(`${process.env.REACT_APP_API_URL}/party/${id}`);
-        const data = await res.json();
-        setPartyData(data);
-      })();
-    },
-    [noteSubmitted],
-  );
+  // useMemo(
+  //   _ => {
+  //     // TODO: fix double load
+  //     (async () => {
+  //       const res = await fetch(`${process.env.REACT_APP_API_URL}/party/${id}`);
+  //       const data = await res.json();
+  //       setPartyData(data);
+  //       setNoteIsLoading(false);
+  //     })();
+  //   },
+  //   [noteSubmitted],
+  // );
 
   const vote = async _ => {
     try {
@@ -193,11 +202,22 @@ export const VoteTable = ({
                   />
                 </Td>
                 <Td>
+                  <Box width="24em">
                   <Text>
                     {partyData.notes?.filter(n => n.candidate.toLowerCase() === d.toLowerCase()).reverse()[0]?.message}
                   </Text>
+                  </Box>
                   {d.toLowerCase() === address.toLowerCase() ? (
-                    <Button size="xs" rightIcon={<EditIcon />} variant="link" ml="1" onClick={onOpen}>
+                    <Button
+                      size="xs"
+                      rightIcon={<EditIcon />}
+                      variant="link"
+                      ml="1"
+                      onClick={_ => {
+                        setNoteChars(0);
+                        onOpen();
+                      }}
+                    >
                       Edit
                     </Button>
                   ) : null}
@@ -245,14 +265,16 @@ export const VoteTable = ({
             <Input
               onChange={e => {
                 setCandidateNote(e.target.value);
+                setNoteChars(e.target.value.length);
               }}
               ref={initialRef}
               placeholder="Enter your note here"
             />
+            <Text>{noteChars}/124</Text>
           </FormControl>
         </ModalBody>
         <ModalFooter>
-          <Button mr={3} onClick={newCandidateNote}>
+          <Button mr={3} onClick={newCandidateNote} isLoading={noteIsLoading} isDisabled={noteChars > 124}>
             Submit
           </Button>
           <Button onClick={onClose}>Cancel</Button>
