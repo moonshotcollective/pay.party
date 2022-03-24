@@ -82,15 +82,12 @@ export const ViewTable = ({
                 />
               </Td>
               <Td>
-                <Box width="24em">
+                <Box width="12em">
                   <Text>
                     {partyData.notes?.filter(n => n.candidate.toLowerCase() === d.toLowerCase()).reverse()[0]?.message}
                   </Text>
                 </Box>
                 {d.toLowerCase() === address.toLowerCase() ? (
-                  // <Button size="xs" rightIcon={<EditIcon />} variant="link" ml="1" onClick={onOpen}>
-                  //   Edit
-                  // </Button>
                   <Button
                     size="xs"
                     rightIcon={<EditIcon />}
@@ -125,20 +122,6 @@ export const ViewTable = ({
     return row;
   }, [partyData, votesData, distribution, strategy, amountToDistribute]);
 
-  // const newCandidateNote = async _ => {
-  //   const note = {
-  //     candidate: address,
-  //     message: candidateNote,
-  //     signature: "",
-  //   };
-
-  //   const res = await fetch(`${process.env.REACT_APP_API_URL}/party/${partyData.id}/note`, {
-  //     method: "put",
-  //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify(note),
-  //   });
-  //   onClose();
-  // };
   const newCandidateNote = async _ => {
     try {
       setNoteIsLoading(true);
