@@ -34,15 +34,25 @@ import {
 } from "@chakra-ui/react";
 import { EditIcon, CheckIcon } from "@chakra-ui/icons";
 import React, { useState, useMemo, useEffect, useRef } from "react";
-import { useHistory } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 import AddressChakra from "../../../components/AddressChakra";
 
-export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readContracts, mainnetProvider }) => {
+export const VoteTable = ({
+  partyData,
+  setPartyData,
+  address,
+  userSigner,
+  targetNetwork,
+  readContracts,
+  mainnetProvider,
+}) => {
   // Init votes data to 0 votes for each candidate
   const [votesData, setVotesData] = useState(null);
   // Init votes left to nvotes
   const [votesLeft, setVotesLeft] = useState(null);
   const [candidateNote, setCandidateNote] = useState("");
+  const [displayNote, setDisplayNote] = useState("");
+  const [noteSubmitted, setNoteSubmitted] = useState(false);
   const [invalidVotesLeft, setInvalidVotesLeft] = useState(false);
   const [blockNumber, setBlockNumber] = useState("-1");
   const [isCorrectChainId, setIsCorrectChainId] = useState(true);
@@ -53,6 +63,7 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
     setBlockNumber(bn.toString());
   });
   const history = useHistory();
+  let { id } = useParams();
 
   useEffect(
     _ => {
@@ -87,7 +98,20 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
       body: JSON.stringify(note),
     });
     onClose();
+    setNoteSubmitted(true);
   };
+
+  useMemo(
+    _ => {
+      // TODO: fix double load
+      (async () => {
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/party/${id}`);
+        const data = await res.json();
+        setPartyData(data);
+      })();
+    },
+    [noteSubmitted],
+  );
 
   const vote = async _ => {
     try {

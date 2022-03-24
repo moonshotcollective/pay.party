@@ -152,6 +152,7 @@ export default function Party({
       return (
         <VoteTable
           partyData={partyData}
+          setPartyData={setPartyData}
           address={address}
           userSigner={userSigner}
           targetNetwork={targetNetwork}
