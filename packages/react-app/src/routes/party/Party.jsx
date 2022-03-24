@@ -131,6 +131,8 @@ export default function Party({
         return (
           <ViewTable
             partyData={partyData}
+            setPartyData={setPartyData}
+            userSigner={userSigner}
             mainnetProvider={mainnetProvider}
             votesData={accountVoteData}
             distribution={dist}

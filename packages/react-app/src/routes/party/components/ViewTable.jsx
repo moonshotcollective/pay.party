@@ -16,14 +16,17 @@ import {
 } from "@chakra-ui/react";
 import { EditIcon, CheckIcon } from "@chakra-ui/icons";
 import React, { useState, useMemo, useRef, useEffect } from "react";
-import { useHistory } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 import AddressChakra from "../../../components/AddressChakra";
 import Confetti from "react-confetti";
 import { useLocation } from "react-router-dom";
 import { useScreenDimensions } from "../../../hooks/useScreenDimensions";
+import {ethers} from "ethers";
 
 export const ViewTable = ({
   partyData,
+  setPartyData,
+  userSigner,
   mainnetProvider,
   votesData,
   distribution,
@@ -34,6 +37,8 @@ export const ViewTable = ({
   const [castVotes, setCastVotes] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [candidateNote, setCandidateNote] = useState();
+  const [noteChars, setNoteChars] = useState(0);
+  const [noteIsLoading, setNoteIsLoading] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
   const initialRef = React.useRef();
   const finalRef = React.useRef();
@@ -41,6 +46,7 @@ export const ViewTable = ({
   const [showConfetti, setShowConfetti] = useState(false);
   const location = useLocation();
   const { width, height } = useScreenDimensions();
+  let { id } = useParams();
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
@@ -76,11 +82,25 @@ export const ViewTable = ({
                 />
               </Td>
               <Td>
-                <Text>
-                  {partyData.notes?.filter(n => n.candidate.toLowerCase() === d.toLowerCase()).reverse()[0]?.message}
-                </Text>
+                <Box width="24em">
+                  <Text>
+                    {partyData.notes?.filter(n => n.candidate.toLowerCase() === d.toLowerCase()).reverse()[0]?.message}
+                  </Text>
+                </Box>
                 {d.toLowerCase() === address.toLowerCase() ? (
-                  <Button size="xs" rightIcon={<EditIcon />} variant="link" ml="1" onClick={onOpen}>
+                  // <Button size="xs" rightIcon={<EditIcon />} variant="link" ml="1" onClick={onOpen}>
+                  //   Edit
+                  // </Button>
+                  <Button
+                    size="xs"
+                    rightIcon={<EditIcon />}
+                    variant="link"
+                    ml="1"
+                    onClick={_ => {
+                      setNoteChars(0);
+                      onOpen();
+                    }}
+                  >
                     Edit
                   </Button>
                 ) : null}
@@ -105,19 +125,44 @@ export const ViewTable = ({
     return row;
   }, [partyData, votesData, distribution, strategy, amountToDistribute]);
 
-  const newCandidateNote = async _ => {
-    const note = {
-      candidate: address,
-      message: candidateNote,
-      signature: "",
-    };
+  // const newCandidateNote = async _ => {
+  //   const note = {
+  //     candidate: address,
+  //     message: candidateNote,
+  //     signature: "",
+  //   };
 
-    const res = await fetch(`${process.env.REACT_APP_API_URL}/party/${partyData.id}/note`, {
-      method: "put",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(note),
-    });
-    onClose();
+  //   const res = await fetch(`${process.env.REACT_APP_API_URL}/party/${partyData.id}/note`, {
+  //     method: "put",
+  //     headers: { "Content-Type": "application/json" },
+  //     body: JSON.stringify(note),
+  //   });
+  //   onClose();
+  // };
+  const newCandidateNote = async _ => {
+    try {
+      setNoteIsLoading(true);
+      const sig = await userSigner.signMessage(ethers.utils.keccak256(ethers.utils.toUtf8Bytes(candidateNote)));
+      const note = {
+        candidate: address,
+        message: candidateNote,
+        signature: sig,
+      };
+      const noteRes = await fetch(`${process.env.REACT_APP_API_URL}/party/${partyData.id}/note`, {
+        method: "put",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(note),
+      });
+      // TODO: Find a more efficient approach instead of re-requesting the whole party
+      const partyRes = await fetch(`${process.env.REACT_APP_API_URL}/party/${id}`);
+      const data = await partyRes.json();
+      setPartyData(data);
+      setNoteIsLoading(false);
+      onClose();
+    } catch(err) {
+      console.log("error submitting note: ", err);
+      setNoteIsLoading(false);
+    }
   };
 
   const editNoteModal = (
@@ -129,14 +174,18 @@ export const ViewTable = ({
         <ModalBody pb={6}>
           <FormControl>
             <Input
-              onChange={e => setCandidateNote(e.target.value)}
+              onChange={e => {
+                setCandidateNote(e.target.value);
+                setNoteChars(e.target.value.length);
+              }}
               ref={initialRef}
               placeholder="Enter your note here"
             />
           </FormControl>
+          <Text>{noteChars}/124</Text>
         </ModalBody>
         <ModalFooter>
-          <Button mr={3} onClick={newCandidateNote}>
+          <Button mr={3} onClick={newCandidateNote} isLoading={noteIsLoading} isDisabled={noteChars > 124}>
             Submit
           </Button>
           <Button onClick={onClose}>Cancel</Button>
