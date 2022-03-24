@@ -36,6 +36,7 @@ import { EditIcon, CheckIcon } from "@chakra-ui/icons";
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import AddressChakra from "../../../components/AddressChakra";
+import { ethers } from "ethers";
 
 export const VoteTable = ({
   partyData,
@@ -52,8 +53,6 @@ export const VoteTable = ({
   const [votesLeft, setVotesLeft] = useState(null);
   const [candidateNote, setCandidateNote] = useState("");
   const [noteChars, setNoteChars] = useState(0);
-  // const [displayNote, setDisplayNote] = useState("");
-  // const [noteSubmitted, setNoteSubmitted] = useState(0);
   const [noteIsLoading, setNoteIsLoading] = useState(false);
   const [invalidVotesLeft, setInvalidVotesLeft] = useState(false);
   const [blockNumber, setBlockNumber] = useState("-1");
@@ -88,13 +87,14 @@ export const VoteTable = ({
   };
 
   const newCandidateNote = async _ => {
+    try {
     setNoteIsLoading(true);
+    const sig = await userSigner.signMessage(ethers.utils.keccak256(ethers.utils.toUtf8Bytes(candidateNote)));
     const note = {
       candidate: address,
       message: candidateNote,
-      signature: "",
+      signature: sig,
     };
-
     const noteRes = await fetch(`${process.env.REACT_APP_API_URL}/party/${partyData.id}/note`, {
       method: "put",
       headers: { "Content-Type": "application/json" },
@@ -105,22 +105,12 @@ export const VoteTable = ({
     const data = await partyRes.json();
     setPartyData(data);
     setNoteIsLoading(false);
-    // setNoteSubmitted(noteSubmitted + 1);
     onClose();
+  } catch {
+    console.log("error submitting note")
+    setNoteIsLoading(false);
+  }
   };
-
-  // useMemo(
-  //   _ => {
-  //     // TODO: fix double load
-  //     (async () => {
-  //       const res = await fetch(`${process.env.REACT_APP_API_URL}/party/${id}`);
-  //       const data = await res.json();
-  //       setPartyData(data);
-  //       setNoteIsLoading(false);
-  //     })();
-  //   },
-  //   [noteSubmitted],
-  // );
 
   const vote = async _ => {
     try {
