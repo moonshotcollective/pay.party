@@ -34,15 +34,26 @@ import {
 } from "@chakra-ui/react";
 import { EditIcon, CheckIcon } from "@chakra-ui/icons";
 import React, { useState, useMemo, useEffect, useRef } from "react";
-import { useHistory } from "react-router-dom";
+import { useParams, useHistory } from "react-router-dom";
 import AddressChakra from "../../../components/AddressChakra";
+import { ethers } from "ethers";
 
-export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readContracts, mainnetProvider }) => {
+export const VoteTable = ({
+  partyData,
+  setPartyData,
+  address,
+  userSigner,
+  targetNetwork,
+  readContracts,
+  mainnetProvider,
+}) => {
   // Init votes data to 0 votes for each candidate
   const [votesData, setVotesData] = useState(null);
   // Init votes left to nvotes
   const [votesLeft, setVotesLeft] = useState(null);
   const [candidateNote, setCandidateNote] = useState("");
+  const [noteChars, setNoteChars] = useState(0);
+  const [noteIsLoading, setNoteIsLoading] = useState(false);
   const [invalidVotesLeft, setInvalidVotesLeft] = useState(false);
   const [blockNumber, setBlockNumber] = useState("-1");
   const [isCorrectChainId, setIsCorrectChainId] = useState(true);
@@ -53,6 +64,7 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
     setBlockNumber(bn.toString());
   });
   const history = useHistory();
+  let { id } = useParams();
 
   useEffect(
     _ => {
@@ -75,18 +87,29 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
   };
 
   const newCandidateNote = async _ => {
+    try {
+    setNoteIsLoading(true);
+    const sig = await userSigner.signMessage(ethers.utils.keccak256(ethers.utils.toUtf8Bytes(candidateNote)));
     const note = {
       candidate: address,
       message: candidateNote,
-      signature: "",
+      signature: sig,
     };
-
-    const res = await fetch(`${process.env.REACT_APP_API_URL}/party/${partyData.id}/note`, {
+    const noteRes = await fetch(`${process.env.REACT_APP_API_URL}/party/${partyData.id}/note`, {
       method: "put",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(note),
     });
+    // TODO: Find a more efficient approach instead of re-requesting the whole party
+    const partyRes = await fetch(`${process.env.REACT_APP_API_URL}/party/${id}`);
+    const data = await partyRes.json();
+    setPartyData(data);
+    setNoteIsLoading(false);
     onClose();
+  } catch {
+    console.log("error submitting note")
+    setNoteIsLoading(false);
+  }
   };
 
   const vote = async _ => {
@@ -169,11 +192,22 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
                   />
                 </Td>
                 <Td>
+                  <Box width="24em">
                   <Text>
                     {partyData.notes?.filter(n => n.candidate.toLowerCase() === d.toLowerCase()).reverse()[0]?.message}
                   </Text>
+                  </Box>
                   {d.toLowerCase() === address.toLowerCase() ? (
-                    <Button size="xs" rightIcon={<EditIcon />} variant="link" ml="1" onClick={onOpen}>
+                    <Button
+                      size="xs"
+                      rightIcon={<EditIcon />}
+                      variant="link"
+                      ml="1"
+                      onClick={_ => {
+                        setNoteChars(0);
+                        onOpen();
+                      }}
+                    >
                       Edit
                     </Button>
                   ) : null}
@@ -221,14 +255,16 @@ export const VoteTable = ({ partyData, address, userSigner, targetNetwork, readC
             <Input
               onChange={e => {
                 setCandidateNote(e.target.value);
+                setNoteChars(e.target.value.length);
               }}
               ref={initialRef}
               placeholder="Enter your note here"
             />
+            <Text>{noteChars}/124</Text>
           </FormControl>
         </ModalBody>
         <ModalFooter>
-          <Button mr={3} onClick={newCandidateNote}>
+          <Button mr={3} onClick={newCandidateNote} isLoading={noteIsLoading} isDisabled={noteChars > 124}>
             Submit
           </Button>
           <Button onClick={onClose}>Cancel</Button>
