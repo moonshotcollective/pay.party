@@ -1,4 +1,5 @@
-import { useToast, Box, Button, Text, Center, Tooltip, Link, Tag, HStack } from "@chakra-ui/react";
+import { useToast, Box, Button, Text, Center, Tooltip, Tag, HStack } from "@chakra-ui/react";
+import { useHistory, Link } from "react-router-dom";
 import { CopyIcon, ExternalLinkIcon } from "@chakra-ui/icons";
 import { NETWORK } from "../../../constants";
 import React, { useState } from "react";
@@ -50,8 +51,11 @@ export const Metadata = ({ partyData, mainnetProvider, votesData, distribution, 
       </Center>
       <Center pt={4} pl="5%" pr="5%">
         <Text>
-          To know more about how voting, distribution etc works, check out our
-          <Link href="https://pay.party" isExternal m="2">
+          To know more about how voting, distribution etc works, check out our&nbsp;
+{/*          <Link href="https://pay.party" isExternal m="2">
+            FAQ page <ExternalLinkIcon mx="2px" />
+          </Link>*/}
+          <Link as={Link} to='/faq' isExternal m="2">
             FAQ page <ExternalLinkIcon mx="2px" />
           </Link>
         </Text>

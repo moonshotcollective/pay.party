@@ -10,7 +10,7 @@ import { BLOCKNATIVE_DAPPID, INFURA_ID, NETWORK, NETWORKS } from "./constants";
 import { Transactor, SafeTransactor } from "./helpers";
 import { useBalance, useGasPrice } from "eth-hooks";
 import { useExchangeEthPrice } from "eth-hooks/dapps/dex";
-import { Home, Create, Party } from "./routes";
+import { Home, Create, Party, FAQ } from "./routes";
 import { useUserProviderAndSigner } from "./hooks";
 
 import { useContractConfig, useContractLoader } from "./hooks";
@@ -412,6 +412,20 @@ function App(props) {
             <Switch>
               <Route exact path="/">
                 <Home
+                  address={address}
+                  tx={tx}
+                  targetNetwork={targetNetwork}
+                  readContracts={readContracts}
+                  writeContracts={writeContracts}
+                  mainnetProvider={mainnetProvider}
+                  setPartyName={setPartyName}
+                  partyName={partyName}
+                  partyJson={partyJson}
+                  setPartyJson={setPartyJson}
+                />
+              </Route>
+              <Route path="/faq">
+                <FAQ
                   address={address}
                   tx={tx}
                   targetNetwork={targetNetwork}
