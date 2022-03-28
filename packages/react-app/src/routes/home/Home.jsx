@@ -8,6 +8,7 @@ import { useHistory, Link } from "react-router-dom";
 import { PartyCard, EmptyCard, PartyTable } from "./components";
 import { Alert, AlertIcon, AlertTitle, AlertDescription } from "@chakra-ui/react";
 import { CloseButton } from "@chakra-ui/react";
+import { CopyIcon, ExternalLinkIcon } from "@chakra-ui/icons";
 
 function Home({
   address,

@@ -1,6 +1,7 @@
-import { Box, Divider, Flex, Link, Text, useColorMode, Spacer, Center } from "@chakra-ui/react";
+import { Box, Divider, Flex, Text, useColorMode, Spacer, Center, Link } from "@chakra-ui/react";
 import { Icon } from "@chakra-ui/icon";
 import { FaGithub } from "react-icons/fa";
+import { CopyIcon, ExternalLinkIcon } from "@chakra-ui/icons";
 
 const Footer = () => {
   const { colorMode } = useColorMode();
@@ -10,6 +11,8 @@ const Footer = () => {
         <Text fontSize={"xs"} color="grey">
           {process.env.REACT_APP_VERSION}
         </Text>
+        <Link href="https://dev.pay.party/faq" isExternal m="2"> FAQ Page <ExternalLinkIcon mx="2px" />
+        </Link>
         <Spacer />
         <Link href="https://gitcoin.co/" target="_blank" rel="noopener noreferrer">
           {colorMode === "light" ? (
