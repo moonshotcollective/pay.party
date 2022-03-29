@@ -5,9 +5,10 @@ import { useColorModeValue } from "@chakra-ui/color-mode";
 import { Wrap, WrapItem, Stack, Center, Text, Input } from "@chakra-ui/react";
 import React, { useEffect, useState, useMemo } from "react";
 import { useHistory, Link } from "react-router-dom";
-import { PartyCard, EmptyCard, PartyTable } from "./components";
+import { PartyCard, EmptyCard, PartyTable, MyParties } from "./components";
 import { Alert, AlertIcon, AlertTitle, AlertDescription } from "@chakra-ui/react";
 import { CloseButton } from "@chakra-ui/react";
+import { CopyIcon, ExternalLinkIcon } from "@chakra-ui/icons";
 
 function Home({
   address,
@@ -26,6 +27,7 @@ function Home({
   const [id, setId] = useState(null);
   const [isInvalidId, setIsInvalidId] = useState(null);
   const [isLoading, setIsLoading] = useState(null);
+  const [filteredData, setFilteredData] = useState(null);
 
   useEffect(_ => {
     (async _ => {
@@ -47,6 +49,42 @@ function Home({
     setPartyName(id);
     routeHistory.push("/create");
   };
+
+  /** Cards ***/
+  const cards = useMemo(() => {
+    let c =
+      partyJson &&
+      partyJson.filter(p => {
+        return p.participants.some(q => {
+          return q.toLowerCase() === address.toLowerCase();
+        });
+      });
+    let d =
+      partyJson &&
+      partyJson.filter(p => {
+        return p.candidates.some(q => {
+          return q.toLowerCase() === address.toLowerCase();
+        });
+      });
+
+    if (c != null && d != null) {
+      c = c.concat(d);
+      var initial = c;
+      var final = [];
+      for (var i = 0, l = initial.length; i < l; i++) {
+        var unique = true;
+        for (var j = 0, k = final.length; j < k; j++) {
+          if (initial[i].id === final[j].id) {
+            unique = false;
+          }
+        }
+        if (unique) {
+          final.push(initial[i]);
+        }
+      }
+    }
+    setFilteredData(final);
+  }, [partyJson]);
 
   /***** Join a party from ID *****/
   const joinParty = async id => {
@@ -80,50 +118,53 @@ function Home({
   };
 
   return (
-    <Center pt={10}>
-      <Box borderWidth={1} borderRadius={24} shadow="xl" pl={10} pr={10} pb={6} pt={2}>
-        <Center>
-          <Text fontSize="xl" fontWeight="semibold" pt={6} pb={6} pr={3}>
-            Join the party
-          </Text>
-          <Text fontSize="2xl" fontWeight="semibold" pt={1}>
-            🎊
-          </Text>
-        </Center>
-        <Box bg={useColorModeValue("whiteAlpha.900", "purple.900")} borderRadius={24}>
-          {alertInvalidId()}
-          <Input
-            variant="unstyled"
-            p={6}
-            isInvalid={isInvalidId}
-            placeholder="Party Name or UID"
-            onChange={e => setId(e.target.value)}
-          ></Input>
+    <>
+      <Center pt={10}>
+        <Box borderWidth={1} borderRadius={24} shadow="xl" pl={10} pr={10} pb={6} pt={2}>
+          <Center>
+            <Text fontSize="xl" fontWeight="semibold" pt={6} pb={6} pr={3}>
+              Join the party
+            </Text>
+            <Text fontSize="2xl" fontWeight="semibold" pt={1}>
+              🎊
+            </Text>
+          </Center>
+          <Box bg={useColorModeValue("whiteAlpha.900", "purple.900")} borderRadius={24}>
+            {alertInvalidId()}
+            <Input
+              variant="unstyled"
+              p={6}
+              isInvalid={isInvalidId}
+              placeholder="Party Name or UID"
+              onChange={e => setId(e.target.value)}
+            ></Input>
+          </Box>
+          <Center pt={4}>
+            <Box pt={4} pr={2}>
+              <Button onClick={createParty} rightIcon={<AddIcon />} size="lg" variant="outline">
+                Create Party
+              </Button>
+            </Box>
+            <Text pt="1em">or</Text>
+            <Box pt={4} pl={2}>
+              <Button
+                isLoading={isLoading}
+                size="lg"
+                rightIcon={<CheckIcon />}
+                onClick={_ => {
+                  if (id) {
+                    joinParty(id);
+                  }
+                }}
+              >
+                Join Party
+              </Button>
+            </Box>
+          </Center>
         </Box>
-        <Center pt={4}>
-          <Box pt={4} pr={2}>
-            <Button onClick={createParty} rightIcon={<AddIcon />} size="lg" variant="outline">
-              Create Party
-            </Button>
-          </Box>
-          <Text pt="1em">or</Text>
-          <Box pt={4} pl={2}>
-            <Button
-              isLoading={isLoading}
-              size="lg"
-              rightIcon={<CheckIcon />}
-              onClick={_ => {
-                if (id) {
-                  joinParty(id);
-                }
-              }}
-            >
-              Join Party
-            </Button>
-          </Box>
-        </Center>
-      </Box>
-    </Center>
+      </Center>
+        <MyParties data={filteredData} />
+    </>
   );
 }
 

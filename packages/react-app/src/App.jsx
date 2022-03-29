@@ -10,7 +10,7 @@ import { BLOCKNATIVE_DAPPID, INFURA_ID, NETWORK, NETWORKS } from "./constants";
 import { Transactor, SafeTransactor } from "./helpers";
 import { useBalance, useGasPrice } from "eth-hooks";
 import { useExchangeEthPrice } from "eth-hooks/dapps/dex";
-import { Home, Create, Party } from "./routes";
+import { Home, Create, Party, FAQ } from "./routes";
 import { useUserProviderAndSigner } from "./hooks";
 
 import { useContractConfig, useContractLoader } from "./hooks";
@@ -423,6 +423,9 @@ function App(props) {
                   partyJson={partyJson}
                   setPartyJson={setPartyJson}
                 />
+              </Route>
+              <Route path="/faq">
+                <FAQ />
               </Route>
               <Route path="/create">
                 <Create

@@ -1,6 +1,7 @@
-import { Box, Divider, Flex, Link, Text, useColorMode, Spacer, Center } from "@chakra-ui/react";
+import { Box, Divider, Flex, Text, useColorMode, Spacer, Center, Link } from "@chakra-ui/react";
 import { Icon } from "@chakra-ui/icon";
 import { FaGithub } from "react-icons/fa";
+import { CopyIcon, ExternalLinkIcon } from "@chakra-ui/icons";
 
 const Footer = () => {
   const { colorMode } = useColorMode();
@@ -61,6 +62,11 @@ const Footer = () => {
             h={8}
             color="#6F3FF5"
           />
+        </Link>
+        <Center height="42px" paddingLeft={4} paddingRight={3}>
+          <Divider orientation="vertical" />
+        </Center>
+        <Link href="https://dev.pay.party/faq" isExternal m="2"> FAQ <ExternalLinkIcon mx="2px" />
         </Link>
       </Flex>
     </Box>

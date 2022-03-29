@@ -1,5 +1,6 @@
-import { useToast, Box, Button, Text, Center, Tooltip, Link, Tag, HStack } from "@chakra-ui/react";
-import { CopyIcon, ExternalLinkIcon } from "@chakra-ui/icons";
+import { useToast, Box, Button, Text, Center, Tooltip, Tag, HStack, Spacer } from "@chakra-ui/react";
+import { useHistory, Link } from "react-router-dom";
+import { CopyIcon, ExternalLinkIcon, QuestionOutlineIcon } from "@chakra-ui/icons";
 import { NETWORK } from "../../../constants";
 import React, { useState } from "react";
 
@@ -32,29 +33,29 @@ export const Metadata = ({ partyData, mainnetProvider, votesData, distribution, 
         </HStack>
       </Center>
       <Center pt={4}>
-        <Tooltip label={cpText}>
-          <Button
-            size="xs"
-            rightIcon={<CopyIcon />}
-            variant="link"
-            onClick={_ => {
-              navigator.clipboard.writeText(window.location.href);
-            }}
-          >
-            Share Party
-          </Button>
-        </Tooltip>
+        <HStack>
+          <Tooltip label={cpText}>
+            <Button
+              size="xs"
+              rightIcon={<CopyIcon />}
+              variant="link"
+              onClick={_ => {
+                navigator.clipboard.writeText(window.location.href);
+              }}
+            >
+              Share Party
+            </Button>
+          </Tooltip>
+          <Spacer />
+          <Tooltip label="Frequently Asked Questions">
+            <Button size="sm" variant="link" as={Link} to="/faq" m="2" rightIcon={<QuestionOutlineIcon />}>
+              FAQ
+            </Button>
+          </Tooltip>
+        </HStack>
       </Center>
       <Center pt={4} pl="5%" pr="5%">
         <Text fontSize="sm">{`${partyData.description}`}</Text>
-      </Center>
-      <Center pt={4} pl="5%" pr="5%">
-        <Text>
-          To know more about how voting, distribution etc works, check out our
-          <Link href="https://pay.party" isExternal m="2">
-            FAQ page <ExternalLinkIcon mx="2px" />
-          </Link>
-        </Text>
       </Center>
       <Center p="4">
         <Text fontWeight="semibold" fontSize="lg">

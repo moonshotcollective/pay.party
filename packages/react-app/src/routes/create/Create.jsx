@@ -226,7 +226,7 @@ const Create = ({
         </HStack>
         <MultiAddressInput
           ensProvider={mainnetProvider}
-          placeholder="Enter voter address/ens"
+          placeholder="Add voter address/ens and press Enter"
           value={voters}
           onChange={setVoters}
         />
@@ -241,7 +241,7 @@ const Create = ({
         </HStack>
         <MultiAddressInput
           ensProvider={mainnetProvider}
-          placeholder="Enter candidate address/ens"
+          placeholder="Add candidate address/ens and press Enter"
           value={candidates}
           onChange={setCandidates}
         />
