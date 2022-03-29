@@ -11,7 +11,6 @@ const Footer = () => {
         <Text fontSize={"xs"} color="grey">
           {process.env.REACT_APP_VERSION}
         </Text>
-        <Spacer />
         <Link href="https://gitcoin.co/" target="_blank" rel="noopener noreferrer">
           {colorMode === "light" ? (
             <svg width="124" height="58" viewBox="0 0 188 58" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -56,17 +55,21 @@ const Footer = () => {
           <Divider orientation="vertical" />
         </Center>
         <Link href="https://github.com/moonshotcollective" isExternal>
-          <Icon
-            as={FaGithub}
-            w={8}
-            h={8}
-            color="#6F3FF5"
-          />
+          <Icon as={FaGithub} w={8} h={8} color="#6F3FF5" />
         </Link>
         <Center height="42px" paddingLeft={4} paddingRight={3}>
           <Divider orientation="vertical" />
         </Center>
-        <Link href="https://dev.pay.party/faq" isExternal m="2"> FAQ <ExternalLinkIcon mx="2px" />
+        <Link href="https://forms.gle/Hp9jzxqdrcTCfSf56" isExternal m="2">
+          Share Your Feedback
+          <ExternalLinkIcon mx="2px" />
+        </Link>
+        <Center height="42px" paddingLeft={4} paddingRight={3}>
+          <Divider orientation="vertical" />
+        </Center>
+        <Link href="https://dev.pay.party/faq" isExternal m="2">
+          {" "}
+          FAQ <ExternalLinkIcon mx="2px" />
         </Link>
       </Flex>
     </Box>
