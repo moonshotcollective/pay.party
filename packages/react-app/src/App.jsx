@@ -425,18 +425,7 @@ function App(props) {
                 />
               </Route>
               <Route path="/faq">
-                <FAQ
-                  address={address}
-                  tx={tx}
-                  targetNetwork={targetNetwork}
-                  readContracts={readContracts}
-                  writeContracts={writeContracts}
-                  mainnetProvider={mainnetProvider}
-                  setPartyName={setPartyName}
-                  partyName={partyName}
-                  partyJson={partyJson}
-                  setPartyJson={setPartyJson}
-                />
+                <FAQ />
               </Route>
               <Route path="/create">
                 <Create

@@ -11,8 +11,6 @@ const Footer = () => {
         <Text fontSize={"xs"} color="grey">
           {process.env.REACT_APP_VERSION}
         </Text>
-        <Link href="https://dev.pay.party/faq" isExternal m="2"> FAQ Page <ExternalLinkIcon mx="2px" />
-        </Link>
         <Spacer />
         <Link href="https://gitcoin.co/" target="_blank" rel="noopener noreferrer">
           {colorMode === "light" ? (
@@ -64,6 +62,11 @@ const Footer = () => {
             h={8}
             color="#6F3FF5"
           />
+        </Link>
+        <Center height="42px" paddingLeft={4} paddingRight={3}>
+          <Divider orientation="vertical" />
+        </Center>
+        <Link href="https://dev.pay.party/faq" isExternal m="2"> FAQ <ExternalLinkIcon mx="2px" />
         </Link>
       </Flex>
     </Box>
