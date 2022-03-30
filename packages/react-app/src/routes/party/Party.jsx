@@ -111,16 +111,6 @@ export default function Party({
       // console.log(error);
     }
   };
-  const [isCorrectChainId, setIsCorrectChainId] = useState(null);
-  useEffect(
-    _ => {
-      try {
-        let state = onboard.getState();
-        setIsCorrectChainId(state.network === partyData.config.chainId);
-      } catch {}
-    },
-    [partyData],
-  );
 
   // Cache the calculated distribution and table component
   const cachedViewTable = useMemo(
@@ -160,6 +150,7 @@ export default function Party({
           targetNetwork={targetNetwork}
           readContracts={readContracts}
           mainnetProvider={mainnetProvider}
+          onboard={onboard}
         />
       );
     } catch (error) {
@@ -231,7 +222,7 @@ export default function Party({
               strategy={strategy}
             />
           )}
-          {isCorrectChainId ? (canVote ? cachedVoteTable : cachedViewTable) : null}
+          {canVote ? cachedVoteTable : cachedViewTable}
           <Box p="6">
             <Distribute
               partyData={partyData}
