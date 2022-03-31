@@ -4,6 +4,7 @@ import { ArrowBackIcon, ChevronDownIcon, QuestionOutlineIcon } from "@chakra-ui/
 import { useParams, useHistory } from "react-router-dom";
 import { VoteTable, ViewTable, ReceiptsTable, Distribute, Metadata } from "./components";
 import { utils } from "ethers";
+import { ReceiptEventsTable } from "./components";
 
 export default function Party({
   address,
@@ -56,6 +57,9 @@ export default function Party({
             { name: "partySignature", type: "string" },
           ],
         };
+
+        //console.log(party.id);
+        //console.log(utils.keccak256(utils.toUtf8Bytes(party.id)));
 
         const submitted = party.ballots.filter(
           b => utils.verifyTypedData(domain, types, b.data, b.signature).toLowerCase() === address.toLowerCase(),
@@ -250,7 +254,20 @@ export default function Party({
               targetNetwork={targetNetwork}
             />
           </Box>
-          {isPaid && <ReceiptsTable partyData={partyData} targetNetwork={targetNetwork} />}
+{/*          {isPaid && <ReceiptsTable partyData={partyData} targetNetwork={targetNetwork} />}*/}
+          <Box p="6">
+         <ReceiptEventsTable
+            contracts={readContracts}
+            contractName="Distributor"
+            tokenEventName="tokenDistributed"
+            ethEventName="ethDistributed"
+            localProvider={localProvider}
+            mainnetProvider={mainnetProvider}
+            startBlock={1}
+            partyData={partyData}
+            targetNetwork={targetNetwork}
+          />
+        </Box>
         </Box>
       </Center>
     </Box>

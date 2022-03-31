@@ -8,7 +8,7 @@ export const PartyTable = ({ parties }) => {
   const routeHistory = useHistory();
   const [isLoading, setIsLoading] = useState(true);
   const data = useMemo(() => {
-    console.log(parties);
+    //console.log(parties);
     if (parties) {
       setIsLoading(false);
 
