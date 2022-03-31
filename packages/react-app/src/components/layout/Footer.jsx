@@ -11,6 +11,7 @@ const Footer = () => {
         <Text fontSize={"xs"} color="grey">
           {process.env.REACT_APP_VERSION}
         </Text>
+        <Spacer />
         <Link href="https://gitcoin.co/" target="_blank" rel="noopener noreferrer">
           {colorMode === "light" ? (
             <svg width="124" height="58" viewBox="0 0 188 58" fill="none" xmlns="http://www.w3.org/2000/svg">
