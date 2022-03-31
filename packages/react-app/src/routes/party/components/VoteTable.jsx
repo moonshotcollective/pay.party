@@ -32,7 +32,7 @@ import {
   FormHelperText,
   Input,
 } from "@chakra-ui/react";
-import { EditIcon, CheckIcon } from "@chakra-ui/icons";
+import { EditIcon, CheckIcon, WarningTwoIcon } from "@chakra-ui/icons";
 import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import AddressChakra from "../../../components/AddressChakra";
@@ -46,6 +46,7 @@ export const VoteTable = ({
   targetNetwork,
   readContracts,
   mainnetProvider,
+  onboard,
 }) => {
   // Init votes data to 0 votes for each candidate
   const [votesData, setVotesData] = useState(null);
@@ -79,6 +80,18 @@ export const VoteTable = ({
     [partyData, targetNetwork],
   );
 
+  useEffect(
+    _ => {
+      try {
+        let state = onboard.getState();
+        setIsCorrectChainId(state.network === partyData.config.chainId);
+      } catch (err) {
+        console.log(err);
+      }
+    },
+    [partyData],
+  );
+
   const handleVotesChange = (event, adr) => {
     votesData[adr] = Number(event);
     const spent = Object.values(votesData).reduce((a, b) => a + b);
@@ -88,28 +101,28 @@ export const VoteTable = ({
 
   const newCandidateNote = async _ => {
     try {
-    setNoteIsLoading(true);
-    const sig = await userSigner.signMessage(ethers.utils.keccak256(ethers.utils.toUtf8Bytes(candidateNote)));
-    const note = {
-      candidate: address,
-      message: candidateNote,
-      signature: sig,
-    };
-    const noteRes = await fetch(`${process.env.REACT_APP_API_URL}/party/${partyData.id}/note`, {
-      method: "put",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(note),
-    });
-    // TODO: Find a more efficient approach instead of re-requesting the whole party
-    const partyRes = await fetch(`${process.env.REACT_APP_API_URL}/party/${id}`);
-    const data = await partyRes.json();
-    setPartyData(data);
-    setNoteIsLoading(false);
-    onClose();
-  } catch {
-    console.log("error submitting note")
-    setNoteIsLoading(false);
-  }
+      setNoteIsLoading(true);
+      const sig = await userSigner.signMessage(ethers.utils.keccak256(ethers.utils.toUtf8Bytes(candidateNote)));
+      const note = {
+        candidate: address,
+        message: candidateNote,
+        signature: sig,
+      };
+      const noteRes = await fetch(`${process.env.REACT_APP_API_URL}/party/${partyData.id}/note`, {
+        method: "put",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(note),
+      });
+      // TODO: Find a more efficient approach instead of re-requesting the whole party
+      const partyRes = await fetch(`${process.env.REACT_APP_API_URL}/party/${id}`);
+      const data = await partyRes.json();
+      setPartyData(data);
+      setNoteIsLoading(false);
+      onClose();
+    } catch {
+      console.log("error submitting note");
+      setNoteIsLoading(false);
+    }
   };
 
   const vote = async _ => {
@@ -193,9 +206,12 @@ export const VoteTable = ({
                 </Td>
                 <Td>
                   <Box width="24em">
-                  <Text>
-                    {partyData.notes?.filter(n => n.candidate.toLowerCase() === d.toLowerCase()).reverse()[0]?.message}
-                  </Text>
+                    <Text>
+                      {
+                        partyData.notes?.filter(n => n.candidate.toLowerCase() === d.toLowerCase()).reverse()[0]
+                          ?.message
+                      }
+                    </Text>
                   </Box>
                   {d.toLowerCase() === address.toLowerCase() ? (
                     <Button
@@ -223,6 +239,7 @@ export const VoteTable = ({
                     width="6em"
                     size="lg"
                     isInvalid={invalidVotesLeft}
+                    disabled={!isCorrectChainId}
                   >
                     <NumberInputField />
                     <NumberInputStepper>
@@ -273,8 +290,50 @@ export const VoteTable = ({
     </Modal>
   );
 
+  const handleNetworkSwitch = async () => {
+    const ethereum = window.ethereum;
+    const data = [
+      {
+        chainId: "0x" + targetNetwork.chainId.toString(16),
+        chainName: targetNetwork.name,
+        nativeCurrency: targetNetwork.nativeCurrency,
+        rpcUrls: [targetNetwork.rpcUrl],
+        blockExplorerUrls: [targetNetwork.blockExplorer],
+      },
+    ];
+
+    let switchTx;
+    // https://docs.metamask.io/guide/rpc-api.html#other-rpc-methods
+    try {
+      switchTx = await ethereum.request({
+        method: "wallet_switchEthereumChain",
+        params: [{ chainId: "0x" + partyData.config.chainId }],
+      });
+      setTimeout(window.location.reload(), 2000);
+    } catch (switchError) {
+      // not checking specific error code, because maybe we're not using MetaMask
+      try {
+        switchTx = await ethereum.request({
+          method: "wallet_addEthereumChain",
+          params: data,
+        });
+      } catch (addError) {
+        // handle "add" error
+      }
+    }
+
+    if (switchTx) {
+      console.log("Switch Txn: " + switchTx);
+    }
+  }
+
   return (
     <Box>
+      {!isCorrectChainId ? (
+        <Center>
+          <Button onClick={handleNetworkSwitch} leftIcon={<WarningTwoIcon />} variant='outline'>{`You must switch networks to vote!`}</Button>
+        </Center>
+      ) : null}
       <Center pt={4}>
         <Text fontSize="lg">Remaining Votes:</Text>
       </Center>
