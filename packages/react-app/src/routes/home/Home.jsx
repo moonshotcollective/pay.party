@@ -9,6 +9,7 @@ import { PartyCard, EmptyCard, PartyTable, MyParties } from "./components";
 import { Alert, AlertIcon, AlertTitle, AlertDescription } from "@chakra-ui/react";
 import { CloseButton } from "@chakra-ui/react";
 import { CopyIcon, ExternalLinkIcon } from "@chakra-ui/icons";
+import Confetti from "react-confetti";
 
 function Home({
   address,
@@ -125,7 +126,7 @@ function Home({
             <Text fontSize="xl" fontWeight="semibold" pt={6} pb={6} pr={3}>
               Join the party
             </Text>
-            <Text fontSize="2xl" fontWeight="semibold" pt={1}>
+            <Text fontSize="2xl" fontWeight="semibold" pt={1} onClick={() => {console.log("Party!")}}>
               🎊
             </Text>
           </Center>

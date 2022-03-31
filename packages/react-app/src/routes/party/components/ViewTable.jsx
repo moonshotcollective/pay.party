@@ -59,7 +59,7 @@ export const ViewTable = ({
   useEffect(() => {
     let confettiTimer = setTimeout(() => {
       setShowConfetti(false);
-    }, 10000); // Hide the confetti after 10 seconds
+    }, 8000); // Hide the confetti after 8 seconds
     return () => clearTimeout(confettiTimer);
   }, [showConfetti]);
 
@@ -179,7 +179,7 @@ export const ViewTable = ({
 
   return (
     <Box>
-      {showConfetti && <Confetti height={height} width={width} />}
+      {showConfetti && <Confetti height={height} width={width} numberOfPieces={100}/>}
       <Table borderWidth="1px">
         <Thead>
           <Tr>
