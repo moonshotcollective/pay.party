@@ -27,6 +27,11 @@ export const Metadata = ({ partyData, mainnetProvider, votesData, distribution, 
             partyData.signed.signature.length - 4,
             partyData.signed.signature.length,
           )}`}</Text>
+        </HStack>
+      </Center>
+      <Center pt={4} pl="5%" pr="5%">
+        <HStack>
+          <Text fontSize="xs">Vote On: </Text>
           <Tag variant="outline" size="sm">
             {partyNetwork && partyNetwork.name}
           </Tag>
