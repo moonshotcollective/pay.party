@@ -102,7 +102,25 @@ export const VoteTable = ({
   const newCandidateNote = async _ => {
     try {
       setNoteIsLoading(true);
-      const sig = await userSigner.signMessage(ethers.utils.keccak256(ethers.utils.toUtf8Bytes(candidateNote)));
+      // TODO: Put this data model in a seperate file for organization
+      // EIP-712 Typed Data
+      // See: https://eips.ethereum.org/EIPS/eip-712
+      const domain = {
+        name: "pay-party",
+        version: "1",
+        chainId: partyData.config.chainId,
+        verifyingContract: readContracts?.Distributor?.address,
+      };
+      const types = {
+        Party: [{ name: "note", type: "Note" }],
+        Note: [{ name: "message", type: "string" }],
+      };
+      const message = {
+        note: {
+          message: candidateNote,
+        },
+      };
+      const sig = await userSigner._signTypedData(domain, types, message);
       const note = {
         candidate: address,
         message: candidateNote,
@@ -325,13 +343,17 @@ export const VoteTable = ({
     if (switchTx) {
       console.log("Switch Txn: " + switchTx);
     }
-  }
+  };
 
   return (
     <Box>
       {!isCorrectChainId ? (
         <Center>
-          <Button onClick={handleNetworkSwitch} leftIcon={<WarningTwoIcon />} variant='outline'>{`You must switch networks to vote!`}</Button>
+          <Button
+            onClick={handleNetworkSwitch}
+            leftIcon={<WarningTwoIcon />}
+            variant="outline"
+          >{`You must switch networks to vote!`}</Button>
         </Center>
       ) : null}
       <Center pt={4}>

@@ -21,13 +21,14 @@ import AddressChakra from "../../../components/AddressChakra";
 import Confetti from "react-confetti";
 import { useLocation } from "react-router-dom";
 import { useScreenDimensions } from "../../../hooks/useScreenDimensions";
-import {ethers} from "ethers";
+import { ethers } from "ethers";
 
 export const ViewTable = ({
   partyData,
   setPartyData,
   userSigner,
   mainnetProvider,
+  readContracts,
   votesData,
   distribution,
   strategy,
@@ -125,7 +126,25 @@ export const ViewTable = ({
   const newCandidateNote = async _ => {
     try {
       setNoteIsLoading(true);
-      const sig = await userSigner.signMessage(ethers.utils.keccak256(ethers.utils.toUtf8Bytes(candidateNote)));
+      // TODO: Put this data model in a seperate file for organization
+      // EIP-712 Typed Data
+      // See: https://eips.ethereum.org/EIPS/eip-712
+      const domain = {
+        name: "pay-party",
+        version: "1",
+        chainId: partyData.config.chainId,
+        verifyingContract: readContracts?.Distributor?.address,
+      };
+      const types = {
+        Party: [{ name: "note", type: "Note" }],
+        Note: [{ name: "message", type: "string" }],
+      };
+      const message = {
+        note: {
+          message: candidateNote,
+        },
+      };
+      const sig = await userSigner._signTypedData(domain, types, message);
       const note = {
         candidate: address,
         message: candidateNote,
@@ -142,7 +161,7 @@ export const ViewTable = ({
       setPartyData(data);
       setNoteIsLoading(false);
       onClose();
-    } catch(err) {
+    } catch (err) {
       console.log("error submitting note: ", err);
       setNoteIsLoading(false);
     }
@@ -179,7 +198,7 @@ export const ViewTable = ({
 
   return (
     <Box>
-      {showConfetti && <Confetti height={height} width={width} numberOfPieces={100}/>}
+      {showConfetti && <Confetti height={height} width={width} numberOfPieces={100} />}
       <Table borderWidth="1px">
         <Thead>
           <Tr>

@@ -124,6 +124,7 @@ export default function Party({
             setPartyData={setPartyData}
             userSigner={userSigner}
             mainnetProvider={mainnetProvider}
+            readContracts={readContracts}
             votesData={accountVoteData}
             distribution={dist}
             strategy={strategy}

@@ -22,16 +22,14 @@ import {
   AlertDialogContent,
   AlertDialogOverlay,
   AlertDialogCloseButton,
-} from '@chakra-ui/react';
+} from "@chakra-ui/react";
 import { ArrowBackIcon, EditIcon, QuestionOutlineIcon, WarningIcon } from "@chakra-ui/icons";
 import React, { useState, useEffect, useRef } from "react";
 import { useHistory } from "react-router-dom";
 import { default as MultiAddressInput } from "./components/MultiAddressInput";
 import { useColorModeValue } from "@chakra-ui/color-mode";
 import Blockie from "../../components/Blockie";
-import { ethers } from "ethers";
-
-
+import { ethers, utils } from "ethers";
 
 const Create = ({
   address,
@@ -78,22 +76,41 @@ const Create = ({
       setLoadingText("Submitting...");
       setIsLoading(true);
 
-      const partySignatureData = {
-        version: "1.0",
-        name: partyObj.name,
-        timestamp: "",
-        nonce: "",
-        description: partyObj.description,
-        participants: partyObj.participants,
-        candidates: partyObj.candidates,
+      // TODO: Put this data model in a seperate file for organization
+      // EIP-712 Typed Data
+      // See: https://eips.ethereum.org/EIPS/eip-712
+      const domain = {
+        name: "pay-party",
+        version: "1",
+        chainId: partyObj.config.chainId,
+        verifyingContract: readContracts?.Distributor?.address,
+      };
+      const types = {
+        Party: [{ name: "config", type: "Config" }],
+        Config: [
+          { name: "version", type: "string" },
+          { name: "name", type: "string" },
+          { name: "description", type: "string" },
+          { name: "participants", type: "string" },
+          { name: "candidates", type: "string" },
+        ],
+      };
+      const config = {
+        config: {
+          version: "1.0",
+          name: partyObj.name,
+          description: partyObj.description,
+          participants: JSON.stringify(partyObj.participants),
+          candidates: JSON.stringify(partyObj.candidates),
+        },
       };
 
       const signedParty = {
-        data: partySignatureData,
+        data: config,
         signature: "",
       };
 
-      const sig = await userSigner.signMessage(ethers.utils.keccak256(ethers.utils.id(partySignatureData)));
+      const sig = await userSigner._signTypedData(domain, types, config);
       signedParty.signature = sig;
 
       partyObj.signed = signedParty;
@@ -121,7 +138,7 @@ const Create = ({
   const [candidates, setCandidates] = useState([]);
   const [description, setDescription] = useState("");
   const [name, setName] = useState(partyName);
-  
+
   useEffect(_ => {
     if (!partyJson) {
       (async _ => {
@@ -320,64 +337,55 @@ const Create = ({
   );
 
   const goHomeAlert = (
-      <AlertDialog
-        motionPreset='slideInBottom'
-        leastDestructiveRef={cancelRef}
-        onClose={onClose}
-        isOpen={isOpen}
-        isCentered
-      >
-        <AlertDialogOverlay />
+    <AlertDialog
+      motionPreset="slideInBottom"
+      leastDestructiveRef={cancelRef}
+      onClose={onClose}
+      isOpen={isOpen}
+      isCentered
+    >
+      <AlertDialogOverlay />
 
-        <AlertDialogContent>
-          <AlertDialogHeader>Go to home page?</AlertDialogHeader>
-          <AlertDialogCloseButton />
-          <AlertDialogBody>
-            Are you sure? All the details entered will be deleted.
-          </AlertDialogBody>
-          <AlertDialogFooter>
-            <Button ref={cancelRef} onClick={onClose}>
-              No
-            </Button>
-            <Button 
-            colorScheme='red' 
+      <AlertDialogContent>
+        <AlertDialogHeader>Go to home page?</AlertDialogHeader>
+        <AlertDialogCloseButton />
+        <AlertDialogBody>Are you sure? All the details entered will be deleted.</AlertDialogBody>
+        <AlertDialogFooter>
+          <Button ref={cancelRef} onClick={onClose}>
+            No
+          </Button>
+          <Button
+            colorScheme="red"
             ml={3}
             onClick={() => {
               routeHistory.push("/");
             }}
-             >
-              Yes
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    );
-
+          >
+            Yes
+          </Button>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
 
   return (
     <Box>
-    {isReview ? (
-      <Button
-        size="lg"
-        variant="ghost"
-        onClick={() => {
+      {isReview ? (
+        <Button
+          size="lg"
+          variant="ghost"
+          onClick={() => {
             setIsReview(false);
           }}
-        leftIcon={<ArrowBackIcon />}
-      >
-        Edit
-      </Button>
+          leftIcon={<ArrowBackIcon />}
+        >
+          Edit
+        </Button>
       ) : (
-        <Button
-        size="lg"
-        variant="ghost"
-        onClick={onOpen}
-        leftIcon={<ArrowBackIcon />}
-      >
-        Home
-      </Button>
-        )
-      }
+        <Button size="lg" variant="ghost" onClick={onOpen} leftIcon={<ArrowBackIcon />}>
+          Home
+        </Button>
+      )}
       {goHomeAlert}
       <Center p="5">{isReview ? reviewForm : createForm}</Center>
     </Box>
