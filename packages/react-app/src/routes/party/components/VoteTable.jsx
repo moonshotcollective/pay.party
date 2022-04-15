@@ -309,7 +309,7 @@ export const VoteTable = ({
     </Modal>
   );
 
-  const handleNetworkSwitch = async () => {
+  const handleNetworkSwitch = async () => {  
     const ethereum = window.ethereum;
     const data = [
       {
@@ -328,6 +328,11 @@ export const VoteTable = ({
         method: "wallet_switchEthereumChain",
         params: [{ chainId: "0x" + partyData.config.chainId }],
       });
+
+      // switch app network to party network
+      let partyNetworkName = NETWORK(partyData.config.chainId).name;
+      window.localStorage.setItem("network", partyNetworkName);
+
       setTimeout(window.location.reload(), 2000);
     } catch (switchError) {
       // not checking specific error code, because maybe we're not using MetaMask
