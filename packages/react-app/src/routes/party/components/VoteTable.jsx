@@ -37,6 +37,7 @@ import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import AddressChakra from "../../../components/AddressChakra";
 import { ethers } from "ethers";
+import { NETWORK, NETWORKS } from "../../../constants";
 
 export const VoteTable = ({
   partyData,
