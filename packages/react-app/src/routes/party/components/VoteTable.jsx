@@ -70,8 +70,15 @@ export const VoteTable = ({
   useEffect(
     _ => {
       try {
-        setVotesData(partyData.candidates.reduce((o, key) => ({ ...o, [key]: 0 }), {}));
-        setVotesLeft(partyData.config.nvotes);
+        let spent = 0;
+
+        if (!noteIsLoading) {
+          setVotesData(partyData.candidates.reduce((o, key) => ({ ...o, [key]: 0 }), {}));
+        } else {
+          spent = Object.values(votesData).reduce((a, b) => a + b);
+        }
+        setVotesLeft(partyData.config.nvotes - spent);
+        setNoteIsLoading(false);
       } catch (error) {
         // Do something?
         console.log(error);
@@ -135,7 +142,7 @@ export const VoteTable = ({
       const partyRes = await fetch(`${process.env.REACT_APP_API_URL}/party/${id}`);
       const data = await partyRes.json();
       setPartyData(data);
-      setNoteIsLoading(false);
+      // setNoteIsLoading(false);
       onClose();
     } catch {
       console.log("error submitting note");
