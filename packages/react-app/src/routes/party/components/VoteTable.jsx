@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   Text,
+  Textarea,
   NumberInput,
   NumberInputField,
   NumberInputStepper,
@@ -294,7 +295,7 @@ export const VoteTable = ({
         <ModalCloseButton />
         <ModalBody pb={6}>
           <FormControl>
-            <Input
+            <Textarea
               onChange={e => {
                 setCandidateNote(e.target.value);
                 setNoteChars(e.target.value.length);
@@ -302,11 +303,11 @@ export const VoteTable = ({
               ref={initialRef}
               placeholder="Enter your note here"
             />
-            <Text>{noteChars}/124</Text>
+            <Text>{noteChars}/256</Text>
           </FormControl>
         </ModalBody>
         <ModalFooter>
-          <Button mr={3} onClick={newCandidateNote} isLoading={noteIsLoading} isDisabled={noteChars > 124}>
+          <Button mr={3} onClick={newCandidateNote} isLoading={noteIsLoading} isDisabled={noteChars > 256}>
             Submit
           </Button>
           <Button onClick={onClose}>Cancel</Button>
