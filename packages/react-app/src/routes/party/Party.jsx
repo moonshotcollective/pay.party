@@ -31,6 +31,7 @@ export default function Party({
   const [strategy, setStrategy] = useState("quadratic");
   const [isPaid, setIsPaid] = useState(true);
   const [amountToDistribute, setAmountToDistribute] = useState(0);
+  const [distributed, setDistributed] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -74,7 +75,7 @@ export default function Party({
         setLoading(false);
       }
     })();
-  }, [readContracts]);
+  }, [readContracts, distributed]);
 
   // Calculate percent distribution from submitted ballots and memo table
   const calculateDistribution = () => {
@@ -226,6 +227,7 @@ export default function Party({
           {canVote ? cachedVoteTable : cachedViewTable}
           <Box p="6">
             <Distribute
+              setDistributed={setDistributed}
               partyData={partyData}
               address={address}
               userSigner={userSigner}

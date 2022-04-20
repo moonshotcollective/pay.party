@@ -22,6 +22,7 @@ export const Distribute = ({
   localProvider,
   setAmountToDistribute,
   targetNetwork,
+  setDistributed,
 }) => {
   const [tokenInstance, setTokenInstance] = useState(null);
   const [amounts, setAmounts] = useState(null);
@@ -116,7 +117,6 @@ export const Distribute = ({
         txn: res.hash,
         strategy: strategy,
         chainId: targetNetwork.chainId,
-        
       };
       await fetch(`${process.env.REACT_APP_API_URL}/party/${partyData.id}/distribute`, {
         method: "put",
@@ -151,6 +151,7 @@ export const Distribute = ({
         if (token && amounts && addresses && hasApprovedAllowance) {
           // Distribute Token
           tx(writeContracts.Distributor.distributeToken(token, addresses, amounts, partyData.id), handleReceipt);
+          setDistributed(true);
         } else {
           if (amounts) {
             // Distribute Ether
@@ -158,6 +159,7 @@ export const Distribute = ({
               writeContracts.Distributor.distributeEther(addresses, amounts, partyData.id, { value: total }),
               handleReceipt,
             );
+            setDistributed(true);
           } else {
             setIsDistributionLoading(false);
           }
