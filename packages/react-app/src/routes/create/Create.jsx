@@ -138,6 +138,8 @@ const Create = ({
   const [candidates, setCandidates] = useState([]);
   const [description, setDescription] = useState("");
   const [name, setName] = useState(partyName);
+  const [votersAddressIsValid, setVotersAddressIsValid] = useState(true);
+  const [candidatesAddressIsValid, setCandidatesAddressIsValid] = useState(true);
 
   useEffect(_ => {
     if (!partyJson) {
@@ -242,6 +244,7 @@ const Create = ({
           </Tooltip>
         </HStack>
         <MultiAddressInput
+          allAddressAreValid={setVotersAddressIsValid}
           ensProvider={mainnetProvider}
           placeholder="Add voter address/ens and press Enter"
           value={voters}
@@ -257,13 +260,14 @@ const Create = ({
           </Tooltip>
         </HStack>
         <MultiAddressInput
+          allAddressAreValid={setCandidatesAddressIsValid}
           ensProvider={mainnetProvider}
           placeholder="Add candidate address/ens and press Enter"
           value={candidates}
           onChange={setCandidates}
         />
         <Center pt={10}>
-          <Button size="lg" onClick={onContinue}>
+          <Button disabled={!votersAddressIsValid || !candidatesAddressIsValid} size="lg" onClick={onContinue}>
             Continue
           </Button>
         </Center>
