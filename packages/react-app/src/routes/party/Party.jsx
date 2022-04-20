@@ -37,6 +37,7 @@ export default function Party({
     setLoading(true);
     (async () => {
       if (readContracts && readContracts.Distributor.address) {
+        console.log("fetching partyData");
         const res = await fetch(`${process.env.REACT_APP_API_URL}/party/${id}`);
         const party = await res.json();
 

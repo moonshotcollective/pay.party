@@ -123,6 +123,7 @@ export const Distribute = ({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(receipt),
       });
+      setDistributed(prev => !prev);
     }
     setIsDistributionLoading(false);
     // await new Promise(r => setTimeout(r, 5000));
@@ -143,23 +144,21 @@ export const Distribute = ({
   // };
 
   // Distribute either Eth, or loaded erc20
-  const distribute = () => {
+  const distribute = async () => {
     try {
       if (partyData && partyData.ballots.length > 0) {
         setIsDistributionLoading(true);
         // Distribute the funds
         if (token && amounts && addresses && hasApprovedAllowance) {
           // Distribute Token
-          tx(writeContracts.Distributor.distributeToken(token, addresses, amounts, partyData.id), handleReceipt);
-          setDistributed(true);
+          await tx(writeContracts.Distributor.distributeToken(token, addresses, amounts, partyData.id), handleReceipt);
         } else {
           if (amounts) {
             // Distribute Ether
-            tx(
+            await tx(
               writeContracts.Distributor.distributeEther(addresses, amounts, partyData.id, { value: total }),
               handleReceipt,
             );
-            setDistributed(true);
           } else {
             setIsDistributionLoading(false);
           }
