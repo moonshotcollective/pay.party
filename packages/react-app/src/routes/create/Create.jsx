@@ -159,7 +159,7 @@ const Create = ({
         const candidateAddresses = candidates.map(d => d.address);
         const config = {
           strategy: "",
-          nvotes: candidateAddresses.length * 5,
+          nvotes: candidateAddresses.length * 10, // Number of votes per voter
           chainId: targetNetwork.chainId,
         };
         if (name !== "" && candidateAddresses.length > 0 && voterAddresses.length > 0) {
