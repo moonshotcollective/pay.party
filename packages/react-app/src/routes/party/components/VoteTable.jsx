@@ -37,7 +37,7 @@ import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import AddressChakra from "../../../components/AddressChakra";
 import { ethers } from "ethers";
-import { NETWORK, NETWORKS } from "../../../constants";
+import { NETWORK } from "../../../constants";
 
 export const VoteTable = ({
   partyData,
@@ -132,6 +132,8 @@ export const VoteTable = ({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(note),
       });
+      const testDataX = await noteRes.json();
+      console.log("This is ", testDataX.message);
       // TODO: Find a more efficient approach instead of re-requesting the whole party
       const partyRes = await fetch(`${process.env.REACT_APP_API_URL}/party/${id}`);
       const data = await partyRes.json();
@@ -208,6 +210,20 @@ export const VoteTable = ({
     }
   };
 
+  // function testFunc() {
+  //   let c;
+  //   c = partyData.candidates.map(
+  //     d => {
+  //       let varVar = partyData.notes?.filter(n => n.candidate.toLowerCase() === d.toLowerCase()).reverse()[0]?.message;
+  //       console.log("Doing test to..",d);
+  //       console.log("Doing more test to..",varVar);
+  //       return (
+  //         <span>{varVar}</span>
+  //       );
+  //     }
+  //   )
+  // } 
+  // // testFunc();
   const candidates = useMemo(
     _ => {
       let c;
@@ -230,6 +246,7 @@ export const VoteTable = ({
                         partyData.notes?.filter(n => n.candidate.toLowerCase() === d.toLowerCase()).reverse()[0]
                           ?.message
                       }
+                      {/* {testFunc} */}
                     </Text>
                   </Box>
                   {d.toLowerCase() === address.toLowerCase() ? (
