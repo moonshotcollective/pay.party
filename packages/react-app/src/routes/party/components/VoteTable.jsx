@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   Text,
+  Textarea,
   NumberInput,
   NumberInputField,
   NumberInputStepper,
@@ -71,8 +72,15 @@ export const VoteTable = ({
   useEffect(
     _ => {
       try {
-        setVotesData(partyData.candidates.reduce((o, key) => ({ ...o, [key]: 0 }), {}));
-        setVotesLeft(partyData.config.nvotes);
+        let spent = 0;
+
+        if (!noteIsLoading) {
+          setVotesData(partyData.candidates.reduce((o, key) => ({ ...o, [key]: 0 }), {}));
+        } else {
+          spent = Object.values(votesData).reduce((a, b) => a + b);
+        }
+        setVotesLeft(partyData.config.nvotes - spent);
+        setNoteIsLoading(false);
       } catch (error) {
         // Do something?
         console.log(error);
@@ -138,7 +146,7 @@ export const VoteTable = ({
       const partyRes = await fetch(`${process.env.REACT_APP_API_URL}/party/${id}`);
       const data = await partyRes.json();
       setPartyData(data);
-      setNoteIsLoading(false);
+      // setNoteIsLoading(false);
       onClose();
     } catch {
       console.log("error submitting note");
@@ -305,7 +313,7 @@ export const VoteTable = ({
         <ModalCloseButton />
         <ModalBody pb={6}>
           <FormControl>
-            <Input
+            <Textarea
               onChange={e => {
                 setCandidateNote(e.target.value);
                 setNoteChars(e.target.value.length);
@@ -313,11 +321,11 @@ export const VoteTable = ({
               ref={initialRef}
               placeholder="Enter your note here"
             />
-            <Text>{noteChars}/124</Text>
+            <Text>{noteChars}/256</Text>
           </FormControl>
         </ModalBody>
         <ModalFooter>
-          <Button mr={3} onClick={newCandidateNote} isLoading={noteIsLoading} isDisabled={noteChars > 124}>
+          <Button mr={3} onClick={newCandidateNote} isLoading={noteIsLoading} isDisabled={noteChars > 256}>
             Submit
           </Button>
           <Button onClick={onClose}>Cancel</Button>
