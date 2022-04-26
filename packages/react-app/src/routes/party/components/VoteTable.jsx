@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  IconButton,
   Text,
   Textarea,
   NumberInput,
@@ -18,6 +19,7 @@ import {
   Td,
   TableCaption,
 } from "@chakra-ui/react";
+import { RepeatIcon } from "@chakra-ui/icons";
 import {
   useDisclosure,
   Modal,
@@ -42,6 +44,8 @@ import { NETWORK } from "../../../constants";
 
 export const VoteTable = ({
   partyData,
+  isRefreshing,
+  updateUiNotes,
   setPartyData,
   address,
   userSigner,
@@ -140,8 +144,6 @@ export const VoteTable = ({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(note),
       });
-      const testDataX = await noteRes.json();
-      console.log("This is ", testDataX.message);
       // TODO: Find a more efficient approach instead of re-requesting the whole party
       const partyRes = await fetch(`${process.env.REACT_APP_API_URL}/party/${id}`);
       const data = await partyRes.json();
@@ -217,21 +219,6 @@ export const VoteTable = ({
       console.log("Error: Failed to cast ballot!");
     }
   };
-
-  // function testFunc() {
-  //   let c;
-  //   c = partyData.candidates.map(
-  //     d => {
-  //       let varVar = partyData.notes?.filter(n => n.candidate.toLowerCase() === d.toLowerCase()).reverse()[0]?.message;
-  //       console.log("Doing test to..",d);
-  //       console.log("Doing more test to..",varVar);
-  //       return (
-  //         <span>{varVar}</span>
-  //       );
-  //     }
-  //   )
-  // } 
-  // // testFunc();
   const candidates = useMemo(
     _ => {
       let c;
@@ -388,7 +375,7 @@ export const VoteTable = ({
         </Center>
       ) : null}
       <Center pt={4}>
-        <Text fontSize="lg">Remaining Votes:</Text>
+        <Text fontSize="lg">Your Remaining Votes:</Text>
       </Center>
       <Center pb="3">
         <Text fontWeight="semibold" fontSize="lg">
@@ -399,7 +386,10 @@ export const VoteTable = ({
         <Thead>
           <Tr>
             <Th>Address</Th>
-            <Th>Note</Th>
+            <Th>
+              Note
+              <IconButton ml={3} size="xs" variant={"outline"} icon={<RepeatIcon />} disabled={isRefreshing} onClick={updateUiNotes} />
+            </Th>
             <Th>Score</Th>
           </Tr>
         </Thead>

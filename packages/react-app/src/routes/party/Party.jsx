@@ -76,6 +76,24 @@ export default function Party({
     })();
   }, [readContracts]);
 
+  // Update UI when other users adds notes
+  const updateUiNotes = async () => {
+    try {
+      // if (!loading) {
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/party/${id}`);
+        const party = await res.json();
+        const partyNotes = party.notes.length;
+        const newNoteAdded = partyData.notes.length; 
+        if (partyNotes !== newNoteAdded) {
+          setPartyData(party);
+        }
+        console.log("RUNNING UI UPDATES");
+      // }
+    } catch (error) {
+      console.log(error);
+      return null;
+    }
+  }
   // Calculate percent distribution from submitted ballots and memo table
   const calculateDistribution = () => {
     try {
@@ -142,9 +160,12 @@ export default function Party({
 
   const cachedVoteTable = useMemo(() => {
     try {
+      // updateUiNotes();
       return (
         <VoteTable
           partyData={partyData}
+          updateUiNotes={updateUiNotes}
+          isRefreshing={false}
           setPartyData={setPartyData}
           address={address}
           userSigner={userSigner}
