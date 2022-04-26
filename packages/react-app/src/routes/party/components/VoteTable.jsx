@@ -38,6 +38,7 @@ import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useParams, useHistory } from "react-router-dom";
 import AddressChakra from "../../../components/AddressChakra";
 import { ethers } from "ethers";
+import { NETWORK, NETWORKS } from "../../../constants";
 
 export const VoteTable = ({
   partyData,
@@ -316,7 +317,7 @@ export const VoteTable = ({
     </Modal>
   );
 
-  const handleNetworkSwitch = async () => {
+  const handleNetworkSwitch = async () => {  
     const ethereum = window.ethereum;
     const data = [
       {
@@ -335,6 +336,11 @@ export const VoteTable = ({
         method: "wallet_switchEthereumChain",
         params: [{ chainId: "0x" + partyData.config.chainId }],
       });
+
+      // switch app network to party network
+      let partyNetworkName = NETWORK(partyData.config.chainId).name;
+      window.localStorage.setItem("network", partyNetworkName);
+
       setTimeout(window.location.reload(), 2000);
     } catch (switchError) {
       // not checking specific error code, because maybe we're not using MetaMask
