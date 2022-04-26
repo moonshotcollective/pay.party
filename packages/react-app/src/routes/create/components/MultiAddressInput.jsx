@@ -30,6 +30,16 @@ export default function MultiAddressInput(props) {
   const { ensProvider, value, onChange } = props;
   const [isLoading, setIsLoading] = useState(false);
 
+  useEffect(() => {
+    let anyAddressInvalid = false;
+    value.map(add => {
+      if (!add.isValid) {
+        anyAddressInvalid = true;
+      }
+    });
+    props.allAddressAreValid(!anyAddressInvalid);
+  }, [value]);
+
   const addressBadge = d => {
     return (
       <Box p="1" key={d.input}>
