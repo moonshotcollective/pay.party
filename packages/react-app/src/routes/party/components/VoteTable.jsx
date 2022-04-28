@@ -2,6 +2,7 @@ import {
   Box,
   Button,
   IconButton,
+  Tooltip,
   Text,
   Textarea,
   NumberInput,
@@ -44,7 +45,6 @@ import { NETWORK } from "../../../constants";
 
 export const VoteTable = ({
   partyData,
-  isRefreshing,
   updateUiNotes,
   setPartyData,
   address,
@@ -58,6 +58,7 @@ export const VoteTable = ({
   const [votesData, setVotesData] = useState(null);
   // Init votes left to nvotes
   const [votesLeft, setVotesLeft] = useState(null);
+  const [isNoteRefreshing, setIsNoteRefreshing] = useState(false);
   const [candidateNote, setCandidateNote] = useState("");
   const [noteChars, setNoteChars] = useState(0);
   const [noteIsLoading, setNoteIsLoading] = useState(false);
@@ -312,7 +313,7 @@ export const VoteTable = ({
           </FormControl>
         </ModalBody>
         <ModalFooter>
-          <Button mr={3} onClick={newCandidateNote} isLoading={noteIsLoading} isDisabled={noteChars > 256}>
+          <Button mr={3} onClick={()=> {newCandidateNote(), updateUiNotes()}} isLoading={noteIsLoading} isDisabled={noteChars > 256}>
             Submit
           </Button>
           <Button onClick={onClose}>Cancel</Button>
@@ -388,7 +389,22 @@ export const VoteTable = ({
             <Th>Address</Th>
             <Th>
               Note
-              <IconButton ml={3} size="xs" variant={"outline"} icon={<RepeatIcon />} disabled={isRefreshing} onClick={updateUiNotes} />
+              <Tooltip label="Refresh notes" fontSize="xs">
+                <IconButton
+                  isLoading={isNoteRefreshing}
+                  ml={3}
+                  size={"xs"}
+                  variant={"outline"}
+                  icon={<RepeatIcon />}
+                  onClick={() => {
+                    setIsNoteRefreshing(true),
+                    updateUiNotes(),
+                    setTimeout(() => {
+                     setIsNoteRefreshing(false)
+                    }, 2000); 
+                  }}
+                />
+              </Tooltip>
             </Th>
             <Th>Score</Th>
           </Tr>
