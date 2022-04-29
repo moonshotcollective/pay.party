@@ -1,6 +1,8 @@
 import {
   Box,
   Button,
+  IconButton,
+  Tooltip,
   Text,
   Textarea,
   NumberInput,
@@ -18,6 +20,7 @@ import {
   Td,
   TableCaption,
 } from "@chakra-ui/react";
+import { RepeatIcon } from "@chakra-ui/icons";
 import {
   useDisclosure,
   Modal,
@@ -40,8 +43,10 @@ import AddressChakra from "../../../components/AddressChakra";
 import { ethers } from "ethers";
 import { NETWORK, NETWORKS } from "../../../constants";
 
+
 export const VoteTable = ({
   partyData,
+  updateUiNotes,
   setPartyData,
   address,
   userSigner,
@@ -54,6 +59,7 @@ export const VoteTable = ({
   const [votesData, setVotesData] = useState(null);
   // Init votes left to nvotes
   const [votesLeft, setVotesLeft] = useState(null);
+  const [isNoteRefreshing, setIsNoteRefreshing] = useState(false);
   const [candidateNote, setCandidateNote] = useState("");
   const [noteChars, setNoteChars] = useState(0);
   const [noteIsLoading, setNoteIsLoading] = useState(false);
@@ -215,7 +221,6 @@ export const VoteTable = ({
       console.log("Error: Failed to cast ballot!");
     }
   };
-
   const candidates = useMemo(
     _ => {
       let c;
@@ -238,6 +243,7 @@ export const VoteTable = ({
                         partyData.notes?.filter(n => n.candidate.toLowerCase() === d.toLowerCase()).reverse()[0]
                           ?.message
                       }
+                      {/* {testFunc} */}
                     </Text>
                   </Box>
                   {d.toLowerCase() === address.toLowerCase() ? (
@@ -308,7 +314,7 @@ export const VoteTable = ({
           </FormControl>
         </ModalBody>
         <ModalFooter>
-          <Button mr={3} onClick={newCandidateNote} isLoading={noteIsLoading} isDisabled={noteChars > 256}>
+          <Button mr={3} onClick={()=> {newCandidateNote(), updateUiNotes()}} isLoading={noteIsLoading} isDisabled={noteChars > 256}>
             Submit
           </Button>
           <Button onClick={onClose}>Cancel</Button>
@@ -371,7 +377,7 @@ export const VoteTable = ({
         </Center>
       ) : null}
       <Center pt={4}>
-        <Text fontSize="lg">Remaining Votes:</Text>
+        <Text fontSize="lg">Your Remaining Votes:</Text>
       </Center>
       <Center pb="3">
         <Text fontWeight="semibold" fontSize="lg">
@@ -382,7 +388,25 @@ export const VoteTable = ({
         <Thead>
           <Tr>
             <Th>Address</Th>
-            <Th>Note</Th>
+            <Th>
+              Note
+              <Tooltip label="Refresh notes" fontSize="xs">
+                <IconButton
+                  isLoading={isNoteRefreshing}
+                  ml={3}
+                  size={"xs"}
+                  variant={"outline"}
+                  icon={<RepeatIcon />}
+                  onClick={() => {
+                    setIsNoteRefreshing(true),
+                    updateUiNotes(),
+                    setTimeout(() => {
+                     setIsNoteRefreshing(false)
+                    }, 2000); 
+                  }}
+                />
+              </Tooltip>
+            </Th>
             <Th>Score</Th>
           </Tr>
         </Thead>
